@@ -35,8 +35,10 @@ addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
+#include <stdio.h>
 #include "LCD.H"
 #include "PLL.H"
+#include "fixed.h"
 
 //--------------------TimerInit---------------
 // initialize timer module to 0.667us(Boot Mode) TCNT clock
@@ -111,7 +113,10 @@ void main(void) {
   DDRP |= 0x80;     // PortP bit 7 is output to LED, used for debugging
   check(LCD_Open());
   check(LCD_Clear());
-  check(LCD_OutString(" DP512  ")); blank();
+  Fixed_uDecOut2(9999);
+  for(;;) {
+  }
+ /* check(LCD_OutString(" DP512  ")); blank();
   check(LCD_OutString("Valvano ")); swait();
   asm cli   // allows debugger to run
   for(;;) {
@@ -123,5 +128,5 @@ void main(void) {
     check(LCD_OutString("ijklmnop")); swait();
     check(LCD_OutString("!@#$%^&*")); blank();
     check(LCD_OutString("()_+-=[]")); swait();
-  } 
+  }  */
 }
