@@ -216,8 +216,21 @@ short LCD_OutString(char *pt){
 // Input: letter is ASCII code
 // handles at least two special characters, like CR LF or TAB
 // Output: true if successful
+#define CR 13 // \r
+#define TAB 9 // \n
+#define LF 10 // \r
 short TERMIO_PutChar(unsigned char letter) {
-  LCD_OutChar(letter);  
+  if(letter == CR) {
+    if(OpenFlag==0){
+      return 0;  // not open
+    }
+    outCsr(0x02);        // Cursor to home
+    wait(2460);          // 1.64ms wait
+  } 
+  if(letter == LF) {
+    return LCD_Clear();  // Clearscreen
+  }
+  return LCD_OutChar(letter);  
 } 
             
 
