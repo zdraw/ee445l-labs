@@ -56,6 +56,17 @@ short LCD_OutChar(unsigned char letter);
 short LCD_OutString(char *pt); 
 
 
+//---------------------TERMIO_PutChar---------------------
+// sends one ASCII to the LCD display
+// Input: letter is ASCII code
+// handles at least two special characters, like CR LF or TAB
+// Output: true if successful
+#define CR 13 // \r
+#define TAB 9 // \n
+#define LF 10 // \r
+short TERMIO_PutChar(unsigned char letter);
+
+
     
      
 
