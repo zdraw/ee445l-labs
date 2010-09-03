@@ -29,3 +29,15 @@ unsigned short Fixed_sDecOut3(signed short integer) {
   }
 }
    
+   
+unsigned short Fixed_uBinOut8(unsigned short integer) {
+  if(integer > 65534) {
+    printf("***.**");
+    return 0;
+  } 
+  else {
+    unsigned short newInt = (((unsigned long) integer)*100)/256;
+    printf("%3d.%02d", newInt/100, newInt%100);
+    return 1;
+  }   
+}

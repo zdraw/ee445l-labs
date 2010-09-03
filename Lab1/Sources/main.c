@@ -134,7 +134,8 @@ void main(void) {
     Fixed_uDecOut2(65534);
     swait();
     Fixed_uDecOut2(65535);
-    swait(); */     
+    swait(); */ 
+    /*    
     LCD_OutString("-32768 ="); blank();
     Fixed_sDecOut3(-32768);
     swait();            
@@ -164,7 +165,38 @@ void main(void) {
     swait();  
     LCD_OutString("32767="); blank();
     Fixed_sDecOut3(32767);
+    swait();  */ 
+    LCD_OutString("0     = "); blank();
+    Fixed_uBinOut8(0);
+    swait();            
+    LCD_OutString("2     = "); blank();
+    Fixed_uBinOut8(2);
+    swait();   
+    LCD_OutString("64    = "); blank();
+    Fixed_uBinOut8(64);
+    swait();  
+    LCD_OutString("100   = "); blank();
+    Fixed_uBinOut8(100);
+    swait();                
+    LCD_OutString("500   = "); blank();
+    Fixed_uBinOut8(500);
+    swait();   
+    LCD_OutString("512   = "); blank();
+    Fixed_uBinOut8(512);
+    swait();  
+    LCD_OutString("5000  = "); blank();
+    Fixed_uBinOut8(5000);
+    swait();  
+    LCD_OutString("30000 = "); blank();
+    Fixed_uBinOut8(30000);
+    swait();  
+    LCD_OutString("65534 = "); blank();
+    Fixed_uBinOut8(65534);
+    swait();  
+    LCD_OutString("65535 = "); blank();
+    Fixed_uBinOut8(65535);
     swait();
+    
   }
  /* check(LCD_OutString(" DP512  ")); blank();
   check(LCD_OutString("Valvano ")); swait();
