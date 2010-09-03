@@ -113,8 +113,58 @@ void main(void) {
   DDRP |= 0x80;     // PortP bit 7 is output to LED, used for debugging
   check(LCD_Open());
   check(LCD_Clear());
-  Fixed_uDecOut2(9999);
   for(;;) {
+  /*
+    Fixed_uDecOut2(0);
+    swait();
+    Fixed_uDecOut2(1);
+    swait();
+    Fixed_uDecOut2(99);
+    swait();
+    Fixed_uDecOut2(100);
+    swait();
+    Fixed_uDecOut2(999);
+    swait();
+    Fixed_uDecOut2(1000);
+    swait();
+    Fixed_uDecOut2(9999);
+    swait();
+    Fixed_uDecOut2(10000);
+    swait();
+    Fixed_uDecOut2(65534);
+    swait();
+    Fixed_uDecOut2(65535);
+    swait(); */     
+    LCD_OutString("-32768 ="); blank();
+    Fixed_sDecOut3(-32768);
+    swait();            
+    LCD_OutString("-10000 ="); blank();
+    Fixed_sDecOut3(-10000);
+    swait();   
+    LCD_OutString("-9999  ="); blank();
+    Fixed_sDecOut3(-9999);
+    swait();  
+    LCD_OutString("-999   ="); blank();
+    Fixed_sDecOut3(-999);
+    swait(); 
+    LCD_OutString("-1     ="); blank();
+    Fixed_sDecOut3(-1);
+    swait();   
+    LCD_OutString("0      ="); blank();
+    Fixed_sDecOut3(0);
+    swait();  
+    LCD_OutString("123    ="); blank();
+    Fixed_sDecOut3(123);
+    swait();  
+    LCD_OutString("1234   ="); blank();
+    Fixed_sDecOut3(1234);
+    swait();  
+    LCD_OutString("9999   ="); blank();
+    Fixed_sDecOut3(9999);
+    swait();  
+    LCD_OutString("32767="); blank();
+    Fixed_sDecOut3(32767);
+    swait();
   }
  /* check(LCD_OutString(" DP512  ")); blank();
   check(LCD_OutString("Valvano ")); swait();
