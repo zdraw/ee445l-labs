@@ -41,3 +41,15 @@ unsigned short Fixed_uBinOut8(unsigned short integer) {
     return 1;
   }   
 }
+
+unsigned short Fixed_uBinOut8s(unsigned short integer, char* buffer) {
+  if(integer > 65534) {
+    sprintf(buffer,"***.**");
+    return 0;
+  } 
+  else {
+    unsigned short newInt = (((unsigned long) integer)*100)/256;
+    sprintf(buffer,"%3d.%02d", newInt/100, newInt%100);
+    return 1;
+  }   
+}
