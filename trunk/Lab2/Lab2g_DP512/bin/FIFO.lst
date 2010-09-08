@@ -1,0 +1,231 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // filename *************Fifo.c********
+    2:  // Two-Index implementation of a FIFO
+    3:  // Jonathan W. Valvano 8/29/10
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //        Thompson, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+    9:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   10:  
+   11:  // Copyright 2010 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  
+   15:  #include "Fifo.h"
+   16:  
+   17:  // set Good equal to 0 to use a FIFO with a critical section
+   18:  // set Good equal to 1 to use a FIFO without a critical section
+   19:  #define Good 0
+   20:  dataType static Fifo[FIFOSIZE];
+   21:  
+   22:  #if Good 
+   23:  
+   24:  unsigned short volatile PutI;  // put next
+   25:  unsigned short volatile GetI;  // get next
+   26:  
+   27:  // ******* Fifo_Init ********
+   28:  // Initialize FIFO, making it empty
+   29:  // This function must be called before FIFO is used,
+   30:  // Can be called again to empty FIFO
+   31:  // Inputs: none
+   32:  // Outputs: none
+   33:  void Fifo_Init(void){ unsigned char SaveCCR;
+   34:  asm  tpa  
+   35:  asm  staa SaveCCR 
+   36:  asm  sei          // make atomic 
+   37:    PutI = GetI = 0;      // Empty
+   38:  asm  ldaa SaveCCR
+   39:  asm  tap          // end critical section 
+   40:  }
+   41:  
+   42:  // ******* Fifo_Put ********
+   43:  // Put data into FIFO
+   44:  // Inputs: data to save in FIFO
+   45:  // Outputs: FIFOSUCCESS if saved
+   46:  //          FIFOFAIL if not saved, because FIFO was full
+   47:  int Fifo_Put(dataType data){
+   48:    if((PutI-GetI) & ~(FIFOSIZE-1)){
+   49:      return(FIFOFAIL); // Failed, fifo full
+   50:    }
+   51:    Fifo[PutI&(FIFOSIZE-1)] = data; // put
+   52:    PutI++;  // Success, update
+   53:    return(FIFOSUCCESS);
+   54:  }
+   55:  
+   56:  
+   57:  // ******* Fifo_Get ********
+   58:  // Get data from FIFO
+   59:  // Inputs: pointer to memory into which to return data
+   60:  // Outputs: FIFOSUCCESS if data properly removed
+   61:  //          FIFOFAIL if not removed, because FIFO was empty
+   62:  int Fifo_Get(dataType *datapt){
+   63:    if(PutI == GetI ){
+   64:      return(FIFOFAIL); // Empty if PutI=GetI
+   65:    }
+   66:    *datapt = Fifo[GetI&(FIFOSIZE-1)];
+   67:    GetI++;  // Success, update
+   68:    return(FIFOSUCCESS);
+   69:  }
+   70:  
+   71:  // ******* Fifo_Size ********
+   72:  // Check the status of the FIFO
+   73:  // Inputs: none
+   74:  // Outputs: number of elements currently stored
+   75:  // 0 to FIFOSIZE (0 means empty, FIFOSIZE means full)
+   76:  unsigned short Fifo_Size(void){
+   77:   return ((unsigned short)(PutI-GetI));
+   78:  }
+   79:  
+   80:  
+   81:  #else
+   82:  //***************Second Implementation with critical section****
+   83:  unsigned short static volatile Size;   /* number of elements in FIFO */
+   84:  dataType static volatile *PutPt;    /* Pointer of where to put next */
+   85:  dataType static volatile *GetPt;    /* Pointer of where to get next */
+   86:  
+   87:  /*-----------------------Fifo_Init----------------------------
+   88:    Initialize fifo to be empty
+   89:    Inputs: none
+   90:    Outputs: none */
+   91:  void Fifo_Init(void){
+*** EVALUATION ***
+
+Function: Fifo_Init
+Source  : D:\EE345L\Solutions\Lab2g_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_DP512;D:\EE345L\Solutions\Lab2g_DP512\bin;D:\EE345L\Solutions\Lab2g_DP512\prm;D:\EE345L\Solutions\Lab2g_DP512\cmd;D:\EE345L\Solutions\Lab2g_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+
+  0000 36           [2]     PSHA  
+   92:  unsigned char SaveCCR;
+   93:  asm  tpa  
+  0001 b720         [1]     TPA   
+   94:  asm  staa SaveCCR 
+  0003 6a80         [2]     STAA  0,SP
+   95:  asm  sei          // make atomic 
+  0005 1410         [1]     SEI   
+   96:    PutPt=GetPt=&Fifo[0];   // Empty when PutPt=GetPt
+  0007 180300000000 [5]     MOVW  #Fifo,GetPt
+  000d fc0000       [3]     LDD   GetPt
+  0010 7c0000       [3]     STD   PutPt
+   97:    Size = 0; 
+  0013 c7           [1]     CLRB  
+  0014 87           [1]     CLRA  
+  0015 7c0000       [3]     STD   Size
+   98:  asm  ldaa SaveCCR
+  0018 a680         [3]     LDAA  0,SP
+   99:  asm  tap          // end critical section 
+  001a b702         [1]     TAP   
+  100:  }
+  001c 32           [3]     PULA  
+  001d 3d           [5]     RTS   
+  101:  
+  102:  
+  103:  /*-----------------------Fifo_Put----------------------------
+  104:    Enter one character into the fifo
+  105:    Inputs: data
+  106:    Outputs: true if data is properly saved,
+  107:             false if data not saved because it was previously full*/
+  108:  int Fifo_Put(dataType data){
+*** EVALUATION ***
+
+Function: Fifo_Put
+Source  : D:\EE345L\Solutions\Lab2g_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_DP512;D:\EE345L\Solutions\Lab2g_DP512\bin;D:\EE345L\Solutions\Lab2g_DP512\prm;D:\EE345L\Solutions\Lab2g_DP512\cmd;D:\EE345L\Solutions\Lab2g_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+
+  0000 37           [2]     PSHB  
+  109:    if(Size==FIFOSIZE){
+  0001 fc0000       [3]     LDD   Size
+  0004 8c0020       [2]     CPD   #32
+  0007 2603         [3/1]   BNE   *+5 ;abs = 000c
+  110:      return 0;     // Failed, fifo was previously full
+  0009 c7           [1]     CLRB  
+  000a 2021         [3]     BRA   *+35 ;abs = 002d
+  111:    }
+  112:    *(PutPt) = data;      // try to Put data into fifo 
+  000c e680         [3]     LDAB  0,SP
+  000e 6bfb0000     [4]     STAB  [PutPt,PCR]
+  113:    PutPt++;              
+  0012 fe0000       [3]     LDX   PutPt
+  0015 08           [1]     INX   
+  0016 7e0000       [3]     STX   PutPt
+  114:    if(PutPt == &Fifo[FIFOSIZE]){ // need to wrap?
+  0019 8e0000       [2]     CPX   #Fifo:32
+  001c 2606         [3/1]   BNE   *+8 ;abs = 0024
+  115:      PutPt = &Fifo[0];
+  001e 180300000000 [5]     MOVW  #Fifo,PutPt
+  116:    }
+  117:    Size++;   // one more element
+  0024 fe0000       [3]     LDX   Size
+  0027 08           [1]     INX   
+  0028 7e0000       [3]     STX   Size
+  118:    return(1);
+  002b c601         [1]     LDAB  #1
+  002d 87           [1]     CLRA  
+  119:  }
+  002e 1b81         [2]     LEAS  1,SP
+  0030 3d           [5]     RTS   
+  120:  
+  121:  /*-----------------------Fifo_Get----------------------------
+  122:    Remove one character from the fifo
+  123:    Inputs: pointer to place to return data
+  124:    Outputs: true if data is valid, 
+  125:             false if fifo was empty at the time of the call*/
+  126:  int Fifo_Get(dataType *datapt){ 
+*** EVALUATION ***
+
+Function: Fifo_Get
+Source  : D:\EE345L\Solutions\Lab2g_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_DP512;D:\EE345L\Solutions\Lab2g_DP512\bin;D:\EE345L\Solutions\Lab2g_DP512\prm;D:\EE345L\Solutions\Lab2g_DP512\cmd;D:\EE345L\Solutions\Lab2g_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+
+  0000 3b           [2]     PSHD  
+  127:    if(Size == 0){
+  0001 fc0000       [3]     LDD   Size
+  0004 2602         [3/1]   BNE   *+4 ;abs = 0008
+  128:      return(0);     // Empty if no elements in FIFO 
+  0006 2024         [3]     BRA   *+38 ;abs = 002c
+  129:    }
+  130:    *datapt = *(GetPt);  // return by reference
+  0008 ee80         [3]     LDX   0,SP
+  000a e6fb0000     [6]     LDAB  [GetPt,PCR]
+  000e 6b00         [2]     STAB  0,X
+  131:    GetPt++;             // removes data from fifo
+  0010 fe0000       [3]     LDX   GetPt
+  0013 08           [1]     INX   
+  0014 7e0000       [3]     STX   GetPt
+  132:    if(GetPt == &Fifo[FIFOSIZE]){ 
+  0017 8e0000       [2]     CPX   #Fifo:32
+  001a 2606         [3/1]   BNE   *+8 ;abs = 0022
+  133:      GetPt = &Fifo[0];  // wrap
+  001c 180300000000 [5]     MOVW  #Fifo,GetPt
+  134:    }
+  135:    Size--;   // one less element
+  0022 fe0000       [3]     LDX   Size
+  0025 09           [1]     DEX   
+  0026 7e0000       [3]     STX   Size
+  136:    return(1); 
+  0029 c601         [1]     LDAB  #1
+  002b 87           [1]     CLRA  
+  137:  }
+  002c 30           [3]     PULX  
+  002d 3d           [5]     RTS   
+  138:  
+  139:  //-----------------------Fifo_Size----------------------------
+  140:  // Check the status of the FIFO
+  141:  // Inputs: none
+  142:  // Outputs: number of elements currently stored
+  143:  // 0 to FIFOSIZE (0 means empty, FIFOSIZE-1 means full)
+  144:  unsigned short Fifo_Size(void){ 
+*** EVALUATION ***
+
+Function: Fifo_Size
+Source  : D:\EE345L\Solutions\Lab2g_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_DP512;D:\EE345L\Solutions\Lab2g_DP512\bin;D:\EE345L\Solutions\Lab2g_DP512\prm;D:\EE345L\Solutions\Lab2g_DP512\cmd;D:\EE345L\Solutions\Lab2g_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+
+  145:    return Size;
+  0000 fc0000       [3]     LDD   Size
+  146:  }
+  0003 3d           [5]     RTS   
+  147:  #endif
