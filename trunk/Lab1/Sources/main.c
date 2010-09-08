@@ -106,7 +106,7 @@ void swait(void){
 void blank(void){
   check(LCD_OutString("                                "));
 }
-
+/*
 void main(void) {
   PLL_Init();       // set E clock to 24 MHz
   TimerInit();      // enable timer
@@ -114,7 +114,7 @@ void main(void) {
   check(LCD_Open());
   check(LCD_Clear());
   for(;;) {
-  /*
+  
     Fixed_uDecOut2(0);
     swait();
     Fixed_uDecOut2(1);
@@ -165,7 +165,7 @@ void main(void) {
     swait();  
     LCD_OutString("32767="); blank();
     Fixed_sDecOut3(32767);
-    swait();  */ 
+    swait();  
     LCD_OutString("0     = "); blank();
     Fixed_uBinOut8(0);
     swait();            
@@ -197,7 +197,7 @@ void main(void) {
     Fixed_uBinOut8(65535);
     swait();
     
-  }
+  } */
  /* check(LCD_OutString(" DP512  ")); blank();
   check(LCD_OutString("Valvano ")); swait();
   asm cli   // allows debugger to run
@@ -210,5 +210,42 @@ void main(void) {
     check(LCD_OutString("ijklmnop")); swait();
     check(LCD_OutString("!@#$%^&*")); blank();
     check(LCD_OutString("()_+-=[]")); swait();
-  }  */
+  }  
+}    */
+  /**********VALVANOS***********/
+  // const will place these structures in ROM
+const struct outTestCase{ // used to test routines
+unsigned short InNumber; // test input number
+unsigned char OutBuffer[10]; // Output String
+};
+typedef const struct outTestCase outTestCaseType;
+outTestCaseType outTests3[13]={
+{ 0, "  0.00" }, // 0/256 = 0.00
+{ 4, "  0.01" }, // 4/256 = 0.01
+{ 10, "  0.03" }, // 10/256 = 0.03
+{ 200, "  0.78" }, // 200/256 = 0.78
+{ 254, "  0.99" }, // 254/256 = 0.99
+{ 505, "  1.97" }, // 505/256 = 1.97
+{ 1070, "  4.17" }, // 1070/256 = 4.17
+{ 26000, "101.56" }, // 26000/256 = 101.56
+{ 32767, "127.99" }, // 32767/256 = 127.99
+{ 32768, "128.00" }, // 32768/256 = 128
+{ 34567, "135.02" }, // 34567/256 = 135.02
+{ 65534, "255.99" }, // 65534/256 = 255.99
+{ 65535, "***.**" } // error
+};
+unsigned short I;
+unsigned short Errors,AnError;
+unsigned char Buffer[10];
+void main(void){ // possible main program that tests your functions
+Errors = 0;
+asm cli
+for(I=0; I<13; I++){
+  Fixed_uBinOut8s(outTests3[I].InNumber,Buffer);
+  if(strcmp((char *)Buffer, (char *)outTests3[I].OutBuffer)){
+    Errors++;
+    AnError = I;
+  }
+}
+for(;;) {} /* wait forever */
 }
