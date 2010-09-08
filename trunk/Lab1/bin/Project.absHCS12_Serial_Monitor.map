@@ -13,12 +13,10 @@ Linker      : SmartLinker V-5.0.40 Build 10203, Jul 23 2010
 FILE SECTION
 ---------------------------------------------------------------------------------------------
 mc9s12dp512.c.o                         Model: SMALL,         Lang: ANSI-C
-lcd.c.o                                 Model: SMALL,         Lang: ANSI-C
 main.c.o                                Model: SMALL,         Lang: ANSI-C
-PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 Start12.c.o                             Model: SMALL,         Lang: ANSI-C
-EMBEDDED.C.o (ansisi.lib)               Model: SMALL,         Lang: ANSI-C
 PRINTF.C.o (ansisi.lib)                 Model: SMALL,         Lang: ANSI-C
+STRING.C.o (ansisi.lib)                 Model: SMALL,         Lang: ANSI-C
 rtshc12.c.o (ansisi.lib)                Model: SMALL,         Lang: ANSI-C
 fixed.c.o                               Model: SMALL,         Lang: ANSI-C
 
@@ -29,8 +27,8 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x900     8
-  _Copy    *toCopyDownBeg 0xC8BA
+  _Range   pZeroOut       0x900     22
+  _Copy    *toCopyDownBeg 0xC729
 } _startupData;
 
 *********************************************************************************************
@@ -39,10 +37,10 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.rodata                          116     R     0xC045     0xC0B8   ROM_C000
-.rodata1                         139     R     0xC0B9     0xC143   ROM_C000
-.text                           1815     R     0xC144     0xC85A   ROM_C000
-.copy                              2     R     0xC8BA     0xC8BB   ROM_C000
+.rodata                          272     R     0xC045     0xC154   ROM_C000
+.rodata1                          16     R     0xC155     0xC164   ROM_C000
+.text                           1381     R     0xC165     0xC6C9   ROM_C000
+.copy                              2     R     0xC729     0xC72A   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -569,13 +567,14 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_23e                   2   N/I      0x23E      0x23F   .absSeg522
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg523
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
-.bss                               8   R/W      0x900      0x907   RAM
-RUNTIME                           95     R     0xC85B     0xC8B9   ROM_C000
+.bss                               6   R/W      0x900      0x905   RAM
+.common                           16   R/W      0x906      0x915   RAM
+RUNTIME                           95     R     0xC6CA     0xC728   ROM_C000
 .vectSeg525_vect                   2     R     0xFFFE     0xFFFF   .vectSeg525
 
 Summary of section sizes per section type:
-READ_ONLY (R):         8BE (dec:     2238)
-READ_WRITE (R/W):      108 (dec:      264)
+READ_ONLY (R):         72D (dec:     1837)
+READ_WRITE (R/W):      116 (dec:      278)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -619,12 +618,12 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PPAGE                                      30       1       1       0   .abs_section_30
      _PORTK                                      32       1       1       0   .abs_section_32
      _DDRK                                       33       1       1       0   .abs_section_33
-     _SYNR                                       34       1       1       1   .abs_section_34
-     _REFDV                                      35       1       1       1   .abs_section_35
-     _CRGFLG                                     37       1       1       1   .abs_section_37
+     _SYNR                                       34       1       1       0   .abs_section_34
+     _REFDV                                      35       1       1       0   .abs_section_35
+     _CRGFLG                                     37       1       1       0   .abs_section_37
      _CRGINT                                     38       1       1       0   .abs_section_38
-     _CLKSEL                                     39       1       1       2   .abs_section_39
-     _PLLCTL                                     3A       1       1       1   .abs_section_3a
+     _CLKSEL                                     39       1       1       0   .abs_section_39
+     _PLLCTL                                     3A       1       1       0   .abs_section_3a
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
@@ -632,17 +631,17 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
-     _TSCR1                                      46       1       1       2   .abs_section_46
+     _TSCR1                                      46       1       1       0   .abs_section_46
      _TTOV                                       47       1       1       0   .abs_section_47
      _TCTL1                                      48       1       1       0   .abs_section_48
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
      _TIE                                        4C       1       1       0   .abs_section_4c
-     _TSCR2                                      4D       1       1       2   .abs_section_4d
+     _TSCR2                                      4D       1       1       0   .abs_section_4d
      _TFLG1                                      4E       1       1       0   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
-     _PACTL                                      60       1       1       2   .abs_section_60
+     _PACTL                                      60       1       1       0   .abs_section_60
      _PAFLG                                      61       1       1       0   .abs_section_61
      _MCCTL                                      66       1       1       0   .abs_section_66
      _MCFLG                                      67       1       1       0   .abs_section_67
@@ -970,17 +969,17 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       4   .abs_section_258
+     _PTP                                       258       1       1       0   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       1   .abs_section_25a
+     _DDRP                                      25A       1       1       0   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1      11   .abs_section_260
+     _PTH                                       260       1       1       0   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
-     _DDRH                                      262       1       1       1   .abs_section_262
+     _DDRH                                      262       1       1       0   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
      _PERH                                      264       1       1       0   .abs_section_264
      _PPSH                                      265       1       1       0   .abs_section_265
@@ -1054,7 +1053,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PORTAB                                      0       2       2       0   .abs_section_0
      _DDRAB                                       2       2       2       0   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
-     _TCNT                                       44       2       2       4   .abs_section_44
+     _TCNT                                       44       2       2       0   .abs_section_44
      _TC0                                        50       2       2       0   .abs_section_50
      _TC1                                        52       2       2       0   .abs_section_52
      _TC2                                        54       2       2       0   .abs_section_54
@@ -1116,43 +1115,15 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN3TXTSR                                 23E       2       2       0   .abs_section_23e
      _CAN4RXTSR                                 2AE       2       2       0   .abs_section_2ae
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
-MODULE:                 -- lcd.c.o --
-- PROCEDURES:
-     wait                                      C144      11      17       8   .text       
-     wait1ms                                   C155      10      16       2   .text       
-     outCsrNibble                              C165      19      25       5   .text       
-     outCsr                                    C17E      12      18       7   .text       
-     LCD_Clear                                 C190      1C      28       3   .text       
-     LCD_Open                                  C1AC      5A      90       1   .text       
-     LCD_OutChar                               C206      44      68       2   .text       
-     LCD_OutString                             C24A      20      32       2   .text       
-     TERMIO_PutChar                            C26A      28      40       1   .text       
-- VARIABLES:
-     OpenFlag                                   900       2       2       6   .bss        
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     TimerInit                                 C292       B      11       1   .text       
-     mwait                                     C29D      1D      29       2   .text       
-     check                                     C2BA      13      19       4   .text       
-     swait                                     C2CD      13      19       1   .text       
-     blank                                     C2E0       9       9       1   .text       
-     main                                      C2E9      84     132       1   .text       
+     main                                      C165      50      80       1   .text       
 - VARIABLES:
-     STRING......................1             C0B9      21      33       1   .rodata1    
-     STRING.0........2                         C0DA       9       9       1   .rodata1    
-     STRING.2........3                         C0E3       9       9       1   .rodata1    
-     STRING.64.......4                         C0EC       9       9       1   .rodata1    
-     STRING.100......5                         C0F5       9       9       1   .rodata1    
-     STRING.500......6                         C0FE       9       9       1   .rodata1    
-     STRING.512......7                         C107       9       9       1   .rodata1    
-     STRING.5000.....8                         C110       9       9       1   .rodata1    
-     STRING.30000....9                         C119       9       9       1   .rodata1    
-     STRING.65534....10                        C122       9       9       1   .rodata1    
-     STRING.65535....11                        C12B       9       9       1   .rodata1    
-MODULE:                 -- PLL.c.o --
-- PROCEDURES:
-     PLL_Init                                  C36D      15      21       1   .text       
-- VARIABLES:
+     outTests3                                 C045      9C     156       2   .rodata     
+     I                                          906       2       2       6   .common     
+     Errors                                     908       2       2       3   .common     
+     AnError                                    90A       2       2       1   .common     
+     Buffer                                     90C       A      10       2   .common     
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      C000      29      41       1   .init       
@@ -1161,69 +1132,63 @@ MODULE:                 -- Start12.c.o --
      _startupData                              C03B       6       6       3   .startData  
 - LABELS:
      __SEG_END_SSTACK                           900       0       0       1               
-MODULE:                 -- EMBEDDED.C.o (ansisi.lib) --
-- PROCEDURES:
-     printf                                    C382      13      19       2   .text       
-- VARIABLES:
 MODULE:                 -- PRINTF.C.o (ansisi.lib) --
 - PROCEDURES:
-     vprintf                                   C395     478    1144      49   .text       
-     _out                                      C80D       C      12       9   .text       
-     set_printf                                C819       C      12       1   .text       
+     vprintf                                   C1B5     478    1144      49   .text       
+     _out                                      C62D       C      12       9   .text       
+     deposit_char                              C639       F      15       1   .text       
+     sprintf                                   C648      29      41       2   .text       
 - VARIABLES:
-     pow10                                     C045      28      40       4   .rodata     
-     pow16                                     C06D      20      32       4   .rodata     
-     pow8                                      C08D      2C      44       4   .rodata     
-     pbuf                                       902       6       6      10   .bss        
+     pow10                                     C0E1      28      40       4   .rodata     
+     pow16                                     C109      20      32       4   .rodata     
+     pow8                                      C129      2C      44       4   .rodata     
+     pbuf                                       900       6       6      15   .bss        
+MODULE:                 -- STRING.C.o (ansisi.lib) --
+- PROCEDURES:
+     strcmp                                    C671      19      25       1   .text       
+- VARIABLES:
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _LCMP_P                                   C85B      15      21       3   RUNTIME     
-     _LNEG                                     C870       D      13       1   RUNTIME     
-     _ILSEXT                                   C87D       7       7       2   RUNTIME     
-     _CASE_DIRECT_BYTE                         C884       5       5       1   RUNTIME     
-     _CASE_SEARCH_8                            C889      17      23       1   RUNTIME     
-     _CASE_SEARCH_8_BYTE                       C8A0      1A      26       1   RUNTIME     
+     _LCMP_P                                   C6CA      15      21       3   RUNTIME     
+     _LNEG                                     C6DF       D      13       1   RUNTIME     
+     _ILSEXT                                   C6EC       7       7       2   RUNTIME     
+     _CASE_DIRECT_BYTE                         C6F3       5       5       1   RUNTIME     
+     _CASE_SEARCH_8                            C6F8      17      23       1   RUNTIME     
+     _CASE_SEARCH_8_BYTE                       C70F      1A      26       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- fixed.c.o --
 - PROCEDURES:
-     Fixed_uBinOut8                            C825      36      54       1   .text       
+     Fixed_uBinOut8s                           C68A      40      64       1   .text       
 - VARIABLES:
-     STRING........6                           C134       7       7       1   .rodata1    
-     STRING..3d..02d.7                         C13B       9       9       1   .rodata1    
+     STRING........8                           C155       7       7       1   .rodata1    
+     STRING..3d..02d.9                         C15C       9       9       1   .rodata1    
 
 *********************************************************************************************
 MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  lcd.c.o                                      2    334      0
-  main.c.o                                     0    219    123
-  PLL.c.o                                      0     21      0
+  main.c.o                                    16     80    156
   Start12.c.o                                  0     59      0
-  EMBEDDED.C.o (ansisi.lib)                    0     19      0
-  PRINTF.C.o (ansisi.lib)                      6   1168    116
+  PRINTF.C.o (ansisi.lib)                      6   1212    116
+  STRING.C.o (ansisi.lib)                      0     25      0
   rtshc12.c.o (ansisi.lib)                     0     95      0
-  fixed.c.o                                    0     54     16
+  fixed.c.o                                    0     64     16
   other                                      256     12      2
 
 *********************************************************************************************
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  wait wait1ms outCsrNibble outCsr LCD_Clear LCD_Open LCD_OutChar 
-  LCD_OutString TERMIO_PutChar TimerInit mwait check swait blank main PLL_Init 
-  printf vprintf _out set_printf Fixed_uBinOut8 
+  main vprintf _out deposit_char sprintf strcmp Fixed_uBinOut8s 
 SECTION: ".bss"
-  OpenFlag pbuf 
+  pbuf 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".rodata"
-  pow10 pow16 pow8 
+  outTests3 pow10 pow16 pow8 
 SECTION: ".rodata1"
-  STRING......................1 STRING.0........2 STRING.2........3 
-  STRING.64.......4 STRING.100......5 STRING.500......6 STRING.512......7 
-  STRING.5000.....8 STRING.30000....9 STRING.65534....10 STRING.65535....11 
-  STRING........6 STRING..3d..02d.7 
+  STRING........8 STRING..3d..02d.9 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -2274,6 +2239,8 @@ SECTION: ".abs_section_2ae"
   _CAN4RXTSR 
 SECTION: ".abs_section_2be"
   _CAN4TXTSR 
+SECTION: ".common"
+  I Errors AnError Buffer 
 SECTION: "RUNTIME"
   _LCMP_P _LNEG _ILSEXT _CASE_DIRECT_BYTE _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE 
 
@@ -2312,12 +2279,12 @@ OBJECT LIST SORTED BY ADDRESS
      _PPAGE                                      30       1       1       0   .abs_section_30
      _PORTK                                      32       1       1       0   .abs_section_32
      _DDRK                                       33       1       1       0   .abs_section_33
-     _SYNR                                       34       1       1       1   .abs_section_34
-     _REFDV                                      35       1       1       1   .abs_section_35
-     _CRGFLG                                     37       1       1       1   .abs_section_37
+     _SYNR                                       34       1       1       0   .abs_section_34
+     _REFDV                                      35       1       1       0   .abs_section_35
+     _CRGFLG                                     37       1       1       0   .abs_section_37
      _CRGINT                                     38       1       1       0   .abs_section_38
-     _CLKSEL                                     39       1       1       2   .abs_section_39
-     _PLLCTL                                     3A       1       1       1   .abs_section_3a
+     _CLKSEL                                     39       1       1       0   .abs_section_39
+     _PLLCTL                                     3A       1       1       0   .abs_section_3a
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
@@ -2325,15 +2292,15 @@ OBJECT LIST SORTED BY ADDRESS
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
-     _TCNT                                       44       2       2       4   .abs_section_44
-     _TSCR1                                      46       1       1       2   .abs_section_46
+     _TCNT                                       44       2       2       0   .abs_section_44
+     _TSCR1                                      46       1       1       0   .abs_section_46
      _TTOV                                       47       1       1       0   .abs_section_47
      _TCTL1                                      48       1       1       0   .abs_section_48
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
      _TIE                                        4C       1       1       0   .abs_section_4c
-     _TSCR2                                      4D       1       1       2   .abs_section_4d
+     _TSCR2                                      4D       1       1       0   .abs_section_4d
      _TFLG1                                      4E       1       1       0   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
      _TC0                                        50       2       2       0   .abs_section_50
@@ -2344,7 +2311,7 @@ OBJECT LIST SORTED BY ADDRESS
      _TC5                                        5A       2       2       0   .abs_section_5a
      _TC6                                        5C       2       2       0   .abs_section_5c
      _TC7                                        5E       2       2       0   .abs_section_5e
-     _PACTL                                      60       1       1       2   .abs_section_60
+     _PACTL                                      60       1       1       0   .abs_section_60
      _PAFLG                                      61       1       1       0   .abs_section_61
      _PACN32                                     62       2       2       0   .abs_section_62
      _PACN10                                     64       2       2       0   .abs_section_64
@@ -2723,17 +2690,17 @@ OBJECT LIST SORTED BY ADDRESS
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       4   .abs_section_258
+     _PTP                                       258       1       1       0   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       1   .abs_section_25a
+     _DDRP                                      25A       1       1       0   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1      11   .abs_section_260
+     _PTH                                       260       1       1       0   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
-     _DDRH                                      262       1       1       1   .abs_section_262
+     _DDRH                                      262       1       1       0   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
      _PERH                                      264       1       1       0   .abs_section_264
      _PPSH                                      265       1       1       0   .abs_section_265
@@ -2806,63 +2773,45 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
-     OpenFlag                                   900       2       2       6   .bss        
-     pbuf                                       902       6       6      10   .bss        
+     pbuf                                       900       6       6      15   .bss        
+     I                                          906       2       2       6   .common     
+     Errors                                     908       2       2       3   .common     
+     AnError                                    90A       2       2       1   .common     
+     Buffer                                     90C       A      10       2   .common     
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     pow10                                     C045      28      40       4   .rodata     
-     pow16                                     C06D      20      32       4   .rodata     
-     pow8                                      C08D      2C      44       4   .rodata     
-     STRING......................1             C0B9      21      33       1   .rodata1    
-     STRING.0........2                         C0DA       9       9       1   .rodata1    
-     STRING.2........3                         C0E3       9       9       1   .rodata1    
-     STRING.64.......4                         C0EC       9       9       1   .rodata1    
-     STRING.100......5                         C0F5       9       9       1   .rodata1    
-     STRING.500......6                         C0FE       9       9       1   .rodata1    
-     STRING.512......7                         C107       9       9       1   .rodata1    
-     STRING.5000.....8                         C110       9       9       1   .rodata1    
-     STRING.30000....9                         C119       9       9       1   .rodata1    
-     STRING.65534....10                        C122       9       9       1   .rodata1    
-     STRING.65535....11                        C12B       9       9       1   .rodata1    
-     STRING........6                           C134       7       7       1   .rodata1    
-     STRING..3d..02d.7                         C13B       9       9       1   .rodata1    
-     wait                                      C144      11      17       8   .text       
-     wait1ms                                   C155      10      16       2   .text       
-     outCsrNibble                              C165      19      25       5   .text       
-     outCsr                                    C17E      12      18       7   .text       
-     LCD_Clear                                 C190      1C      28       3   .text       
-     LCD_Open                                  C1AC      5A      90       1   .text       
-     LCD_OutChar                               C206      44      68       2   .text       
-     LCD_OutString                             C24A      20      32       2   .text       
-     TERMIO_PutChar                            C26A      28      40       1   .text       
-     TimerInit                                 C292       B      11       1   .text       
-     mwait                                     C29D      1D      29       2   .text       
-     check                                     C2BA      13      19       4   .text       
-     swait                                     C2CD      13      19       1   .text       
-     blank                                     C2E0       9       9       1   .text       
-     main                                      C2E9      84     132       1   .text       
-     PLL_Init                                  C36D      15      21       1   .text       
-     printf                                    C382      13      19       2   .text       
-     vprintf                                   C395     478    1144      49   .text       
-     _out                                      C80D       C      12       9   .text       
-     set_printf                                C819       C      12       1   .text       
-     Fixed_uBinOut8                            C825      36      54       1   .text       
-     _LCMP_P                                   C85B      15      21       3   RUNTIME     
-     _LNEG                                     C870       D      13       1   RUNTIME     
-     _ILSEXT                                   C87D       7       7       2   RUNTIME     
-     _CASE_DIRECT_BYTE                         C884       5       5       1   RUNTIME     
-     _CASE_SEARCH_8                            C889      17      23       1   RUNTIME     
-     _CASE_SEARCH_8_BYTE                       C8A0      1A      26       1   RUNTIME     
+     outTests3                                 C045      9C     156       2   .rodata     
+     pow10                                     C0E1      28      40       4   .rodata     
+     pow16                                     C109      20      32       4   .rodata     
+     pow8                                      C129      2C      44       4   .rodata     
+     STRING........8                           C155       7       7       1   .rodata1    
+     STRING..3d..02d.9                         C15C       9       9       1   .rodata1    
+     main                                      C165      50      80       1   .text       
+     vprintf                                   C1B5     478    1144      49   .text       
+     _out                                      C62D       C      12       9   .text       
+     deposit_char                              C639       F      15       1   .text       
+     sprintf                                   C648      29      41       2   .text       
+     strcmp                                    C671      19      25       1   .text       
+     Fixed_uBinOut8s                           C68A      40      64       1   .text       
+     _LCMP_P                                   C6CA      15      21       3   RUNTIME     
+     _LNEG                                     C6DF       D      13       1   RUNTIME     
+     _ILSEXT                                   C6EC       7       7       2   RUNTIME     
+     _CASE_DIRECT_BYTE                         C6F3       5       5       1   RUNTIME     
+     _CASE_SEARCH_8                            C6F8      17      23       1   RUNTIME     
+     _CASE_SEARCH_8_BYTE                       C70F      1A      26       1   RUNTIME     
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
 ---------------------------------------------------------------------------------------------
 NOT USED PROCEDURES
-EMBEDDED.C.o (ansisi.lib):
-  scanf gets puts fopen fflush fclose fprintf fputs fputc fgetc remove clock 
-  abort exit 
+main.c.o:
+  TimerInit mwait check swait blank 
 PRINTF.C.o (ansisi.lib):
-  deposit_char sprintf vsprintf 
+  set_printf vsprintf 
+STRING.C.o (ansisi.lib):
+  strerror memchr memcmp memcpy2 memcpy _memcpy_8bitCount memmove memset 
+  _memset_clear_8bitCount strlen strset strcat strncat strcpy strncpy strncmp 
+  strchr strrchr strspn strcspn strpbrk strstr strtok strcoll strxfrm 
 rtshc12.c.o (ansisi.lib):
   _BSHL _BSHRS _BSHRU _BDIVMODU _BDIVMODS _ISHL _ISHRU _ISHRS _LSHL _LSHRU 
   _LSHRS _LADD _LSUB _LAND _LOR _LXOR _LCMP _LCMP_PP _LCOM _LINC _LDEC _LMUL 
@@ -2870,20 +2819,22 @@ rtshc12.c.o (ansisi.lib):
   _CASE_DIRECT _CASE_CHECKED _CASE_CHECKED_BYTE _CASE_SEARCH _CASE_SEARCH_BYTE 
   _FCALL _FPCMP 
 fixed.c.o:
-  Fixed_uDecOut2 Fixed_sDecOut3 
+  Fixed_uDecOut2 Fixed_sDecOut3 Fixed_uBinOut8 
 NOT USED VARIABLES
-EMBEDDED.C.o (ansisi.lib):
-  STRING..1 
+main.c.o:
+  STRING......................1 
+STRING.C.o (ansisi.lib):
+  STRING..1 next.2 
 rtshc12.c.o (ansisi.lib):
   _PowOfTwo_8 _PowOfTwo_16 _PowOfTwo_32 errno 
 fixed.c.o:
   STRING........1 STRING..3d..02d.2 STRING........3 STRING...1d..03d.4 
-  STRING...1d..03d.5 
+  STRING...1d..03d.5 STRING........6 STRING..3d..02d.7 
 
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC8BA ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC729 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2892,36 +2843,15 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-wait                      USES _TCNT 
-wait1ms                   USES wait 
-outCsrNibble              USES _PTH 
-outCsr                    USES outCsrNibble wait 
-LCD_Clear                 USES OpenFlag outCsr wait 
-LCD_Open                  USES OpenFlag _DDRH _PTH _TSCR1 _TSCR2 _PACTL 
-                                wait1ms outCsrNibble wait outCsr 
-LCD_OutChar               USES OpenFlag _PTH wait 
-LCD_OutString             USES OpenFlag LCD_OutChar 
-TERMIO_PutChar            USES OpenFlag outCsr wait LCD_Clear LCD_OutChar 
-TimerInit                 USES _TSCR1 _TSCR2 _PACTL 
-mwait                     USES _TCNT 
-check                     USES _PTP mwait 
-swait                     USES _PTP mwait LCD_Clear check 
-blank                     USES STRING......................1 LCD_OutString 
-                                check 
-main                      USES PLL_Init TimerInit _DDRP LCD_Open check 
-                                LCD_Clear STRING.0........2 STRING.2........3 
-                                STRING.64.......4 STRING.100......5 STRING.500......6 
-                                STRING.512......7 STRING.5000.....8 STRING.30000....9 
-                                STRING.65534....10 STRING.65535....11 LCD_OutString blank 
-                                Fixed_uBinOut8 swait 
-PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
-printf                    USES TERMIO_PutChar set_printf vprintf 
+main                      USES Errors I outTests3 Buffer Fixed_uBinOut8s 
+                                strcmp AnError 
 vprintf                   USES vprintf _out _CASE_SEARCH_8_BYTE 
                                 _CASE_DIRECT_BYTE _CASE_SEARCH_8 pbuf _ILSEXT _LNEG pow8 _LCMP_P 
                                 pow16 pow10 
 _out                      USES pbuf 
-set_printf                USES pbuf 
-Fixed_uBinOut8            USES STRING........6 printf STRING..3d..02d.7 
+deposit_char              USES pbuf 
+sprintf                   USES pbuf deposit_char vprintf 
+Fixed_uBinOut8s           USES STRING........8 sprintf STRING..3d..02d.9 
 
 *********************************************************************************************
 DEPENDENCY TREE
@@ -2930,63 +2860,11 @@ DEPENDENCY TREE
  | 
  +- main                
  |  | 
- |  +- PLL_Init            
- |  |    
- |  +- TimerInit           
- |  |    
- |  +- LCD_Open            
+ |  +- Fixed_uBinOut8s     
  |  |  | 
- |  |  +- wait1ms             
- |  |  |  | 
- |  |  |  +- wait                
- |  |  |       
- |  |  +- outCsrNibble        
- |  |  |    
- |  |  +- wait                 (see above)
- |  |  |  
- |  |  +- outCsr              
+ |  |  +- sprintf             
  |  |     | 
- |  |     +- outCsrNibble         (see above)
- |  |     |  
- |  |     +- wait                 (see above)
- |  |        
- |  +- check               
- |  |  | 
- |  |  +- mwait               
- |  |       
- |  +- LCD_Clear           
- |  |  | 
- |  |  +- outCsr               (see above)
- |  |  |  
- |  |  +- wait                 (see above)
- |  |     
- |  +- LCD_OutString       
- |  |  | 
- |  |  +- LCD_OutChar         
- |  |     | 
- |  |     +- wait                 (see above)
- |  |        
- |  +- blank               
- |  |  | 
- |  |  +- LCD_OutString        (see above)
- |  |  |  
- |  |  +- check                (see above)
- |  |     
- |  +- Fixed_uBinOut8      
- |  |  | 
- |  |  +- printf              
- |  |     | 
- |  |     +- TERMIO_PutChar      
- |  |     |  | 
- |  |     |  +- outCsr               (see above)
- |  |     |  |  
- |  |     |  +- wait                 (see above)
- |  |     |  |  
- |  |     |  +- LCD_Clear            (see above)
- |  |     |  |  
- |  |     |  +- LCD_OutChar          (see above)
- |  |     |     
- |  |     +- set_printf          
+ |  |     +- deposit_char        
  |  |     |    
  |  |     +- vprintf             
  |  |        | 
@@ -3004,14 +2882,8 @@ DEPENDENCY TREE
  |  |        |    
  |  |        +- _LCMP_P             
  |  |             
- |  +- swait               
- |     | 
- |     +- mwait                (see above)
- |     |  
- |     +- LCD_Clear            (see above)
- |     |  
- |     +- check                (see above)
- |        
+ |  +- strcmp              
+ |       
  +- _Startup            
     | 
     +- Init                
@@ -3024,6 +2896,6 @@ STATISTIC SECTION
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 7
-Total size of all blocks to be downloaded: 2238
+Number of blocks to be downloaded: 6
+Total size of all blocks to be downloaded: 1837
 
