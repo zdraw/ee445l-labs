@@ -1,5 +1,5 @@
 *** EVALUATION ***
-ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
 
     1:  /*************************PLL.C***************************
     2:  *   boosts the CPU clock to 24 MHz                       *
@@ -25,8 +25,8 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
 *** EVALUATION ***
 
 Function: PLL_Init
-Source  : D:\EE345L\Solutions\Lab2g_DP512\Sources\PLL.c
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_DP512;D:\EE345L\Solutions\Lab2g_DP512\bin;D:\EE345L\Solutions\Lab2g_DP512\prm;D:\EE345L\Solutions\Lab2g_DP512\cmd;D:\EE345L\Solutions\Lab2g_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PLL.c.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\PLL.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\PLL.c.o" -WmsgSd1106
 
    22:    SYNR = 0x02;
   0000 ccd102       [2]     LDD   #53506
