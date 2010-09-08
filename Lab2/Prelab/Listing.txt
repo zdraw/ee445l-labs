@@ -1,0 +1,41 @@
+Function: Fifo_Get
+  0000 3b           [2]     PSHD  
+   63:    if(PutI == GetI ){
+  0001 fc0000       [3]     LDD   PutI
+  0004 bc0000       [3]     CPD   GetI
+  0007 2603         [3/1]   BNE   *+5 ;abs = 000c
+   64:      return(FIFOFAIL); // Empty if PutI=GetI
+  0009 c7           [1]     CLRB  
+  000a 2017         [3]     BRA   *+25 ;abs = 0023
+   65:    }
+   66:    *datapt = Fifo[GetI&(FIFOSIZE-1)];
+  000c f60000       [3]     LDAB  GetI:1
+  000f c41f         [1]     ANDB  #31
+  0011 ce0000       [2]     LDX   #Fifo
+  0014 a6e5         [3]     LDAA  B,X
+  0016 ee80         [3]     LDX   0,SP
+  0018 6a00         [2]     STAA  0,X
+   67:    GetI++;  // Success, update
+  001a fe0000       [3]     LDX   GetI
+  001d 08           [1]     INX   
+  001e 7e0000       [3]     STX   GetI
+   68:    return(FIFOSUCCESS);
+  0021 c601         [1]     LDAB  #1
+  0023 87           [1]     CLRA  
+   69:  }
+  0024 30           [3]     PULX  
+  0025 3d           [5]     RTS   
+
+
+
+
+
+   91:      while(Fifo_Get(&ForeData)==FIFOFAIL){
+  0022 cc0000       [2]     LDD   #ForeData
+  0025 160000       [4]     JSR   Fifo_Get
+  0028 0454f7       [3]     TBEQ  D,*-6 ;abs = 0022
+
+
+
+50 cycles per call
+50/24*10^6 = 2.08333333 us per call
