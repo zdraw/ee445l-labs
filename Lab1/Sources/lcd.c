@@ -230,7 +230,7 @@ short TERMIO_PutChar(unsigned char letter) {
   if(letter == LF) {
     return LCD_Clear();  // Clearscreen
   }
-  return LCD_OutChar(letter);  
+  return LCD_OutChar(letter); // Outputs character to LCD
 } 
             
 
