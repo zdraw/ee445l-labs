@@ -75,8 +75,10 @@ void Debug_Profile(unsigned short thePlace){
   placeBuf[Debug_n] = thePlace;   // record place from which it is called
   Debug_n++;
 }
-
+#define PROCEDURE 1
+                         
 unsigned short Delay,First;
+#if PROCEDURE == 1
 void main(void){  	 
   PLL_Init();         // running at 24MHz
   DDRT |= 0x03;       // debugging outputs
@@ -121,10 +123,13 @@ interrupt 8 void OC0Han(void){ // periodic interrupt
   NumInterrupts++;
   PTT_PTT0 = 0;	    // falling edge of PT0 means end of interrupt
 }
+#endif        
 
+#if PROCEDURE == 2
 // main program for Procedure part D
-void main2(void){
-dataType data;
+void main(void){      
+dataType data;        
+  PLL_Init();         // running at 24MHz
   DDRT |= 0x01;       
   Fifo_Init();    // initialize 
   TSCR1 = 0x80;   // Enable TCNT, 24MHz assumming PLL is active
@@ -138,3 +143,4 @@ asm cli
     PTT_PTT0 = 0;   
   }
 }
+#endif

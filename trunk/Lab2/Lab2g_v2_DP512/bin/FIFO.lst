@@ -1,5 +1,5 @@
 *** EVALUATION ***
-ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
 
     1:  // filename *************Fifo.c********
     2:  // Two-Index implementation of a FIFO
@@ -33,8 +33,8 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
 *** EVALUATION ***
 
 Function: Fifo_Init
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
 
   0000 36           [2]     PSHA  
    30:  asm  tpa  
@@ -66,8 +66,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: Fifo_Put
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
 
   0000 37           [2]     PSHB  
    44:    if((PutI-GetI) & ~(FIFOSIZE-1)){
@@ -106,8 +106,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: Fifo_Get
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
 
   0000 3b           [2]     PSHD  
    59:    if(PutI == GetI ){
@@ -145,8 +145,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: Fifo_Size
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
 
    73:   return ((unsigned short)(PutI-GetI));
   0000 fc0000       [3]     LDD   PutI
@@ -159,8 +159,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: Fifo_Get2
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
 
   0000 3b           [2]     PSHD  
    78:    if(PutI == GetI ){
@@ -215,8 +215,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: Fifo_Get3
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
 
   0000 3b           [2]     PSHD  
    95:    if(PutI == GetI ){

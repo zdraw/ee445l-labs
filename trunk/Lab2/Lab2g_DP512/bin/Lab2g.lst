@@ -125,174 +125,155 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\
    77:  }
   001f 3a           [3]     PULD  
   0020 3d           [5]     RTS   
-   78:  
-   79:  unsigned short Delay,First;
-   80:  void main(void){  	 
+   78:  #define PROCEDURE 1
+   79:                           
+   80:  unsigned short Delay,First;
+   81:  #if PROCEDURE == 1
+   82:  void main(void){  	 
 *** EVALUATION ***
 
 Function: main
 Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\Lab2g.c
 Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab2g.c.o" -WmsgSd1106
 
-   81:    PLL_Init();         // running at 24MHz
+   83:    PLL_Init();         // running at 24MHz
   0000 160000       [4]     JSR   PLL_Init
-   82:    DDRT |= 0x03;       // debugging outputs
+   84:    DDRT |= 0x03;       // debugging outputs
   0003 1c000003     [4]     BSET  _DDRT,#3
-   83:    PTT &= ~0x03;
+   85:    PTT &= ~0x03;
   0007 1d000003     [4]     BCLR  _PTT,#3
-   84:    Debug_Profile(0);   // 0 means initialization phase
+   86:    Debug_Profile(0);   // 0 means initialization phase
   000b c7           [1]     CLRB  
   000c 87           [1]     CLRA  
   000d 0700         [4]     BSR   Debug_Profile
-   85:    Fifo_Init();        // Initialize fifo
+   87:    Fifo_Init();        // Initialize fifo
   000f 160000       [4]     JSR   Fifo_Init
-   86:    OC0_Init();         // variable rate interrupt
+   88:    OC0_Init();         // variable rate interrupt
   0012 0700         [4]     BSR   OC0_Init
-   87:    ForeExpected = 0;   // expected data
+   89:    ForeExpected = 0;   // expected data
   0014 790000       [3]     CLR   ForeExpected
-   88:    for(;;){
+   90:    for(;;){
   0017 2046         [3]     BRA   *+72 ;abs = 005f
-   89:      Debug_Profile(1); // 1 means start of foreground waiting 
+   91:      Debug_Profile(1); // 1 means start of foreground waiting 
   0019 c601         [1]     LDAB  #1
   001b 87           [1]     CLRA  
   001c 0700         [4]     BSR   Debug_Profile
-   90:      PTT_PTT1 = 0;     // falling edge of PT1 means start of foreground waiting
+   92:      PTT_PTT1 = 0;     // falling edge of PT1 means start of foreground waiting
   001e 1d000002     [4]     BCLR  _PTT,#2
-   91:      while(Fifo_Get(&ForeData)==FIFOFAIL){
+   93:      while(Fifo_Get(&ForeData)==FIFOFAIL){
   0022 cc0000       [2]     LDD   #ForeData
   0025 160000       [4]     JSR   Fifo_Get
   0028 0454f7       [3]     TBEQ  D,*-6 ;abs = 0022
-   92:      }
-   93:      Debug_Profile(2); // 2 means foreground has new data
+   94:      }
+   95:      Debug_Profile(2); // 2 means foreground has new data
   002b c602         [1]     LDAB  #2
   002d 87           [1]     CLRA  
   002e 0700         [4]     BSR   Debug_Profile
-   94:      PTT_PTT1 = 1;     // rising edge of PT1 means start of foreground processing
+   96:      PTT_PTT1 = 1;     // rising edge of PT1 means start of foreground processing
   0030 1c000002     [4]     BSET  _PTT,#2
-   95:      if(ForeExpected != ForeData){
+   97:      if(ForeExpected != ForeData){
   0034 f60000       [3]     LDAB  ForeExpected
   0037 f10000       [3]     CMPB  ForeData
   003a 2710         [3/1]   BEQ   *+18 ;abs = 004c
-   96:        Errors++;                  // critical section found
+   98:        Errors++;                  // critical section found
   003c fe0000       [3]     LDX   Errors
   003f 08           [1]     INX   
   0040 7e0000       [3]     STX   Errors
-   97:        ForeExpected = ForeData+1; // resych to lost/bad data
+   99:        ForeExpected = ForeData+1; // resych to lost/bad data
   0043 f60000       [3]     LDAB  ForeData
   0046 52           [1]     INCB  
   0047 7b0000       [3]     STAB  ForeExpected
-   98:      }  
+  100:      }  
   004a 2003         [3]     BRA   *+5 ;abs = 004f
-   99:      else{
-  100:        ForeExpected++;  // sequence is 0,1,2,3,...,254,255,0,1,...
+  101:      else{
+  102:        ForeExpected++;  // sequence is 0,1,2,3,...,254,255,0,1,...
   004c 720000       [4]     INC   ForeExpected
-  101:      }
-  102:      if((ForeData%10)==0){
+  103:      }
+  104:      if((ForeData%10)==0){
   004f f60000       [3]     LDAB  ForeData
   0052 860a         [1]     LDAA  #10
   0054 160000       [4]     JSR   _BDIVMODU
   0057 0471bf       [3]     TBNE  B,*-62 ;abs = 0019
-  103:        Debug_Profile(3); // 3 means foreground has 10th data
+  105:        Debug_Profile(3); // 3 means foreground has 10th data
   005a c603         [1]     LDAB  #3
   005c 87           [1]     CLRA  
   005d 0700         [4]     BSR   Debug_Profile
-  104:      }
-  105:    }
+  106:      }
+  107:    }
   005f 20b8         [3]     BRA   *-70 ;abs = 0019
-  106:  }          
-  107:  interrupt 8 void OC0Han(void){ // periodic interrupt
+  108:  }          
+  109:  interrupt 8 void OC0Han(void){ // periodic interrupt
 *** EVALUATION ***
 
 Function: OC0Han
 Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\Lab2g.c
 Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab2g.c.o" -WmsgSd1106
 
-  108:    Debug_Profile(4);  // 4 means background thread active
+  110:    Debug_Profile(4);  // 4 means background thread active
   0000 c604         [1]     LDAB  #4
   0002 87           [1]     CLRA  
   0003 160000       [4]     JSR   Debug_Profile
-  109:    PTT_PTT0 = 1;      // rising edge of PT0 means start of interrupt
+  111:    PTT_PTT0 = 1;      // rising edge of PT0 means start of interrupt
   0006 1c000001     [4]     BSET  _PTT,#1
-  110:    TFLG1 = 0x01;      // acknowledge OC0
+  112:    TFLG1 = 0x01;      // acknowledge OC0
   000a c601         [1]     LDAB  #1
   000c 5b00         [2]     STAB  _TFLG1
-  111:    TC0 = TC0 +BackPeriod;   // varies from 10us to 1ms
+  113:    TC0 = TC0 +BackPeriod;   // varies from 10us to 1ms
   000e dc00         [3]     LDD   _TC0
   0010 f30000       [3]     ADDD  BackPeriod
   0013 5c00         [2]     STD   _TC0
-  112:    if(Fifo_Put(BackData)==FIFOFAIL){
+  114:    if(Fifo_Put(BackData)==FIFOFAIL){
   0015 f60000       [3]     LDAB  BackData
   0018 160000       [4]     JSR   Fifo_Put
   001b 046407       [3]     TBNE  D,*+10 ;abs = 0025
-  113:      NumLost++;
+  115:      NumLost++;
   001e fe0000       [3]     LDX   NumLost
   0021 08           [1]     INX   
   0022 7e0000       [3]     STX   NumLost
-  114:    }
-  115:    BackData++; // sequence is 0,1,2,3,...,254,255,0,1,...
+  116:    }
+  117:    BackData++; // sequence is 0,1,2,3,...,254,255,0,1,...
   0025 720000       [4]     INC   BackData
-  116:    if(BackPeriod > 500){
+  118:    if(BackPeriod > 500){
   0028 fc0000       [3]     LDD   BackPeriod
   002b 8c01f4       [2]     CPD   #500
   002e 2305         [3/1]   BLS   *+7 ;abs = 0035
-  117:      BackPeriod = 200;
+  119:      BackPeriod = 200;
   0030 c6c8         [1]     LDAB  #200
   0032 87           [1]     CLRA  
-  118:    } else{
+  120:    } else{
   0033 2003         [3]     BRA   *+5 ;abs = 0038
-  119:      BackPeriod = BackPeriod+23;
+  121:      BackPeriod = BackPeriod+23;
   0035 c30017       [2]     ADDD  #23
   0038 7c0000       [3]     STD   BackPeriod
-  120:    }
-  121:    NumInterrupts++;
+  122:    }
+  123:    NumInterrupts++;
   003b fc0000       [3]     LDD   NumInterrupts:2
   003e fe0000       [3]     LDX   NumInterrupts
   0041 160000       [4]     JSR   _LINC
   0044 7c0000       [3]     STD   NumInterrupts:2
   0047 7e0000       [3]     STX   NumInterrupts
-  122:    PTT_PTT0 = 0;	    // falling edge of PT0 means end of interrupt
+  124:    PTT_PTT0 = 0;	    // falling edge of PT0 means end of interrupt
   004a 1d000001     [4]     BCLR  _PTT,#1
-  123:  }
+  125:  }
   004e 0b           [8]     RTI   
-  124:  
-  125:  // main program for Procedure part D
-  126:  void main2(void){
-*** EVALUATION ***
-
-Function: main2
-Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\Lab2g.c
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Lab2g.c.o" -WmsgSd1106
-
-  0000 36           [2]     PSHA  
-  127:  dataType data;
-  128:    DDRT |= 0x01;       
-  0001 1c000001     [4]     BSET  _DDRT,#1
-  129:    Fifo_Init();    // initialize 
-  0005 160000       [4]     JSR   Fifo_Init
-  130:    TSCR1 = 0x80;   // Enable TCNT, 24MHz assumming PLL is active
-  0008 c680         [1]     LDAB  #128
-  000a 5b00         [2]     STAB  _TSCR1
-  131:    First = TCNT;
-  000c dc00         [3]     LDD   _TCNT
-  000e 7c0000       [3]     STD   First
-  132:    Delay = TCNT-First;
-  0011 dc00         [3]     LDD   _TCNT
-  0013 b30000       [3]     SUBD  First
-  0016 7c0000       [3]     STD   Delay
-  133:  asm cli     
-  0019 10ef         [1]     CLI   
-  134:    for(;;){
-  135:      Fifo_Put(1);
-  001b c601         [1]     LDAB  #1
-  001d 160000       [4]     JSR   Fifo_Put
-  136:      PTT_PTT0 = 1;     
-  0020 1c000001     [4]     BSET  _PTT,#1
-  137:      Fifo_Get(&data);
-  0024 b774         [1]     TFR   SP,D
-  0026 160000       [4]     JSR   Fifo_Get
-  138:      PTT_PTT0 = 0;   
-  0029 1d000001     [4]     BCLR  _PTT,#1
-  002d 20ec         [3]     BRA   *-18 ;abs = 001b
-  139:    }
-  140:  }
-  141:  
+  126:  #endif        
+  127:  
+  128:  #if PROCEDURE == 2
+  129:  // main program for Procedure part D
+  130:  void main(void){      
+  131:  dataType data;        
+  132:    PLL_Init();         // running at 24MHz
+  133:    DDRT |= 0x01;       
+  134:    Fifo_Init();    // initialize 
+  135:    TSCR1 = 0x80;   // Enable TCNT, 24MHz assumming PLL is active
+  136:    First = TCNT;
+  137:    Delay = TCNT-First;
+  138:  asm cli     
+  139:    for(;;){
+  140:      Fifo_Put(1);
+  141:      PTT_PTT0 = 1;     
+  142:      Fifo_Get(&data);
+  143:      PTT_PTT0 = 0;   
+  144:    }
+  145:  }
+  146:  #endif

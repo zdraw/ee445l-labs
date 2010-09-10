@@ -2797,8 +2797,6 @@ OBJECT LIST SORTED BY ADDRESS
 UNUSED-OBJECTS SECTION
 ---------------------------------------------------------------------------------------------
 NOT USED PROCEDURES
-Lab2g.c.o:
-  main2 
 rtshc12.c.o (ansisi.lib):
   _BSHL _BSHRS _BSHRU _BDIVMODS _ISHL _ISHRU _ISHRS _LSHL _LSHRU _LSHRS _LADD 
   _LSUB _LAND _LOR _LXOR _LCMP _LCMP_P _LCMP_PP _LNEG _LCOM _LDEC _LMUL 

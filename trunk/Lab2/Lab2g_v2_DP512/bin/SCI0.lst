@@ -1,5 +1,5 @@
 *** EVALUATION ***
-ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
 
     1:  // filename  ***************  SCI0.C ****************************** 
     2:  // Simple I/O routines to 9S12DP512 serial port   
@@ -31,8 +31,8 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
 *** EVALUATION ***
 
 Function: SCI0_Init
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 6caa         [2]     STD   6,-SP
   0002 34           [2]     PSHX  
@@ -96,8 +96,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_InChar
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
    60:    while((SCI0SR1 & RDRF) == 0){};
   0000 4f0020fc     [4]     BRCLR _SCI0SR1,#32,*+0 ;abs = 0000
@@ -115,8 +115,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_OutChar
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
    70:    while((SCI0SR1 & TDRE) == 0){};
@@ -137,8 +137,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_InStatus
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
    81:    return(SCI0SR1 & RDRF);
   0000 d600         [3]     LDAB  _SCI0SR1
@@ -155,8 +155,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_OutStatus
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
    90:    return(SCI0SR1 & TDRE);
   0000 d600         [3]     LDAB  _SCI0SR1
@@ -173,8 +173,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_OutString
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
    99:    while(*pt){
   0000 b745         [1]     TFR   D,X
@@ -203,8 +203,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_InUDec
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 1b9b         [2]     LEAS  -5,SP
   114:  unsigned short number=0, length=0;
@@ -282,8 +282,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_OutUDec
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
   144:  // This function uses recursion to convert decimal number
@@ -326,8 +326,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_InUHex
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 1b99         [2]     LEAS  -7,SP
   166:  unsigned short number=0, digit, length=0;
@@ -437,8 +437,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_OutUHex
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
   203:  // This function uses recursion to convert the number of 
@@ -495,8 +495,8 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L
 *** EVALUATION ***
 
 Function: SCI0_InString
-Source  : D:\EE345L\Solutions\Lab2g_v2_DP512\Sources\SCI0.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\Solutions\Lab2g_v2_DP512;D:\EE345L\Solutions\Lab2g_v2_DP512\bin;D:\EE345L\Solutions\Lab2g_v2_DP512\prm;D:\EE345L\Solutions\Lab2g_v2_DP512\cmd;D:\EE345L\Solutions\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -EnvTEXTPATH=D:\EE345L\Solutions\Lab2g_v2_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\Solutions\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources\SCI0.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_v2_DP512\Lab2g_v2_DP512_Data\HCS12_Serial_Monitor\ObjectCode\SCI0.C.o" -WmsgSd1106
 
   0000 6cab         [2]     STD   5,-SP
   232:  int length=0;
