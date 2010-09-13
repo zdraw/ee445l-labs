@@ -1,7 +1,7 @@
 // filename ******** Main.C ************** 
-// This example illustrates the output compare interrupts, 
-// 9S12DP512
-// Jonathan W. Valvano 9/7/09
+// LCD Display (HD44780) on Port H for the 9S12DP512   
+// Jonathan W. Valvano 9/18/09
+// TCNT runs at 667ns,
 
 //  This example accompanies the books
 //   "Embedded Microcomputer Systems: Real Time Interfacing",
@@ -10,13 +10,9 @@
 //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
 
 // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
-// You may use, edit, run or distribute this file 
-//    as long as the above copyright notices remain
-
-
-#include <hidef.h>      /* common defines and macros */
-#include <mc9s12dp512.h>     /* derivative information */
-#pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+//    You may use, edit, run or distribute this file 
+//    as long as the above copyright notice remains 
+// Purpose: test program for 4-bit LCD.C driver
 
 /*   
   size is 1*16 
@@ -127,7 +123,7 @@ void OC_Init0(){
   TIOS |= 0x01;   // activate TC0 as output compare
   TIE  |= 0x01;   // arm OC0
   TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
-  TSCR2 = 0x03;   // divide by 8 TCNT prescale, TOI disarm
+  TSCR2 = 0x07;   // divide by 8 TCNT prescale, TOI disarm
   PACTL = 0;      // timer prescale used for TCNT
 /* Bottom three bits of TSCR2 (PR2,PR1,PR0) set TCNT period
     divide  FastMode(24MHz)    Slow Mode (8MHz)
@@ -163,12 +159,24 @@ void OC_Init3(){
 }
 
 void main(void) {
+  //PLL_Init();       // set E clock to 24 MHz
+  TimerInit();      // enable timer0
   OC_Init0();
-  OC_Init3();
-  DDRP |= 0x80;  // LED
-  asm cli
-
+  //OC_Init3();
+  DDRP |= 0x80;     // PortP bit 7 is output to LED, used for debugging
+  check(LCD_Open());
+  check(LCD_Clear());
+  check(LCD_OutString(" DP512  ")); blank();
+  check(LCD_OutString("Valvano ")); swait();
+  asm cli   // allows debugger to run
   for(;;) {
-    PTP ^= 0x80; // flash LED
+    check(LCD_OutString("ABCDEFGH")); blank();
+    check(LCD_OutString("IJKLMNOP")); swait();
+    check(LCD_OutString("01234567")); blank();
+    check(LCD_OutString("890,./<>")); swait();
+    check(LCD_OutString("abcdefgh")); blank();
+    check(LCD_OutString("ijklmnop")); swait();
+    check(LCD_OutString("!@#$%^&*")); blank();
+    check(LCD_OutString("()_+-=[]")); swait();
   } 
 }

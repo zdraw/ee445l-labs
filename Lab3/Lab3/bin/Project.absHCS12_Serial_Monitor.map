@@ -23,8 +23,8 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x900     4
-  _Copy    *toCopyDownBeg 0xC0C7
+  _Range   pZeroOut       0x900     6
+  _Copy    *toCopyDownBeg 0xC0AE
 } _startupData;
 
 *********************************************************************************************
@@ -33,8 +33,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.text                            130     R     0xC045     0xC0C6   ROM_C000
-.copy                              2     R     0xC0C7     0xC0C8   ROM_C000
+.text                            105     R     0xC045     0xC0AD   ROM_C000
+.copy                              2     R     0xC0AE     0xC0AF   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -563,12 +563,12 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
 .abs_section_ffee                  2     R     0xFFEE     0xFFEF   .absSeg525
 .abs_section_ffe8                  2     R     0xFFE8     0xFFE9   .absSeg526
-.bss                               4   R/W      0x900      0x903   RAM
+.bss                               6   R/W      0x900      0x905   RAM
 .vectSeg527_vect                   2     R     0xFFFE     0xFFFF   .vectSeg527
 
 Summary of section sizes per section type:
-READ_ONLY (R):          CF (dec:      207)
-READ_WRITE (R/W):      104 (dec:      260)
+READ_ONLY (R):          B6 (dec:      182)
+READ_WRITE (R/W):      106 (dec:      262)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -621,7 +621,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
-     _TIOS                                       40       1       1       2   .abs_section_40
+     _TIOS                                       40       1       1       1   .abs_section_40
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
@@ -631,7 +631,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
-     _TIE                                        4C       1       1       2   .abs_section_4c
+     _TIE                                        4C       1       1       1   .abs_section_4c
      _TSCR2                                      4D       1       1       1   .abs_section_4d
      _TFLG1                                      4E       1       1       2   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
@@ -944,7 +944,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN3TXTBPR                                23D       1       1       0   .abs_section_23d
      _PTT                                       240       1       1       4   .abs_section_240
      _PTIT                                      241       1       1       0   .abs_section_241
-     _DDRT                                      242       1       1       2   .abs_section_242
+     _DDRT                                      242       1       1       1   .abs_section_242
      _RDRT                                      243       1       1       0   .abs_section_243
      _PERT                                      244       1       1       0   .abs_section_244
      _PPST                                      245       1       1       0   .abs_section_245
@@ -1047,11 +1047,11 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PORTAB                                      0       2       2       0   .abs_section_0
      _DDRAB                                       2       2       2       0   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
-     _TCNT                                       44       2       2       2   .abs_section_44
+     _TCNT                                       44       2       2       1   .abs_section_44
      _TC0                                        50       2       2       3   .abs_section_50
      _TC1                                        52       2       2       0   .abs_section_52
      _TC2                                        54       2       2       0   .abs_section_54
-     _TC3                                        56       2       2       3   .abs_section_56
+     _TC3                                        56       2       2       2   .abs_section_56
      _TC4                                        58       2       2       0   .abs_section_58
      _TC5                                        5A       2       2       0   .abs_section_5a
      _TC6                                        5C       2       2       0   .abs_section_5c
@@ -1114,11 +1114,11 @@ MODULE:                 -- main.c.o --
      TOC0handler                               C045      1B      27       1   .text       
      OC_Init0                                  C060      21      33       1   .text       
      TOC3handler                               C081      1B      27       1   .text       
-     OC_Init3                                  C09C      17      23       1   .text       
-     main                                      C0B3      14      20       1   .text       
+     main                                      C09C      12      18       1   .text       
 - VARIABLES:
-     Count0                                     900       2       2       3   .bss        
-     Count3                                     902       2       2       3   .bss        
+     Count0                                     900       2       2       1   .bss        
+     time                                       902       2       2       2   .bss        
+     Count3                                     904       2       2       2   .bss        
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
      _Vector_11                                FFE8       2       2       0   .abs_section_ffe8
 MODULE:                 -- Start12.c.o --
@@ -1135,7 +1135,7 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     4    130      4
+  main.c.o                                     6    105      4
   Start12.c.o                                  0     59      0
   other                                      256     12      2
 
@@ -1143,9 +1143,9 @@ MODULE STATISTIC
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  TOC0handler OC_Init0 TOC3handler OC_Init3 main 
+  TOC0handler OC_Init0 TOC3handler main 
 SECTION: ".bss"
-  Count0 Count3 
+  Count0 time Count3 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".abs_section_8"
@@ -2247,25 +2247,25 @@ OBJECT LIST SORTED BY ADDRESS
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
-     _TIOS                                       40       1       1       2   .abs_section_40
+     _TIOS                                       40       1       1       1   .abs_section_40
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
-     _TCNT                                       44       2       2       2   .abs_section_44
+     _TCNT                                       44       2       2       1   .abs_section_44
      _TSCR1                                      46       1       1       1   .abs_section_46
      _TTOV                                       47       1       1       0   .abs_section_47
      _TCTL1                                      48       1       1       0   .abs_section_48
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
-     _TIE                                        4C       1       1       2   .abs_section_4c
+     _TIE                                        4C       1       1       1   .abs_section_4c
      _TSCR2                                      4D       1       1       1   .abs_section_4d
      _TFLG1                                      4E       1       1       2   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
      _TC0                                        50       2       2       3   .abs_section_50
      _TC1                                        52       2       2       0   .abs_section_52
      _TC2                                        54       2       2       0   .abs_section_54
-     _TC3                                        56       2       2       3   .abs_section_56
+     _TC3                                        56       2       2       2   .abs_section_56
      _TC4                                        58       2       2       0   .abs_section_58
      _TC5                                        5A       2       2       0   .abs_section_5a
      _TC6                                        5C       2       2       0   .abs_section_5c
@@ -2630,7 +2630,7 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN3TXTSR                                 23E       2       2       0   .abs_section_23e
      _PTT                                       240       1       1       4   .abs_section_240
      _PTIT                                      241       1       1       0   .abs_section_241
-     _DDRT                                      242       1       1       2   .abs_section_242
+     _DDRT                                      242       1       1       1   .abs_section_242
      _RDRT                                      243       1       1       0   .abs_section_243
      _PERT                                      244       1       1       0   .abs_section_244
      _PPST                                      245       1       1       0   .abs_section_245
@@ -2732,15 +2732,15 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
-     Count0                                     900       2       2       3   .bss        
-     Count3                                     902       2       2       3   .bss        
+     Count0                                     900       2       2       1   .bss        
+     time                                       902       2       2       2   .bss        
+     Count3                                     904       2       2       2   .bss        
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
      TOC0handler                               C045      1B      27       1   .text       
      OC_Init0                                  C060      21      33       1   .text       
      TOC3handler                               C081      1B      27       1   .text       
-     OC_Init3                                  C09C      17      23       1   .text       
-     main                                      C0B3      14      20       1   .text       
+     main                                      C09C      12      18       1   .text       
      _Vector_11                                FFE8       2       2       0   .abs_section_ffe8
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
@@ -2749,7 +2749,7 @@ UNUSED-OBJECTS SECTION
 ---------------------------------------------------------------------------------------------
 NOT USED PROCEDURES
 main.c.o:
-  TimerInit mwait check swait blank 
+  TimerInit mwait check swait blank OC_Init3 
 NOT USED VARIABLES
 main.c.o:
   STRING......................1 
@@ -2757,7 +2757,7 @@ main.c.o:
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC0C7 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC0AE ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2766,12 +2766,11 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-TOC0handler               USES _TFLG1 Count0 _TC0 _PTT 
+TOC0handler               USES _TFLG1 time _TC0 _PTT 
 OC_Init0                  USES Count0 _DDRT _TIOS _TIE _TSCR1 _TSCR2 _PACTL 
                                 _TCNT _TC0 
 TOC3handler               USES _TFLG1 Count3 _TC3 _PTT 
-OC_Init3                  USES Count3 _DDRT _TIOS _TIE _TCNT _TC3 
-main                      USES OC_Init0 OC_Init3 _DDRP _PTP 
+main                      USES OC_Init0 _DDRP _PTP 
 _Vector_11                USES TOC3handler 
 _Vector_8                 USES TOC0handler 
 
@@ -2783,8 +2782,6 @@ DEPENDENCY TREE
  +- main                
  |  | 
  |  +- OC_Init0            
- |  |    
- |  +- OC_Init3            
  |       
  +- _Startup            
     | 
@@ -2807,5 +2804,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 7
-Total size of all blocks to be downloaded: 207
+Total size of all blocks to be downloaded: 182
 
