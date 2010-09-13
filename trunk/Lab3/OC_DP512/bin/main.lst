@@ -1,0 +1,175 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // filename ******** Main.C ************** 
+    2:  // This example illustrates the output compare interrupts, 
+    3:  // 9S12DP512
+    4:  // Jonathan W. Valvano 9/7/09
+    5:  
+    6:  //  This example accompanies the books
+    7:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    8:  //        Thompson, copyright (c) 2006,
+    9:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+   10:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   11:  
+   12:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   13:  // You may use, edit, run or distribute this file 
+   14:  //    as long as the above copyright notices remain
+   15:  
+   16:  
+   17:  #include <hidef.h>      /* common defines and macros */
+   18:  #include <mc9s12dp512.h>     /* derivative information */
+   19:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+   20:  
+   21:  
+   22:  unsigned short static volatile Count0;
+   23:  interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
+*** EVALUATION ***
+
+Function: TOC0handler
+Source  : D:\EE345L\9S12DP512\OC_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\OC_DP512;D:\EE345L\9S12DP512\OC_DP512\bin;D:\EE345L\9S12DP512\OC_DP512\prm;D:\EE345L\9S12DP512\OC_DP512\cmd;D:\EE345L\9S12DP512\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\OC_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\OC_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   24:    TFLG1 = 0x01;         // acknowledge OC0
+  0000 c601         [1]     LDAB  #1
+  0002 5b00         [2]     STAB  _TFLG1
+   25:    Count0++;
+  0004 fe0000       [3]     LDX   Count0
+  0007 08           [1]     INX   
+  0008 7e0000       [3]     STX   Count0
+   26:    TC0 = TC0+10000;      // 10 ms
+  000b dc00         [3]     LDD   _TC0
+  000d c32710       [2]     ADDD  #10000
+  0010 5c00         [2]     STD   _TC0
+   27:    PTT ^= 0x01;          // debugging monitor
+  0012 f60000       [3]     LDAB  _PTT
+  0015 c801         [1]     EORB  #1
+  0017 7b0000       [3]     STAB  _PTT
+   28:  }
+  001a 0b           [8]     RTI   
+   29:  
+   30:  //---------------------OC_Init0---------------------
+   31:  // arm output compare 0 for 100Hz periodic interrupt
+   32:  // Input: none
+   33:  // Output: none 
+   34:  void OC_Init0(){
+*** EVALUATION ***
+
+Function: OC_Init0
+Source  : D:\EE345L\9S12DP512\OC_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\OC_DP512;D:\EE345L\9S12DP512\OC_DP512\bin;D:\EE345L\9S12DP512\OC_DP512\prm;D:\EE345L\9S12DP512\OC_DP512\cmd;D:\EE345L\9S12DP512\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\OC_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\OC_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   35:    Count0 = 0;     // debugging monitor
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 7c0000       [3]     STD   Count0
+   36:    DDRT |= 0x01;   // debugging monitor
+  0005 1c000001     [4]     BSET  _DDRT,#1
+   37:    TIOS |= 0x01;   // activate TC0 as output compare
+  0009 4c0001       [4]     BSET  _TIOS,#1
+   38:    TIE  |= 0x01;   // arm OC0
+  000c 4c0001       [4]     BSET  _TIE,#1
+   39:    TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
+  000f c680         [1]     LDAB  #128
+  0011 5b00         [2]     STAB  _TSCR1
+   40:    TSCR2 = 0x03;   // divide by 8 TCNT prescale, TOI disarm
+  0013 c603         [1]     LDAB  #3
+  0015 5b00         [2]     STAB  _TSCR2
+   41:    PACTL = 0;      // timer prescale used for TCNT
+  0017 5a00         [2]     STAA  _PACTL
+   42:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) set TCNT period
+   43:      divide  FastMode(24MHz)    Slow Mode (8MHz)
+   44:  000   1     42ns  TOF  2.73ms  125ns TOF  8.192ms
+   45:  001   2     84ns  TOF  5.46ms  250ns TOF 16.384ms 
+   46:  010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms     
+   47:  011   8    333ns  TOF  21.8ms    1us TOF 65.536ms
+   48:  100  16    667ns  TOF  43.7ms    2us TOF 131.072ms
+   49:  101  32   1.33us  TOF  87.4ms    4us TOF 262.144ns
+   50:  110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
+   51:  111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s */
+   52:    TC0    = TCNT+50; // first interrupt right away
+  0019 de00         [3]     LDX   _TCNT
+  001b 1ae032       [2]     LEAX  50,X
+  001e 5e00         [2]     STX   _TC0
+   53:  }
+  0020 3d           [5]     RTS   
+   54:  
+   55:  unsigned short static volatile Count3;
+   56:  interrupt 11 void TOC3handler(void){ // executes at 1000 Hz 
+*** EVALUATION ***
+
+Function: TOC3handler
+Source  : D:\EE345L\9S12DP512\OC_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\OC_DP512;D:\EE345L\9S12DP512\OC_DP512\bin;D:\EE345L\9S12DP512\OC_DP512\prm;D:\EE345L\9S12DP512\OC_DP512\cmd;D:\EE345L\9S12DP512\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\OC_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\OC_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   57:    TFLG1 = 0x08;         // acknowledge OC3
+  0000 c608         [1]     LDAB  #8
+  0002 5b00         [2]     STAB  _TFLG1
+   58:    Count3++;
+  0004 fe0000       [3]     LDX   Count3
+  0007 08           [1]     INX   
+  0008 7e0000       [3]     STX   Count3
+   59:    TC3 = TC3+1000;       // 1 ms
+  000b dc00         [3]     LDD   _TC3
+  000d c303e8       [2]     ADDD  #1000
+  0010 5c00         [2]     STD   _TC3
+   60:    PTT ^= 0x08;          // debugging monitor
+  0012 f60000       [3]     LDAB  _PTT
+  0015 c808         [1]     EORB  #8
+  0017 7b0000       [3]     STAB  _PTT
+   61:  }
+  001a 0b           [8]     RTI   
+   62:  
+   63:  //---------------------OC_Init3---------------------
+   64:  // arm output compare 3 for 1000Hz periodic interrupt
+   65:  // Input: none    assumes another ritual enabled the TCNT
+   66:  // Output: none 
+   67:  void OC_Init3(){
+*** EVALUATION ***
+
+Function: OC_Init3
+Source  : D:\EE345L\9S12DP512\OC_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\OC_DP512;D:\EE345L\9S12DP512\OC_DP512\bin;D:\EE345L\9S12DP512\OC_DP512\prm;D:\EE345L\9S12DP512\OC_DP512\cmd;D:\EE345L\9S12DP512\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\OC_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\OC_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   68:    Count3 = 0;      // debugging monitor      
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 7c0000       [3]     STD   Count3
+   69:    DDRT |= 0x08;    // debugging monitor
+  0005 1c000008     [4]     BSET  _DDRT,#8
+   70:    TIOS |= 0x08;    // activate TC3 as output compare
+  0009 4c0008       [4]     BSET  _TIOS,#8
+   71:    TIE  |= 0x08;    // arm OC3
+  000c 4c0008       [4]     BSET  _TIE,#8
+   72:    TC3   = TCNT+50; // first interrupt right away
+  000f de00         [3]     LDX   _TCNT
+  0011 1ae032       [2]     LEAX  50,X
+  0014 5e00         [2]     STX   _TC3
+   73:  }
+  0016 3d           [5]     RTS   
+   74:  
+   75:  void main(void) {
+*** EVALUATION ***
+
+Function: main
+Source  : D:\EE345L\9S12DP512\OC_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\OC_DP512;D:\EE345L\9S12DP512\OC_DP512\bin;D:\EE345L\9S12DP512\OC_DP512\prm;D:\EE345L\9S12DP512\OC_DP512\cmd;D:\EE345L\9S12DP512\OC_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\OC_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\OC_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\OC_DP512\OC_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   76:    OC_Init0();
+  0000 0700         [4]     BSR   OC_Init0
+   77:    OC_Init3();
+  0002 0700         [4]     BSR   OC_Init3
+   78:    DDRP |= 0x80;  // LED
+  0004 1c000080     [4]     BSET  _DDRP,#128
+   79:    asm cli
+  0008 10ef         [1]     CLI   
+   80:  
+   81:    for(;;) {
+   82:      PTP ^= 0x80; // flash LED
+  000a f60000       [3]     LDAB  _PTP
+  000d c880         [1]     EORB  #128
+  000f 7b0000       [3]     STAB  _PTP
+  0012 20f6         [3]     BRA   *-8 ;abs = 000a
+   83:    } 
+   84:  }
+   85:  

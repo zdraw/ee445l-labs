@@ -16,7 +16,7 @@
 
 // set Good equal to 0 to use a FIFO with a critical section
 // set Good equal to 1 to use a FIFO without a critical section
-#define Good 1
+#define Good 0
 dataType static Fifo[FIFOSIZE];
 
 #if Good 
@@ -45,11 +45,14 @@ asm  tap          // end critical section
 // Outputs: FIFOSUCCESS if saved
 //          FIFOFAIL if not saved, because FIFO was full
 int Fifo_Put(dataType data){
+  PTT_PTT3 = 1;
   if((PutI-GetI) & ~(FIFOSIZE-1)){
+    PTT_PTT3 = 0;
     return(FIFOFAIL); // Failed, fifo full
   }
   Fifo[PutI&(FIFOSIZE-1)] = data; // put
   PutI++;  // Success, update
+  PTT_PTT3 = 0;
   return(FIFOSUCCESS);
 }
 
@@ -60,11 +63,14 @@ int Fifo_Put(dataType data){
 // Outputs: FIFOSUCCESS if data properly removed
 //          FIFOFAIL if not removed, because FIFO was empty
 int Fifo_Get(dataType *datapt){
+  PTT_PTT2 = 1;
   if(PutI == GetI ){
+    PTT_PTT2 = 0;
     return(FIFOFAIL); // Empty if PutI=GetI
   }
   *datapt = Fifo[GetI&(FIFOSIZE-1)];
   GetI++;  // Success, update
+  PTT_PTT2 = 0;
   return(FIFOSUCCESS);
 }
 
@@ -106,7 +112,9 @@ asm  tap          // end critical section
   Outputs: true if data is properly saved,
            false if data not saved because it was previously full*/
 int Fifo_Put(dataType data){
+  PTT_PTT3 = 1;
   if(Size==FIFOSIZE){
+    PTT_PTT3 = 0;
     return 0;     // Failed, fifo was previously full
   }
   *(PutPt) = data;      // try to Put data into fifo 
@@ -115,6 +123,7 @@ int Fifo_Put(dataType data){
     PutPt = &Fifo[0];
   }
   Size++;   // one more element
+  PTT_PTT3 = 0;
   return(1);
 }
 
@@ -124,7 +133,9 @@ int Fifo_Put(dataType data){
   Outputs: true if data is valid, 
            false if fifo was empty at the time of the call*/
 int Fifo_Get(dataType *datapt){ 
+  PTT_PTT2 = 1;
   if(Size == 0){
+    PTT_PTT2 = 0;
     return(0);     // Empty if no elements in FIFO 
   }
   *datapt = *(GetPt);  // return by reference
@@ -133,6 +144,7 @@ int Fifo_Get(dataType *datapt){
     GetPt = &Fifo[0];  // wrap
   }
   Size--;   // one less element
+  PTT_PTT2 = 0;
   return(1); 
 }
 

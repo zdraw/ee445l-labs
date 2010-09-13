@@ -144,3 +144,50 @@ asm cli
   }
 }
 #endif
+
+#if PROCEDURE == 3
+void main(void){  	 
+  PLL_Init();         // running at 24MHz
+  DDRT |= 0x0F;       // debugging outputs
+  PTT &= ~0x03;
+  Debug_Profile(0);   // 0 means initialization phase
+  Fifo_Init();        // Initialize fifo
+  OC0_Init();         // variable rate interrupt
+  ForeExpected = 0;   // expected data
+  for(;;){
+    Debug_Profile(1); // 1 means start of foreground waiting 
+    PTT_PTT1 = 0;     // falling edge of PT1 means start of foreground waiting
+    while(Fifo_Get(&ForeData)==FIFOFAIL){
+    }
+    Debug_Profile(2); // 2 means foreground has new data
+    PTT_PTT1 = 1;     // rising edge of PT1 means start of foreground processing
+    if(ForeExpected != ForeData){
+      Errors++;                  // critical section found
+      ForeExpected = ForeData+1; // resych to lost/bad data
+    }  
+    else{
+      ForeExpected++;  // sequence is 0,1,2,3,...,254,255,0,1,...
+    }
+    if((ForeData%10)==0){
+      Debug_Profile(3); // 3 means foreground has 10th data
+    }
+  }
+}          
+interrupt 8 void OC0Han(void){ // periodic interrupt
+  Debug_Profile(4);  // 4 means background thread active
+  PTT_PTT0 = 1;      // rising edge of PT0 means start of interrupt
+  TFLG1 = 0x01;      // acknowledge OC0
+  TC0 = TC0 +BackPeriod;   // varies from 10us to 1ms
+  if(Fifo_Put(BackData)==FIFOFAIL){
+    NumLost++;
+  }
+  BackData++; // sequence is 0,1,2,3,...,254,255,0,1,...
+  if(BackPeriod > 500){
+    BackPeriod = 200;
+  } else{
+    BackPeriod = BackPeriod+23;
+  }
+  NumInterrupts++;
+  PTT_PTT0 = 0;	    // falling edge of PT0 means end of interrupt
+}
+#endif  

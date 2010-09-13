@@ -1,0 +1,246 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  // filename ******** Main.C ************** 
+    2:  // LCD Display (HD44780) on Port H for the 9S12DP512   
+    3:  // Jonathan W. Valvano 9/18/09
+    4:  // TCNT runs at 667ns,
+    5:  
+    6:  //  This example accompanies the books
+    7:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    8:  //        Thompson, copyright (c) 2006,
+    9:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+   10:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   11:  
+   12:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   13:  //    You may use, edit, run or distribute this file 
+   14:  //    as long as the above copyright notice remains 
+   15:  // Purpose: test program for 4-bit LCD.C driver
+   16:  
+   17:  /*   
+   18:    size is 1*16 
+   19:    if do not need to read busy, then you can tie R/W=ground 
+   20:    ground = pin 1    Vss
+   21:    power  = pin 2    Vdd   +5V
+   22:    ground = pin 3    Vlc   grounded for highest contrast
+   23:    PH4    = pin 4    RS    (1 for data, 0 for control/status)
+   24:    PH5    = pin 5    R/W   (1 for read, 0 for write)
+   25:    PH6    = pin 6    E     (enable)
+   26:    PH3    = pin 14   DB7   (4-bit data)
+   27:    PH2    = pin 13   DB6
+   28:    PH1    = pin 12   DB5
+   29:    PH0    = pin 11   DB4
+   30:  16 characters are configured as 2 rows of 8
+   31:  addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
+   32:  */
+   33:  
+   34:  #include <hidef.h>      /* common defines and macros */
+   35:  #include <mc9s12dp512.h>     /* derivative information */
+   36:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+   37:  
+   38:  #include "LCD.H"
+   39:  #include "PLL.H"
+   40:  
+   41:  //--------------------TimerInit---------------
+   42:  // initialize timer module to 0.667us(Boot Mode) TCNT clock
+   43:  // inputs: none
+   44:  // outputs: none
+   45:  void TimerInit(void){
+*** EVALUATION ***
+
+Function: TimerInit
+Source  : D:\EE345L\9S12DP512\LCD_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\LCD_DP512;D:\EE345L\9S12DP512\LCD_DP512\bin;D:\EE345L\9S12DP512\LCD_DP512\prm;D:\EE345L\9S12DP512\LCD_DP512\cmd;D:\EE345L\9S12DP512\LCD_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\LCD_DP512\LCD_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   46:    TSCR1 = 0x80;   // Enable TCNT, 24MHz in both boo tand run modes
+  0000 cc0480       [2]     LDD   #1152
+  0003 5b00         [2]     STAB  _TSCR1
+   47:    TSCR2 = 0x04;   // divide by 16 TCNT prescale, TCNT at 667nsec
+  0005 5a00         [2]     STAA  _TSCR2
+   48:    PACTL = 0;      // timer prescale used for TCNT
+  0007 790000       [3]     CLR   _PACTL
+   49:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
+   50:      divide  FastMode(24MHz)    Slow Mode (8MHz)
+   51:  000   1     42ns  TOF  2.73ms  125ns TOF 8.192ms
+   52:  001   2     84ns  TOF  5.46ms  250ns TOF 16.384ms 
+   53:  010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms   
+   54:  011   8    333ns  TOF  21.8ms 	 1us TOF 65.536ms
+   55:  100  16    667ns  TOF  43.7ms 	 2us TOF 131.072ms
+   56:  101  32   1.33us  TOF  87.4ms		 4us TOF 262.144ns
+   57:  110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
+   58:  111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s */ 
+   59:  // Be careful, TSCR1 and TSCR2 maybe set in other rituals
+   60:  }
+  000a 3d           [5]     RTS   
+   61:  
+   62:  //---------------------mwait---------------------
+   63:  // wait specified number of msec
+   64:  // Input: number of msec to wait
+   65:  // Output: none
+   66:  // assumes TCNT timer is running at 667ns
+   67:  void mwait(unsigned short msec){ 
+*** EVALUATION ***
+
+Function: mwait
+Source  : D:\EE345L\9S12DP512\LCD_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\LCD_DP512;D:\EE345L\9S12DP512\LCD_DP512\bin;D:\EE345L\9S12DP512\LCD_DP512\prm;D:\EE345L\9S12DP512\LCD_DP512\cmd;D:\EE345L\9S12DP512\LCD_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\LCD_DP512\LCD_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   68:  unsigned short startTime;
+   69:    for(; msec>0; msec--){
+  0002 2012         [3]     BRA   *+20 ;abs = 0016
+   70:      startTime = TCNT;
+  0004 dc00         [3]     LDD   _TCNT
+  0006 6c82         [2]     STD   2,SP
+   71:      while((TCNT-startTime) <= 1500){} 
+  0008 dc00         [3]     LDD   _TCNT
+  000a a382         [3]     SUBD  2,SP
+  000c 8c05dc       [2]     CPD   #1500
+  000f 23f7         [3/1]   BLS   *-7 ;abs = 0008
+  0011 ee80         [3]     LDX   0,SP
+  0013 09           [1]     DEX   
+  0014 6e80         [2]     STX   0,SP
+  0016 ec80         [3]     LDD   0,SP
+  0018 26ea         [3/1]   BNE   *-20 ;abs = 0004
+   72:    }
+   73:  }
+  001a 1b84         [2]     LEAS  4,SP
+  001c 3d           [5]     RTS   
+   74:  
+   75:  //---------------------check---------------------
+   76:  // if LCD broken toggle LED1 at 2Hz
+   77:  // Input: last LCD status, 0 means bad
+   78:  // Output: none
+   79:  // Error: if status is zero, this function will not return
+   80:  void check(short status){	 // 0 if LCD is broken
+*** EVALUATION ***
+
+Function: check
+Source  : D:\EE345L\9S12DP512\LCD_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\LCD_DP512;D:\EE345L\9S12DP512\LCD_DP512\bin;D:\EE345L\9S12DP512\LCD_DP512\prm;D:\EE345L\9S12DP512\LCD_DP512\cmd;D:\EE345L\9S12DP512\LCD_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\LCD_DP512\LCD_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   81:    if(status ==0){		   
+  0000 04640f       [3]     TBNE  D,*+18 ;abs = 0012
+   82:      for(;;) {
+   83:        PTP ^= 0x80;   // fast toggle LED
+  0003 f60000       [3]     LDAB  _PTP
+  0006 c880         [1]     EORB  #128
+  0008 7b0000       [3]     STAB  _PTP
+   84:        mwait(250);    // 0.25 sec wait
+  000b c6fa         [1]     LDAB  #250
+  000d 87           [1]     CLRA  
+  000e 0700         [4]     BSR   mwait
+  0010 20f1         [3]     BRA   *-13 ;abs = 0003
+   85:      }
+   86:    }
+   87:  }
+  0012 3d           [5]     RTS   
+   88:  //---------------------swait---------------------
+   89:  // wait specified 2 sec, then clear LCD
+   90:  // Input: none
+   91:  // Output: none
+   92:  // uses mswait and TCNT timer
+   93:  void swait(void){			
+*** EVALUATION ***
+
+Function: swait
+Source  : D:\EE345L\9S12DP512\LCD_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\LCD_DP512;D:\EE345L\9S12DP512\LCD_DP512\bin;D:\EE345L\9S12DP512\LCD_DP512\prm;D:\EE345L\9S12DP512\LCD_DP512\cmd;D:\EE345L\9S12DP512\LCD_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\LCD_DP512\LCD_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   94:    PTP ^= 0x80;    // toggle LED0
+  0000 f60000       [3]     LDAB  _PTP
+  0003 c880         [1]     EORB  #128
+  0005 7b0000       [3]     STAB  _PTP
+   95:    mwait(2000);    // 2 sec wait
+  0008 cc07d0       [2]     LDD   #2000
+  000b 0700         [4]     BSR   mwait
+   96:    check(LCD_Clear());
+  000d 160000       [4]     JSR   LCD_Clear
+  0010 060000       [3]     JMP   check
+   97:  }
+   98:  
+   99:  //---------------------blank---------------------
+  100:  // move cursor to second half of LCD display
+  101:  // 32 spaces from address 08 to 40
+  102:  // Input: none
+  103:  // Output: none
+  104:  void blank(void){
+*** EVALUATION ***
+
+Function: blank
+Source  : D:\EE345L\9S12DP512\LCD_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\LCD_DP512;D:\EE345L\9S12DP512\LCD_DP512\bin;D:\EE345L\9S12DP512\LCD_DP512\prm;D:\EE345L\9S12DP512\LCD_DP512\cmd;D:\EE345L\9S12DP512\LCD_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\LCD_DP512\LCD_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+  105:    check(LCD_OutString("                                "));
+  0000 cc0000       [2]     LDD   #"                                "
+  0003 160000       [4]     JSR   LCD_OutString
+  0006 060000       [3]     JMP   check
+  106:  }
+  107:  
+  108:  void main(void) {
+*** EVALUATION ***
+
+Function: main
+Source  : D:\EE345L\9S12DP512\LCD_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\LCD_DP512;D:\EE345L\9S12DP512\LCD_DP512\bin;D:\EE345L\9S12DP512\LCD_DP512\prm;D:\EE345L\9S12DP512\LCD_DP512\cmd;D:\EE345L\9S12DP512\LCD_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\LCD_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\LCD_DP512\LCD_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+  109:    PLL_Init();       // set E clock to 24 MHz
+  0000 160000       [4]     JSR   PLL_Init
+  110:    TimerInit();      // enable timer
+  0003 0700         [4]     BSR   TimerInit
+  111:    DDRP |= 0x80;     // PortP bit 7 is output to LED, used for debugging
+  0005 1c000080     [4]     BSET  _DDRP,#128
+  112:    check(LCD_Open());
+  0009 160000       [4]     JSR   LCD_Open
+  000c 0700         [4]     BSR   check
+  113:    check(LCD_Clear());
+  000e 160000       [4]     JSR   LCD_Clear
+  0011 0700         [4]     BSR   check
+  114:    check(LCD_OutString(" DP512  ")); blank();
+  0013 cc0000       [2]     LDD   #" DP512  "
+  0016 0745         [4]     BSR   *+71 ;abs = 005d
+  0018 0700         [4]     BSR   blank
+  115:    check(LCD_OutString("Valvano ")); swait();
+  001a cc0000       [2]     LDD   #"Valvano "
+  001d 073e         [4]     BSR   *+64 ;abs = 005d
+  001f 0700         [4]     BSR   swait
+  116:    asm cli   // allows debugger to run
+  0021 10ef         [1]     CLI   
+  117:    for(;;) {
+  118:      check(LCD_OutString("ABCDEFGH")); blank();
+  0023 cc0000       [2]     LDD   #"ABCDEFGH"
+  0026 0735         [4]     BSR   *+55 ;abs = 005d
+  0028 0700         [4]     BSR   blank
+  119:      check(LCD_OutString("IJKLMNOP")); swait();
+  002a cc0000       [2]     LDD   #"IJKLMNOP"
+  002d 072e         [4]     BSR   *+48 ;abs = 005d
+  002f 0700         [4]     BSR   swait
+  120:      check(LCD_OutString("01234567")); blank();
+  0031 cc0000       [2]     LDD   #"01234567"
+  0034 0727         [4]     BSR   *+41 ;abs = 005d
+  0036 0700         [4]     BSR   blank
+  121:      check(LCD_OutString("890,./<>")); swait();
+  0038 cc0000       [2]     LDD   #"890,./<>"
+  003b 0720         [4]     BSR   *+34 ;abs = 005d
+  003d 0700         [4]     BSR   swait
+  122:      check(LCD_OutString("abcdefgh")); blank();
+  003f cc0000       [2]     LDD   #"abcdefgh"
+  0042 0719         [4]     BSR   *+27 ;abs = 005d
+  0044 0700         [4]     BSR   blank
+  123:      check(LCD_OutString("ijklmnop")); swait();
+  0046 cc0000       [2]     LDD   #"ijklmnop"
+  0049 0712         [4]     BSR   *+20 ;abs = 005d
+  004b 0700         [4]     BSR   swait
+  124:      check(LCD_OutString("!@#$%^&*")); blank();
+  004d cc0000       [2]     LDD   #"!@#$%^&*"
+  0050 070b         [4]     BSR   *+13 ;abs = 005d
+  0052 0700         [4]     BSR   blank
+  125:      check(LCD_OutString("()_+-=[]")); swait();
+  0054 cc0000       [2]     LDD   #"()_+-=[]"
+  0057 0704         [4]     BSR   *+6 ;abs = 005d
+  0059 0700         [4]     BSR   swait
+  005b 20c6         [3]     BRA   *-56 ;abs = 0023
+  005d 160000       [4]     JSR   LCD_OutString
+  0060 060000       [3]     JMP   check
+  126:    } 
+  127:  }
