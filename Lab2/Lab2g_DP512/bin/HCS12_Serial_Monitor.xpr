@@ -1,4 +1,6 @@
 Data:1 < ADDXPR ONLY_ADD_IF_NEW "Lab2g.c::timeBuf[4]"
+Data:1 < ADDXPR ONLY_ADD_IF_NEW "Fifo.c::Fifo"
+Data:1 < ADDXPR ONLY_ADD_IF_NEW "Fifo.c::Size"
 Data:2 < ADDXPR ONLY_ADD_IF_NEW "Delay"
 Data:2 < ADDXPR ONLY_ADD_IF_NEW "First"
 Data:2 < ADDXPR ONLY_ADD_IF_NEW "Errors"

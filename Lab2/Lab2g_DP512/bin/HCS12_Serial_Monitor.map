@@ -26,8 +26,8 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x900     451
-  _Copy    *toCopyDownBeg 0xC1CF
+  _Range   pZeroOut       0x900     453
+  _Copy    *toCopyDownBeg 0xC1FF
 } _startupData;
 
 *********************************************************************************************
@@ -36,8 +36,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.text                            379     R     0xC045     0xC1BF   ROM_C000
-.copy                              2     R     0xC1CF     0xC1D0   ROM_C000
+.text                            427     R     0xC045     0xC1EF   ROM_C000
+.copy                              2     R     0xC1FF     0xC200   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -565,14 +565,14 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg523
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
 .abs_section_ffee                  2     R     0xFFEE     0xFFEF   .absSeg525
-.bss                              34   R/W      0x900      0x921   RAM
-.common                          417   R/W      0x922      0xAC2   RAM
-RUNTIME                           15     R     0xC1C0     0xC1CE   ROM_C000
+.bss                              40   R/W      0x900      0x927   RAM
+.common                          413   R/W      0x928      0xAC4   RAM
+RUNTIME                           15     R     0xC1F0     0xC1FE   ROM_C000
 .vectSeg526_vect                   2     R     0xFFFE     0xFFFF   .vectSeg526
 
 Summary of section sizes per section type:
-READ_ONLY (R):         1D5 (dec:      469)
-READ_WRITE (R/W):      2C3 (dec:      707)
+READ_ONLY (R):         205 (dec:      517)
+READ_WRITE (R/W):      2C5 (dec:      709)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -946,7 +946,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN3TXDSR7                                23B       1       1       0   .abs_section_23b
      _CAN3TXDLR                                 23C       1       1       0   .abs_section_23c
      _CAN3TXTBPR                                23D       1       1       0   .abs_section_23d
-     _PTT                                       240       1       1       5   .abs_section_240
+     _PTT                                       240       1       1      11   .abs_section_240
      _PTIT                                      241       1       1       0   .abs_section_241
      _DDRT                                      242       1       1       1   .abs_section_242
      _RDRT                                      243       1       1       0   .abs_section_243
@@ -1122,15 +1122,15 @@ MODULE:                 -- Lab2g.c.o --
 - VARIABLES:
      Debug_n                                    900       2       2       3   .bss        
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
-     BackData                                   922       1       1       3   .common     
-     NumLost                                    923       2       2       3   .common     
-     BackPeriod                                 925       2       2       4   .common     
-     NumInterrupts                              927       4       4       6   .common     
-     ForeData                                   92B       1       1       4   .common     
-     ForeExpected                               92C       1       1       4   .common     
-     Errors                                     92D       2       2       2   .common     
-     timeBuf                                    92F      C8     200       1   .common     
-     placeBuf                                   9F7      C8     200       1   .common     
+     BackData                                   928       1       1       3   .common     
+     NumLost                                    929       2       2       3   .common     
+     BackPeriod                                 92B       2       2       4   .common     
+     NumInterrupts                              92D       4       4       6   .common     
+     ForeData                                   931       1       1       4   .common     
+     ForeExpected                               932       1       1       4   .common     
+     Errors                                     933       2       2       2   .common     
+     timeBuf                                    935      C8     200       1   .common     
+     placeBuf                                   9FD      C8     200       1   .common     
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      C000      29      41       1   .init       
@@ -1141,8 +1141,8 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _BDIVMODU                                 C1C0       A      10       1   RUNTIME     
-     _LINC                                     C1CA       5       5       1   RUNTIME     
+     _BDIVMODU                                 C1F0       A      10       1   RUNTIME     
+     _LINC                                     C1FA       5       5       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
@@ -1150,13 +1150,14 @@ MODULE:                 -- PLL.c.o --
 - VARIABLES:
 MODULE:                 -- FIFO.C.o --
 - PROCEDURES:
-     Fifo_Init                                 C15A      18      24       1   .text       
-     Fifo_Put                                  C172      28      40       1   .text       
-     Fifo_Get                                  C19A      26      38       1   .text       
+     Fifo_Init                                 C15A      1E      30       1   .text       
+     Fifo_Put                                  C178      3D      61       1   .text       
+     Fifo_Get                                  C1B5      3B      59       1   .text       
 - VARIABLES:
-     Fifo                                       902      20      32       2   .bss        
-     PutI                                       ABF       2       2       6   .common     
-     GetI                                       AC1       2       2       7   .common     
+     Fifo                                       902      20      32       5   .bss        
+     Size                                       922       2       2       7   .bss        
+     PutPt                                      924       2       2       5   .bss        
+     GetPt                                      926       2       2       6   .bss        
 
 *********************************************************************************************
 MODULE STATISTIC
@@ -1167,7 +1168,7 @@ MODULE STATISTIC
   Start12.c.o                                  0     59      0
   rtshc12.c.o (ansisi.lib)                     0     15      0
   PLL.c.o                                      0     21      0
-  FIFO.C.o                                    36    102      0
+  FIFO.C.o                                    38    150      0
   other                                      256     12      2
 
 *********************************************************************************************
@@ -1176,7 +1177,7 @@ SECTION USE IN OBJECT-ALLOCATION SECTION
 SECTION: ".text"
   OC0_Init Debug_Profile main OC0Han PLL_Init Fifo_Init Fifo_Put Fifo_Get 
 SECTION: ".bss"
-  Debug_n Fifo 
+  Debug_n Fifo Size PutPt GetPt 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".abs_section_8"
@@ -2233,7 +2234,7 @@ SECTION: ".abs_section_ffee"
   _Vector_8 
 SECTION: ".common"
   BackData NumLost BackPeriod NumInterrupts ForeData ForeExpected Errors 
-  timeBuf placeBuf PutI GetI 
+  timeBuf placeBuf 
 SECTION: "RUNTIME"
   _BDIVMODU _LINC 
 
@@ -2662,7 +2663,7 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN3TXDLR                                 23C       1       1       0   .abs_section_23c
      _CAN3TXTBPR                                23D       1       1       0   .abs_section_23d
      _CAN3TXTSR                                 23E       2       2       0   .abs_section_23e
-     _PTT                                       240       1       1       5   .abs_section_240
+     _PTT                                       240       1       1      11   .abs_section_240
      _PTIT                                      241       1       1       0   .abs_section_241
      _DDRT                                      242       1       1       1   .abs_section_242
      _RDRT                                      243       1       1       0   .abs_section_243
@@ -2767,18 +2768,19 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
      Debug_n                                    900       2       2       3   .bss        
-     Fifo                                       902      20      32       2   .bss        
-     BackData                                   922       1       1       3   .common     
-     NumLost                                    923       2       2       3   .common     
-     BackPeriod                                 925       2       2       4   .common     
-     NumInterrupts                              927       4       4       6   .common     
-     ForeData                                   92B       1       1       4   .common     
-     ForeExpected                               92C       1       1       4   .common     
-     Errors                                     92D       2       2       2   .common     
-     timeBuf                                    92F      C8     200       1   .common     
-     placeBuf                                   9F7      C8     200       1   .common     
-     PutI                                       ABF       2       2       6   .common     
-     GetI                                       AC1       2       2       7   .common     
+     Fifo                                       902      20      32       5   .bss        
+     Size                                       922       2       2       7   .bss        
+     PutPt                                      924       2       2       5   .bss        
+     GetPt                                      926       2       2       6   .bss        
+     BackData                                   928       1       1       3   .common     
+     NumLost                                    929       2       2       3   .common     
+     BackPeriod                                 92B       2       2       4   .common     
+     NumInterrupts                              92D       4       4       6   .common     
+     ForeData                                   931       1       1       4   .common     
+     ForeExpected                               932       1       1       4   .common     
+     Errors                                     933       2       2       2   .common     
+     timeBuf                                    935      C8     200       1   .common     
+     placeBuf                                   9FD      C8     200       1   .common     
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
      OC0_Init                                  C045      2F      47       1   .text       
@@ -2786,11 +2788,11 @@ OBJECT LIST SORTED BY ADDRESS
      main                                      C095      61      97       1   .text       
      OC0Han                                    C0F6      4F      79       1   .text       
      PLL_Init                                  C145      15      21       1   .text       
-     Fifo_Init                                 C15A      18      24       1   .text       
-     Fifo_Put                                  C172      28      40       1   .text       
-     Fifo_Get                                  C19A      26      38       1   .text       
-     _BDIVMODU                                 C1C0       A      10       1   RUNTIME     
-     _LINC                                     C1CA       5       5       1   RUNTIME     
+     Fifo_Init                                 C15A      1E      30       1   .text       
+     Fifo_Put                                  C178      3D      61       1   .text       
+     Fifo_Get                                  C1B5      3B      59       1   .text       
+     _BDIVMODU                                 C1F0       A      10       1   RUNTIME     
+     _LINC                                     C1FA       5       5       1   RUNTIME     
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
 *********************************************************************************************
@@ -2815,7 +2817,7 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC1CF ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC1FF ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2833,9 +2835,9 @@ main                      USES PLL_Init _DDRT _PTT Debug_Profile Fifo_Init
 OC0Han                    USES Debug_Profile _PTT _TFLG1 _TC0 BackPeriod 
                                 BackData Fifo_Put NumLost NumInterrupts _LINC 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
-Fifo_Init                 USES GetI PutI 
-Fifo_Put                  USES PutI GetI Fifo 
-Fifo_Get                  USES PutI GetI Fifo 
+Fifo_Init                 USES Fifo GetPt PutPt Size 
+Fifo_Put                  USES _PTT Size PutPt Fifo 
+Fifo_Get                  USES _PTT Size GetPt Fifo 
 _Vector_8                 USES OC0Han 
 
 *********************************************************************************************
@@ -2880,5 +2882,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 7
-Total size of all blocks to be downloaded: 469
+Total size of all blocks to be downloaded: 517
 

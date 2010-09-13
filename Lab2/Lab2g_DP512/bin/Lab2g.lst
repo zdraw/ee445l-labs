@@ -277,3 +277,50 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\
   144:    }
   145:  }
   146:  #endif
+  147:  
+  148:  #if PROCEDURE == 3
+  149:  void main(void){  	 
+  150:    PLL_Init();         // running at 24MHz
+  151:    DDRT |= 0x0F;       // debugging outputs
+  152:    PTT &= ~0x03;
+  153:    Debug_Profile(0);   // 0 means initialization phase
+  154:    Fifo_Init();        // Initialize fifo
+  155:    OC0_Init();         // variable rate interrupt
+  156:    ForeExpected = 0;   // expected data
+  157:    for(;;){
+  158:      Debug_Profile(1); // 1 means start of foreground waiting 
+  159:      PTT_PTT1 = 0;     // falling edge of PT1 means start of foreground waiting
+  160:      while(Fifo_Get(&ForeData)==FIFOFAIL){
+  161:      }
+  162:      Debug_Profile(2); // 2 means foreground has new data
+  163:      PTT_PTT1 = 1;     // rising edge of PT1 means start of foreground processing
+  164:      if(ForeExpected != ForeData){
+  165:        Errors++;                  // critical section found
+  166:        ForeExpected = ForeData+1; // resych to lost/bad data
+  167:      }  
+  168:      else{
+  169:        ForeExpected++;  // sequence is 0,1,2,3,...,254,255,0,1,...
+  170:      }
+  171:      if((ForeData%10)==0){
+  172:        Debug_Profile(3); // 3 means foreground has 10th data
+  173:      }
+  174:    }
+  175:  }          
+  176:  interrupt 8 void OC0Han(void){ // periodic interrupt
+  177:    Debug_Profile(4);  // 4 means background thread active
+  178:    PTT_PTT0 = 1;      // rising edge of PT0 means start of interrupt
+  179:    TFLG1 = 0x01;      // acknowledge OC0
+  180:    TC0 = TC0 +BackPeriod;   // varies from 10us to 1ms
+  181:    if(Fifo_Put(BackData)==FIFOFAIL){
+  182:      NumLost++;
+  183:    }
+  184:    BackData++; // sequence is 0,1,2,3,...,254,255,0,1,...
+  185:    if(BackPeriod > 500){
+  186:      BackPeriod = 200;
+  187:    } else{
+  188:      BackPeriod = BackPeriod+23;
+  189:    }
+  190:    NumInterrupts++;
+  191:    PTT_PTT0 = 0;	    // falling edge of PT0 means end of interrupt
+  192:  }
+  193:  #endif  

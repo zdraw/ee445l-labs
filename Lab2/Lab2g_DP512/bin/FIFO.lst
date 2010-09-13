@@ -19,7 +19,7 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
    16:  
    17:  // set Good equal to 0 to use a FIFO with a critical section
    18:  // set Good equal to 1 to use a FIFO without a critical section
-   19:  #define Good 1
+   19:  #define Good 0
    20:  dataType static Fifo[FIFOSIZE];
    21:  
    22:  #if Good 
@@ -34,32 +34,13 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
    31:  // Inputs: none
    32:  // Outputs: none
    33:  void Fifo_Init(void){ unsigned char SaveCCR;
-*** EVALUATION ***
-
-Function: Fifo_Init
-Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
-
-  0000 36           [2]     PSHA  
    34:  asm  tpa  
-  0001 b720         [1]     TPA   
    35:  asm  staa SaveCCR 
-  0003 6a80         [2]     STAA  0,SP
    36:  asm  sei          // make atomic 
-  0005 1410         [1]     SEI   
    37:    PutI = GetI = 0;      // Empty
-  0007 c7           [1]     CLRB  
-  0008 87           [1]     CLRA  
-  0009 7c0000       [3]     STD   GetI
-  000c fe0000       [3]     LDX   GetI
-  000f 7e0000       [3]     STX   PutI
    38:  asm  ldaa SaveCCR
-  0012 a680         [3]     LDAA  0,SP
    39:  asm  tap          // end critical section 
-  0014 b702         [1]     TAP   
    40:  }
-  0016 32           [3]     PULA  
-  0017 3d           [5]     RTS   
    41:  
    42:  // ******* Fifo_Put ********
    43:  // Put data into FIFO
@@ -67,162 +48,203 @@ Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\
    45:  // Outputs: FIFOSUCCESS if saved
    46:  //          FIFOFAIL if not saved, because FIFO was full
    47:  int Fifo_Put(dataType data){
+   48:    PTT_PTT3 = 1;
+   49:    if((PutI-GetI) & ~(FIFOSIZE-1)){
+   50:      PTT_PTT3 = 0;
+   51:      return(FIFOFAIL); // Failed, fifo full
+   52:    }
+   53:    Fifo[PutI&(FIFOSIZE-1)] = data; // put
+   54:    PutI++;  // Success, update
+   55:    PTT_PTT3 = 0;
+   56:    return(FIFOSUCCESS);
+   57:  }
+   58:  
+   59:  
+   60:  // ******* Fifo_Get ********
+   61:  // Get data from FIFO
+   62:  // Inputs: pointer to memory into which to return data
+   63:  // Outputs: FIFOSUCCESS if data properly removed
+   64:  //          FIFOFAIL if not removed, because FIFO was empty
+   65:  int Fifo_Get(dataType *datapt){
+   66:    PTT_PTT2 = 1;
+   67:    if(PutI == GetI ){
+   68:      PTT_PTT2 = 0;
+   69:      return(FIFOFAIL); // Empty if PutI=GetI
+   70:    }
+   71:    *datapt = Fifo[GetI&(FIFOSIZE-1)];
+   72:    GetI++;  // Success, update
+   73:    PTT_PTT2 = 0;
+   74:    return(FIFOSUCCESS);
+   75:  }
+   76:  
+   77:  // ******* Fifo_Size ********
+   78:  // Check the status of the FIFO
+   79:  // Inputs: none
+   80:  // Outputs: number of elements currently stored
+   81:  // 0 to FIFOSIZE (0 means empty, FIFOSIZE means full)
+   82:  unsigned short Fifo_Size(void){
+   83:   return ((unsigned short)(PutI-GetI));
+   84:  }
+   85:  
+   86:  
+   87:  #else
+   88:  //***************Second Implementation with critical section****
+   89:  unsigned short static volatile Size;   /* number of elements in FIFO */
+   90:  dataType static volatile *PutPt;    /* Pointer of where to put next */
+   91:  dataType static volatile *GetPt;    /* Pointer of where to get next */
+   92:  
+   93:  /*-----------------------Fifo_Init----------------------------
+   94:    Initialize fifo to be empty
+   95:    Inputs: none
+   96:    Outputs: none */
+   97:  void Fifo_Init(void){
+*** EVALUATION ***
+
+Function: Fifo_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\FIFO.C
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+   98:  unsigned char SaveCCR;
+   99:  asm  tpa  
+  0001 b720         [1]     TPA   
+  100:  asm  staa SaveCCR 
+  0003 6a80         [2]     STAA  0,SP
+  101:  asm  sei          // make atomic 
+  0005 1410         [1]     SEI   
+  102:    PutPt=GetPt=&Fifo[0];   // Empty when PutPt=GetPt
+  0007 180300000000 [5]     MOVW  #Fifo,GetPt
+  000d fc0000       [3]     LDD   GetPt
+  0010 7c0000       [3]     STD   PutPt
+  103:    Size = 0; 
+  0013 c7           [1]     CLRB  
+  0014 87           [1]     CLRA  
+  0015 7c0000       [3]     STD   Size
+  104:  asm  ldaa SaveCCR
+  0018 a680         [3]     LDAA  0,SP
+  105:  asm  tap          // end critical section 
+  001a b702         [1]     TAP   
+  106:  }
+  001c 32           [3]     PULA  
+  001d 3d           [5]     RTS   
+  107:  
+  108:  
+  109:  /*-----------------------Fifo_Put----------------------------
+  110:    Enter one character into the fifo
+  111:    Inputs: data
+  112:    Outputs: true if data is properly saved,
+  113:             false if data not saved because it was previously full*/
+  114:  int Fifo_Put(dataType data){
 *** EVALUATION ***
 
 Function: Fifo_Put
 Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
-   48:    if((PutI-GetI) & ~(FIFOSIZE-1)){
-  0001 fc0000       [3]     LDD   PutI
-  0004 b30000       [3]     SUBD  GetI
-  0007 c4e0         [1]     ANDB  #224
-  0009 044403       [3]     TBEQ  D,*+6 ;abs = 000f
-   49:      return(FIFOFAIL); // Failed, fifo full
-  000c c7           [1]     CLRB  
-  000d 2015         [3]     BRA   *+23 ;abs = 0024
-   50:    }
-   51:    Fifo[PutI&(FIFOSIZE-1)] = data; // put
-  000f f60000       [3]     LDAB  PutI:1
-  0012 c41f         [1]     ANDB  #31
-  0014 a680         [3]     LDAA  0,SP
-  0016 ce0000       [2]     LDX   #Fifo
-  0019 6ae5         [2]     STAA  B,X
-   52:    PutI++;  // Success, update
-  001b fe0000       [3]     LDX   PutI
-  001e 08           [1]     INX   
-  001f 7e0000       [3]     STX   PutI
-   53:    return(FIFOSUCCESS);
-  0022 c601         [1]     LDAB  #1
-  0024 87           [1]     CLRA  
-   54:  }
-  0025 1b81         [2]     LEAS  1,SP
-  0027 3d           [5]     RTS   
-   55:  
-   56:  
-   57:  // ******* Fifo_Get ********
-   58:  // Get data from FIFO
-   59:  // Inputs: pointer to memory into which to return data
-   60:  // Outputs: FIFOSUCCESS if data properly removed
-   61:  //          FIFOFAIL if not removed, because FIFO was empty
-   62:  int Fifo_Get(dataType *datapt){
+  115:    PTT_PTT3 = 1;
+  0001 1c000008     [4]     BSET  _PTT,#8
+  116:    if(Size==FIFOSIZE){
+  0005 fc0000       [3]     LDD   Size
+  0008 8c0020       [2]     CPD   #32
+  000b 2607         [3/1]   BNE   *+9 ;abs = 0014
+  117:      PTT_PTT3 = 0;
+  000d 1d000008     [4]     BCLR  _PTT,#8
+  118:      return 0;     // Failed, fifo was previously full
+  0011 c7           [1]     CLRB  
+  0012 2025         [3]     BRA   *+39 ;abs = 0039
+  119:    }
+  120:    *(PutPt) = data;      // try to Put data into fifo 
+  0014 e680         [3]     LDAB  0,SP
+  0016 6bfb0000     [4]     STAB  [PutPt,PCR]
+  121:    PutPt++;              
+  001a fe0000       [3]     LDX   PutPt
+  001d 08           [1]     INX   
+  001e 7e0000       [3]     STX   PutPt
+  122:    if(PutPt == &Fifo[FIFOSIZE]){ // need to wrap?
+  0021 8e0000       [2]     CPX   #Fifo:32
+  0024 2606         [3/1]   BNE   *+8 ;abs = 002c
+  123:      PutPt = &Fifo[0];
+  0026 180300000000 [5]     MOVW  #Fifo,PutPt
+  124:    }
+  125:    Size++;   // one more element
+  002c fe0000       [3]     LDX   Size
+  002f 08           [1]     INX   
+  0030 7e0000       [3]     STX   Size
+  126:    PTT_PTT3 = 0;
+  0033 1d000008     [4]     BCLR  _PTT,#8
+  127:    return(1);
+  0037 c601         [1]     LDAB  #1
+  0039 87           [1]     CLRA  
+  128:  }
+  003a 1b81         [2]     LEAS  1,SP
+  003c 3d           [5]     RTS   
+  129:  
+  130:  /*-----------------------Fifo_Get----------------------------
+  131:    Remove one character from the fifo
+  132:    Inputs: pointer to place to return data
+  133:    Outputs: true if data is valid, 
+  134:             false if fifo was empty at the time of the call*/
+  135:  int Fifo_Get(dataType *datapt){ 
 *** EVALUATION ***
 
 Function: Fifo_Get
 Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
-   63:    if(PutI == GetI ){
-  0001 fc0000       [3]     LDD   PutI
-  0004 bc0000       [3]     CPD   GetI
-  0007 2603         [3/1]   BNE   *+5 ;abs = 000c
-   64:      return(FIFOFAIL); // Empty if PutI=GetI
-  0009 c7           [1]     CLRB  
-  000a 2017         [3]     BRA   *+25 ;abs = 0023
-   65:    }
-   66:    *datapt = Fifo[GetI&(FIFOSIZE-1)];
-  000c f60000       [3]     LDAB  GetI:1
-  000f c41f         [1]     ANDB  #31
-  0011 ce0000       [2]     LDX   #Fifo
-  0014 a6e5         [3]     LDAA  B,X
-  0016 ee80         [3]     LDX   0,SP
-  0018 6a00         [2]     STAA  0,X
-   67:    GetI++;  // Success, update
-  001a fe0000       [3]     LDX   GetI
-  001d 08           [1]     INX   
-  001e 7e0000       [3]     STX   GetI
-   68:    return(FIFOSUCCESS);
-  0021 c601         [1]     LDAB  #1
-  0023 87           [1]     CLRA  
-   69:  }
-  0024 30           [3]     PULX  
-  0025 3d           [5]     RTS   
-   70:  
-   71:  // ******* Fifo_Size ********
-   72:  // Check the status of the FIFO
-   73:  // Inputs: none
-   74:  // Outputs: number of elements currently stored
-   75:  // 0 to FIFOSIZE (0 means empty, FIFOSIZE means full)
-   76:  unsigned short Fifo_Size(void){
+  136:    PTT_PTT2 = 1;
+  0001 1c000004     [4]     BSET  _PTT,#4
+  137:    if(Size == 0){
+  0005 fc0000       [3]     LDD   Size
+  0008 2607         [3/1]   BNE   *+9 ;abs = 0011
+  138:      PTT_PTT2 = 0;
+  000a 1d000004     [4]     BCLR  _PTT,#4
+  139:      return(0);     // Empty if no elements in FIFO 
+  000e c7           [1]     CLRB  
+  000f 2027         [3]     BRA   *+41 ;abs = 0038
+  140:    }
+  141:    *datapt = *(GetPt);  // return by reference
+  0011 ee80         [3]     LDX   0,SP
+  0013 e6fb0000     [6]     LDAB  [GetPt,PCR]
+  0017 6b00         [2]     STAB  0,X
+  142:    GetPt++;             // removes data from fifo
+  0019 fe0000       [3]     LDX   GetPt
+  001c 08           [1]     INX   
+  001d 7e0000       [3]     STX   GetPt
+  143:    if(GetPt == &Fifo[FIFOSIZE]){ 
+  0020 8e0000       [2]     CPX   #Fifo:32
+  0023 2606         [3/1]   BNE   *+8 ;abs = 002b
+  144:      GetPt = &Fifo[0];  // wrap
+  0025 180300000000 [5]     MOVW  #Fifo,GetPt
+  145:    }
+  146:    Size--;   // one less element
+  002b fe0000       [3]     LDX   Size
+  002e 09           [1]     DEX   
+  002f 7e0000       [3]     STX   Size
+  147:    PTT_PTT2 = 0;
+  0032 1d000004     [4]     BCLR  _PTT,#4
+  148:    return(1); 
+  0036 c601         [1]     LDAB  #1
+  0038 87           [1]     CLRA  
+  149:  }
+  0039 30           [3]     PULX  
+  003a 3d           [5]     RTS   
+  150:  
+  151:  //-----------------------Fifo_Size----------------------------
+  152:  // Check the status of the FIFO
+  153:  // Inputs: none
+  154:  // Outputs: number of elements currently stored
+  155:  // 0 to FIFOSIZE (0 means empty, FIFOSIZE-1 means full)
+  156:  unsigned short Fifo_Size(void){ 
 *** EVALUATION ***
 
 Function: Fifo_Size
 Source  : C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources\FIFO.C
-Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o"
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\prm;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\cmd;C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab2\Lab2g_DP512\Lab2g_DP512_Data\HCS12_Serial_Monitor\ObjectCode\FIFO.C.o" -WmsgSd1106
 
-   77:   return ((unsigned short)(PutI-GetI));
-  0000 fc0000       [3]     LDD   PutI
-  0003 b30000       [3]     SUBD  GetI
-   78:  }
-  0006 3d           [5]     RTS   
-   79:  
-   80:  
-   81:  #else
-   82:  //***************Second Implementation with critical section****
-   83:  unsigned short static volatile Size;   /* number of elements in FIFO */
-   84:  dataType static volatile *PutPt;    /* Pointer of where to put next */
-   85:  dataType static volatile *GetPt;    /* Pointer of where to get next */
-   86:  
-   87:  /*-----------------------Fifo_Init----------------------------
-   88:    Initialize fifo to be empty
-   89:    Inputs: none
-   90:    Outputs: none */
-   91:  void Fifo_Init(void){
-   92:  unsigned char SaveCCR;
-   93:  asm  tpa  
-   94:  asm  staa SaveCCR 
-   95:  asm  sei          // make atomic 
-   96:    PutPt=GetPt=&Fifo[0];   // Empty when PutPt=GetPt
-   97:    Size = 0; 
-   98:  asm  ldaa SaveCCR
-   99:  asm  tap          // end critical section 
-  100:  }
-  101:  
-  102:  
-  103:  /*-----------------------Fifo_Put----------------------------
-  104:    Enter one character into the fifo
-  105:    Inputs: data
-  106:    Outputs: true if data is properly saved,
-  107:             false if data not saved because it was previously full*/
-  108:  int Fifo_Put(dataType data){
-  109:    if(Size==FIFOSIZE){
-  110:      return 0;     // Failed, fifo was previously full
-  111:    }
-  112:    *(PutPt) = data;      // try to Put data into fifo 
-  113:    PutPt++;              
-  114:    if(PutPt == &Fifo[FIFOSIZE]){ // need to wrap?
-  115:      PutPt = &Fifo[0];
-  116:    }
-  117:    Size++;   // one more element
-  118:    return(1);
-  119:  }
-  120:  
-  121:  /*-----------------------Fifo_Get----------------------------
-  122:    Remove one character from the fifo
-  123:    Inputs: pointer to place to return data
-  124:    Outputs: true if data is valid, 
-  125:             false if fifo was empty at the time of the call*/
-  126:  int Fifo_Get(dataType *datapt){ 
-  127:    if(Size == 0){
-  128:      return(0);     // Empty if no elements in FIFO 
-  129:    }
-  130:    *datapt = *(GetPt);  // return by reference
-  131:    GetPt++;             // removes data from fifo
-  132:    if(GetPt == &Fifo[FIFOSIZE]){ 
-  133:      GetPt = &Fifo[0];  // wrap
-  134:    }
-  135:    Size--;   // one less element
-  136:    return(1); 
-  137:  }
-  138:  
-  139:  //-----------------------Fifo_Size----------------------------
-  140:  // Check the status of the FIFO
-  141:  // Inputs: none
-  142:  // Outputs: number of elements currently stored
-  143:  // 0 to FIFOSIZE (0 means empty, FIFOSIZE-1 means full)
-  144:  unsigned short Fifo_Size(void){ 
-  145:    return Size;
-  146:  }
-  147:  #endif
+  157:    return Size;
+  0000 fc0000       [3]     LDD   Size
+  158:  }
+  0003 3d           [5]     RTS   
+  159:  #endif
