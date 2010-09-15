@@ -52,39 +52,6 @@ unsigned short startTime;
   }
 }
 
-//---------------------check---------------------
-// if LCD broken toggle LED1 at 2Hz
-// Input: last LCD status, 0 means bad
-// Output: none
-// Error: if status is zero, this function will not return
-void check(short status){	 // 0 if LCD is broken
-  if(status ==0){		   
-    for(;;) {
-      //PTP ^= 0x80;   // fast toggle LED
-      mwait(250);    // 0.25 sec wait
-    }
-  }
-}
-//---------------------swait---------------------
-// wait specified 2 sec, then clear LCD
-// Input: none
-// Output: none
-// uses mswait and TCNT timer
-void swait(void){			
-  //PTP ^= 0x80;    // toggle LED0
-  mwait(2000);    // 2 sec wait
-  check(LCD_Clear());
-}
-
-//---------------------blank---------------------
-// move cursor to second half of LCD display
-// 32 spaces from address 08 to 40
-// Input: none
-// Output: none
-void blank(void){
-  check(LCD_OutString("                                "));
-}
-
 unsigned short static volatile seconds;
 interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
   TFLG1 = 0x01;         // acknowledge OC0
@@ -118,24 +85,64 @@ void OC_Init0(){
   TC0   = TCNT+50; // first interrupt right away
 }
 
+#define PROCEDURE 2
+
+#if PROCEDURE == 1
 void main(void) {  
   char buffer[10];
-  unsigned short totalsecs, hrs, mins, secs, initsecs = 32390;
+  unsigned short totalsecs, hrs, mins, secs, initsecs = 32390,error;
   //PLL_Init();       // set E clock to 24 MHz
   //TimerInit();      // enable timer0     
   OC_Init0();           
   //OC_Init3();
-  check(LCD_Open());
-  check(LCD_Clear());
+  LCD_Open();
+  LCD_Clear();
   asm cli   // allows debugger to run
   for(;;) {
+    error = LCD_ErrorCheck();
     LCD_Clear();  
     totalsecs = seconds + initsecs;
     hrs = totalsecs / 3600;
     mins = (totalsecs - hrs*3600)/60;
     secs = totalsecs - hrs*3600 - mins*60;
     sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs);
-    check(LCD_OutString(buffer)); 
+    //LCD_GoTo(0,0);
+    LCD_OutString(buffer); 
     while(totalsecs - initsecs == seconds) {};
   } 
 }
+#endif
+
+#if PROCEDURE == 2
+
+void main(void) {  
+  unsigned short error; 
+  OC_Init0(); 
+  LCD_Open();
+  LCD_Clear();
+  asm cli   // allows debugger to run
+  for(;;) {   
+    error = LCD_ErrorCheck();
+    LCD_OutString("ABCDEFGH"); 
+    LCD_GoTo(1,0);
+    LCD_OutString("IJKLMNOP");
+    mwait(2000);  
+    LCD_Clear();
+    LCD_OutString("01234567");
+    LCD_GoTo(1,0);
+    LCD_OutString("890,./<>");
+    mwait(2000);   
+    LCD_Clear();
+    LCD_OutString("abcdefgh");
+    LCD_GoTo(1,0);
+    LCD_OutString("ijklmnop");
+    mwait(2000);  
+    LCD_Clear();
+    LCD_OutString("!@#$%^&*");
+    LCD_GoTo(1,0);
+    LCD_OutString("()_+-=[]");
+    mwait(2000);  
+    LCD_Clear();
+  } 
+}
+#endif
