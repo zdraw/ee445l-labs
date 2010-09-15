@@ -31,8 +31,13 @@ addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
 
 #include <mc9s12dp512.h>     /* derivative information */
 #include "LCD.H"
-
+#define BUSY 1
+#define NOTBUSY 0
 static unsigned short OpenFlag=0;
+static unsigned short ClearFlag=1;
+static unsigned short CharFlag=1;
+static unsigned short StringFlag=1;
+static unsigned short GotoFlag=1;
 
 //---------------------wait---------------------
 // time delay
@@ -41,18 +46,61 @@ static unsigned short OpenFlag=0;
 void static wait(unsigned short delay){ 
 unsigned short startTime;
   startTime = TCNT;
-  while((TCNT-startTime) <= delay){}  
+  while((TCNT-startTime) <= ((delay/24)+1)){}  
 }
 //---------------------1mswait---------------------
 // time delay
-// Input: time in msec
+// Input: time in msec                s
 // Output: none
 void static wait1ms(unsigned short msec){ 
   for(;msec;msec--){
     wait(1500);    // 1ms wait
   }
 }
-  
+
+//---------------------readStatus----------------------
+// Checks the LCD's internal busy flag
+// Input: 
+// Output: none
+short readStatus(void) {
+  short busy, trash;
+    //4-bit protocol read Busy
+  DDRH &= 0x0F; //1) data direction input on 4 data bits (control lines remain output)
+  PTH_PTH5 = 1; //2) R/W=1, RS=0
+  PTH_PTH4 = 0;
+  PTH_PTH6 = 1; //3) E=1
+  asm nop //4) Wait a little time (2 nops) [it does not work without delay]
+  asm nop
+  busy = ((PTH & 0x04) >> 3); //5) Read 4-bit MS nibble data (bit 3 is busy)
+  PTH_PTH6 = 0;//6) E=0
+  PTH_PTH6 = 1;//7) E=1
+  asm nop //8) Wait a little time (2 nops)
+  asm nop 
+  trash = PTH; //9) Read 4-bit LS nibble data (nothing interesting)
+  PTH_PTH6 = 0;//10) E=0
+  PTH_PTH5 = 0;//11) R/W=0 (default settings)
+  DDRH |= 0x0F; //12) direction on four data lines go back to outputs (default settings)
+  return busy;  //BUSY = 1 and notBUSY = 0
+}
+
+//---------------------checkStatus----------------------
+// Checks the LCD's internal busy flag and timeouts out after a given amount of cycles
+// Input: Cycles to wait before timing-out
+// Output: none
+// Returns: BUSY if the flag is set or it times out
+short checkStatus(unsigned short cycles) {
+  while((readStatus() == BUSY) && (cycles > 0)){
+    cycles--;
+  }
+  if(cycles == 0){
+    return BUSY;
+  }
+  return NOTBUSY;
+}
+
+
+
+
 //---------------------outCsrNibble---------------------
 // sends one command code to the LCD control/status
 // Input: command is 4-bit function to execute
@@ -72,22 +120,23 @@ static void outCsrNibble(unsigned char command){
 static void outCsr(unsigned char command){
   outCsrNibble(command>>4);   // ms nibble, E=0, RS=0
   outCsrNibble(command);      // ls nibble, E=0, RS=0
-  wait(135);                  // blind cycle 90 us wait
+  checkStatus(6);                  // blind cycle 90 us wait
 }
 
 //---------------------LCD_Clear---------------------
 // clear the LCD display, send cursor to home
 // Input: none
 // Output: true if successful
-short LCD_Clear(void){
+void LCD_Clear(void){
   if(OpenFlag==0){
-    return 0;  // not open
+    ClearFlag = 0;  // not open
   }
   outCsr(0x01);        // Clear Display
-  wait(2460);          // 1.64ms wait
+  checkStatus(103);          // 1.64ms wait
   outCsr(0x02);        // Cursor to home
-  wait(2460);          // 1.64ms wait
-  return 1;		         // success
+  checkStatus(103);          // 1.64ms wait
+  ClearFlag = 1;		         // success
+  return;
 }
 #define LCDINC 2
 #define LCDDEC 0
@@ -110,9 +159,9 @@ short LCD_Clear(void){
 // initialize the LCD display, called once at beginning
 // Input: none
 // Output: true if successful
-short LCD_Open(void){
+void LCD_Open(void){
   if(OpenFlag){
-    return 0;      // error if already open
+    return;      // error if already open
   }
   DDRH |= 0x7F;    // PH6-0 output to LCD
   PTH &= ~0x20;    // PH5=R/W=0 means write
@@ -168,16 +217,16 @@ short LCD_Open(void){
        =0 for 5 by 7 dots */
   outCsr(0x20+LCD2LINE+LCD7DOT);   // DL=0 4bit, N=1 2 line, F=0 5by7 dots
   OpenFlag = 1;         // device open
-  return 1;   // clear display
+  return;   // clear display
 }
 
 //---------------------LCD_OutChar---------------------
 // sends one ASCII to the LCD display
 // Input: letter is ASCII code
 // Output: true if successful
-short LCD_OutChar(unsigned char letter){
+void LCD_OutChar(unsigned char letter){
   if(OpenFlag==0){
-    return 0;  // not open
+    CharFlag = 0;  // not open
   }
   PTH = (PTH&0x80)+(0x10+(0x0F&(letter>>4)));   // ms nibble, E=0, RS=1
   PTH |= 0x40;       // E goes 0,1
@@ -189,27 +238,58 @@ short LCD_OutChar(unsigned char letter){
   asm nop
   asm nop            // 5 cycles wide = 208ns
   PTH &= ~0x40;      // E goes 1,0
-  wait(135);         // 90 us wait
-  return 1;	         // success
+  checkStatus(6);         // 90 us wait
+  CharFlag = 1;	         // success
+  return;
 }
 
 //---------------------LCD_OutString--------------
 // Display String
 // Input: pointer to NULL-terminationed ASCII string 
 // Output: true if successful
-short LCD_OutString(char *pt){ 
+void LCD_OutString(char *pt){ 
   if(OpenFlag==0){
-    return 0;  // not open
+    StringFlag=0;
   }
   while(*pt){
-    if(LCD_OutChar((unsigned char)*pt)==0){
-      return 0;
-    }
+    //(***)
+    LCD_OutChar((unsigned char)*pt);
     pt++;
   }
-  return 1;	  // success
+  StringFlag=1;	  // success
+  return;
 }
 
+//---------------------LCD_GoTo--------------
+// Move the cursor to a particular row and column
+// Input: Parameters (row, column)   First row and and column is 0
+// Output: None
+void LCD_GoTo(unsigned char row, unsigned char col){
+  int i;
+  if(OpenFlag==0){
+    GotoFlag = 0;  // not open
+  }
+  OutCsr(0x02); //Returns cursor to home
+  for(i=0; i<col; i++) {
+    OutCsr(0x14); //Move cursor right one
+  }
+  if(row == 1){   //Move cursor to next "row"
+    for(i=0; i<32; i++) {
+      OutCsr(0x14);
+    }
+  }
+  GotoFlag = 1;
+}
 
-
-
+//---------------------LCD_ErrorCheck--------------
+// LCD_ErrorCheck Check to see if the LCD driver has had any errors
+// Returns an error code if LCD has had any errors since initialization or since the last call to ErrorCheck
+// Input Parameter(none)
+// Output Parameter(error code)
+// Typical calling sequence
+// Err = ErrorCheck();
+// if(Err) Handle(Err);
+short LCD_ErrorCheck(void) {
+  short error = (StringFlag<<4) + (CharFlag<<3) + (GotoFlag<<2) + (ClearFlag<<1) + OpenFlag;
+  return error;
+}
