@@ -36,28 +36,8 @@ addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
 #include "LCD.H"
+#include <stdio.h>
 #include "PLL.H"
-
-//--------------------TimerInit---------------
-// initialize timer module to 0.667us(Boot Mode) TCNT clock
-// inputs: none
-// outputs: none
-void TimerInit(void){
-  TSCR1 = 0x80;   // Enable TCNT, 24MHz in both boo tand run modes
-  TSCR2 = 0x04;   // divide by 16 TCNT prescale, TCNT at 667nsec
-  PACTL = 0;      // timer prescale used for TCNT
-/* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
-    divide  FastMode(24MHz)    Slow Mode (8MHz)
-000   1     42ns  TOF  2.73ms  125ns TOF 8.192ms
-001   2     84ns  TOF  5.46ms  250ns TOF 16.384ms 
-010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms   
-011   8    333ns  TOF  21.8ms 	 1us TOF 65.536ms
-100  16    667ns  TOF  43.7ms 	 2us TOF 131.072ms
-101  32   1.33us  TOF  87.4ms		 4us TOF 262.144ns
-110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
-111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s */ 
-// Be careful, TSCR1 and TSCR2 maybe set in other rituals
-}
 
 //---------------------mwait---------------------
 // wait specified number of msec
@@ -68,7 +48,7 @@ void mwait(unsigned short msec){
 unsigned short startTime;
   for(; msec>0; msec--){
     startTime = TCNT;
-    while((TCNT-startTime) <= 1500){} 
+    while((TCNT-startTime) <= 63){} 
   }
 }
 
@@ -80,7 +60,7 @@ unsigned short startTime;
 void check(short status){	 // 0 if LCD is broken
   if(status ==0){		   
     for(;;) {
-      PTP ^= 0x80;   // fast toggle LED
+      //PTP ^= 0x80;   // fast toggle LED
       mwait(250);    // 0.25 sec wait
     }
   }
@@ -91,7 +71,7 @@ void check(short status){	 // 0 if LCD is broken
 // Output: none
 // uses mswait and TCNT timer
 void swait(void){			
-  PTP ^= 0x80;    // toggle LED0
+  //PTP ^= 0x80;    // toggle LED0
   mwait(2000);    // 2 sec wait
   check(LCD_Clear());
 }
@@ -105,12 +85,12 @@ void blank(void){
   check(LCD_OutString("                                "));
 }
 
-unsigned short static volatile Count0;
+unsigned short static volatile seconds;
 interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
   TFLG1 = 0x01;         // acknowledge OC0
-  Count0++;
-  TC0 = TC0+10000;      // 10 ms
-  PTT ^= 0x01;          // debugging monitor
+  seconds++;
+  TC0 = TC0+62500;      // 1 s
+  PTP ^= 0x80;          // debugging monitor
 }
 
 //---------------------OC_Init0---------------------
@@ -118,8 +98,8 @@ interrupt 8 void TOC0handler(void){ // executes at 100 Hz
 // Input: none
 // Output: none 
 void OC_Init0(){
-  Count0 = 0;     // debugging monitor
-  DDRT |= 0x01;   // debugging monitor
+  seconds = 0;     // debugging monitor
+  DDRP |= 0x80;   // debugging monitor
   TIOS |= 0x01;   // activate TC0 as output compare
   TIE  |= 0x01;   // arm OC0
   TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
@@ -132,51 +112,30 @@ void OC_Init0(){
 010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms     
 011   8    333ns  TOF  21.8ms    1us TOF 65.536ms
 100  16    667ns  TOF  43.7ms    2us TOF 131.072ms
-101  32   1.33us  TOF  87.4ms    4us TOF 262.144ns
+101  32   1.33us  TOF  87.4ms    4us TOF 262.144ms
 110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
-111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s */
-  TC0    = TCNT+50; // first interrupt right away
+111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s*/
+  TC0   = TCNT+50; // first interrupt right away
 }
 
-unsigned short static volatile Count3;
-interrupt 11 void TOC3handler(void){ // executes at 1000 Hz 
-  TFLG1 = 0x08;         // acknowledge OC3
-  Count3++;
-  TC3 = TC3+1000;       // 1 ms
-  PTT ^= 0x08;          // debugging monitor
-}
-
-//---------------------OC_Init3---------------------
-// arm output compare 3 for 1000Hz periodic interrupt
-// Input: none    assumes another ritual enabled the TCNT
-// Output: none 
-void OC_Init3(){
-  Count3 = 0;      // debugging monitor      
-  DDRT |= 0x08;    // debugging monitor
-  TIOS |= 0x08;    // activate TC3 as output compare
-  TIE  |= 0x08;    // arm OC3
-  TC3   = TCNT+50; // first interrupt right away
-}
-
-void main(void) {
+void main(void) {  
+  char buffer[10];
+  unsigned short totalsecs, hrs, mins, secs, initsecs = 32390;
   //PLL_Init();       // set E clock to 24 MHz
-  TimerInit();      // enable timer0
-  OC_Init0();
+  //TimerInit();      // enable timer0     
+  OC_Init0();           
   //OC_Init3();
-  DDRP |= 0x80;     // PortP bit 7 is output to LED, used for debugging
   check(LCD_Open());
   check(LCD_Clear());
-  check(LCD_OutString(" DP512  ")); blank();
-  check(LCD_OutString("Valvano ")); swait();
   asm cli   // allows debugger to run
   for(;;) {
-    check(LCD_OutString("ABCDEFGH")); blank();
-    check(LCD_OutString("IJKLMNOP")); swait();
-    check(LCD_OutString("01234567")); blank();
-    check(LCD_OutString("890,./<>")); swait();
-    check(LCD_OutString("abcdefgh")); blank();
-    check(LCD_OutString("ijklmnop")); swait();
-    check(LCD_OutString("!@#$%^&*")); blank();
-    check(LCD_OutString("()_+-=[]")); swait();
+    LCD_Clear();  
+    totalsecs = seconds + initsecs;
+    hrs = totalsecs / 3600;
+    mins = (totalsecs - hrs*3600)/60;
+    secs = totalsecs - hrs*3600 - mins*60;
+    sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs);
+    check(LCD_OutString(buffer)); 
+    while(totalsecs - initsecs == seconds) {};
   } 
 }
