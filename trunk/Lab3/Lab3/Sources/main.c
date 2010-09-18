@@ -35,9 +35,10 @@ addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
-#include "LCD.H"
+#include "LCD.h"
 #include <stdio.h>
-#include "PLL.H"
+#include "PLL.h"
+#include "OC.h"
 
 //---------------------mwait---------------------
 // wait specified number of msec
@@ -52,49 +53,17 @@ unsigned short startTime;
   }
 }
 
-unsigned short static volatile seconds;
-interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
-  TFLG1 = 0x01;         // acknowledge OC0
-  seconds++;
-  TC0 = TC0+62500;      // 1 s
-  PTP ^= 0x80;          // debugging monitor
-}
-
-//---------------------OC_Init0---------------------
-// arm output compare 0 for 100Hz periodic interrupt
-// Input: none
-// Output: none 
-void OC_Init0(){
-  seconds = 0;     // debugging monitor
-  DDRP |= 0x80;   // debugging monitor
-  TIOS |= 0x01;   // activate TC0 as output compare
-  TIE  |= 0x01;   // arm OC0
-  TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
-  TSCR2 = 0x07;   // divide by 8 TCNT prescale, TOI disarm
-  PACTL = 0;      // timer prescale used for TCNT
-/* Bottom three bits of TSCR2 (PR2,PR1,PR0) set TCNT period
-    divide  FastMode(24MHz)    Slow Mode (8MHz)
-000   1     42ns  TOF  2.73ms  125ns TOF  8.192ms
-001   2     84ns  TOF  5.46ms  250ns TOF 16.384ms 
-010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms     
-011   8    333ns  TOF  21.8ms    1us TOF 65.536ms
-100  16    667ns  TOF  43.7ms    2us TOF 131.072ms
-101  32   1.33us  TOF  87.4ms    4us TOF 262.144ms
-110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
-111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s*/
-  TC0   = TCNT+50; // first interrupt right away
-}
-
-#define PROCEDURE 2
+#define PROCEDURE 1
 
 #if PROCEDURE == 1
 void main(void) {  
   char buffer[10];
   unsigned short totalsecs, hrs, mins, secs, initsecs = 32390,error;
-  //PLL_Init();       // set E clock to 24 MHz
+  //PLL_Init();       // set E clock to 8 MHz
   //TimerInit();      // enable timer0     
   OC_Init0();           
-  //OC_Init3();
+  OC_Init1();
+  switchInits();
   LCD_Open();
   LCD_Clear();
   asm cli   // allows debugger to run
