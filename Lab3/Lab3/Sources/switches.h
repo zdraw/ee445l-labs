@@ -4,4 +4,10 @@
 
 #include "OC.h"
 
-void switch1Init(void);
+extern unsigned int alarmSet;
+extern unsigned short hours;
+extern unsigned short minutes;
+extern unsigned short alarmHours;
+extern unsigned short alarmMinutes;
+
+void switchInit(void);

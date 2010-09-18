@@ -39,6 +39,7 @@ addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
 #include <stdio.h>
 #include "PLL.h"
 #include "OC.h"
+#include "switches.h"
 
 //---------------------mwait---------------------
 // wait specified number of msec
@@ -58,26 +59,32 @@ unsigned short startTime;
 #if PROCEDURE == 1
 void main(void) {  
   char buffer[10];
-  unsigned short totalsecs, hrs, mins, secs, initsecs = 32390,error;
+  unsigned long totalsecs;
+  unsigned short hrs, mins, secs,error;
   //PLL_Init();       // set E clock to 8 MHz
   //TimerInit();      // enable timer0     
   OC_Init0();           
   OC_Init1();
-  switchInits();
+  switchInit(); 
   LCD_Open();
   LCD_Clear();
   asm cli   // allows debugger to run
   for(;;) {
     error = LCD_ErrorCheck();
     LCD_Clear();  
-    totalsecs = seconds + initsecs;
-    hrs = totalsecs / 3600;
-    mins = (totalsecs - hrs*3600)/60;
-    secs = totalsecs - hrs*3600 - mins*60;
-    sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs);
-    //LCD_GoTo(0,0);
-    LCD_OutString(buffer); 
-    while(totalsecs - initsecs == seconds) {};
+    totalsecs = seconds;
+    hrs = (unsigned short) (totalsecs/3600) + hours;
+    mins = (unsigned short) ((totalsecs%3600)/60) + minutes;
+    secs = (unsigned short) (totalsecs%60);
+    if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {
+      LCD_OutString(buffer);
+      if((alarmSet || PTP & 0x40) && 
+        sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes))
+        LCD_GoTo(1,0);
+        LCD_OutString(buffer);
+    }
+    //LCD_GoTo(0,0); 
+    while(totalsecs == seconds) {};
   } 
 }
 #endif
