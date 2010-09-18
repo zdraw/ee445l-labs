@@ -1,5 +1,5 @@
 /*************************PLL.C***************************
-*   boosts the CPU clock to 24 MHz                       *
+*   boosts the CPU clock to 8 MHz                       *
 *                                                        *
 *   Created by Theodore Deden on 20 January 2004.        *
 *   Modified by Theodore Deden on 9 February 2004.       *
@@ -14,17 +14,17 @@
 #include <mc9s12dp512.h>     /* derivative information */
 
 //********* PLL_Init ****************
-// Set 9S12DP512 PLL clock to 24 MHz
+// Set 9S12DP512 PLL clock to 8 MHz
 // Inputs: none
 // Outputs: none
 // Errors: will hang if PLL does not stabilize 
 void PLL_Init(void){  
-  SYNR = 0x02;
+  SYNR = 0x00;
   REFDV = 0x01;
   
   /*PLLCLK = 2 * OSCCLK * (SYNR + 1) / (REFDV + 1)
-             2 *   16   * (  2  + 1) / (  1   + 1)
-	Values above give E clock of 24 MHz with 16 MHz crystal. 
+             2 *   16   * (  0  + 1) / (  1   + 1)
+	Values above give E clock of 8 MHz with 16 MHz crystal. 
 	(OSCCLK is Crystal Clock Frequency)                    */
   
   CLKSEL = 0x00;
