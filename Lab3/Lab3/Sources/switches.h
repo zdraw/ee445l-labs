@@ -5,9 +5,9 @@
 #include "OC.h"
 
 extern unsigned int alarmSet;
-extern unsigned short hours;
-extern unsigned short minutes;
-extern unsigned short alarmHours;
-extern unsigned short alarmMinutes;
+extern signed short hours;
+extern signed short minutes;
+extern signed short alarmHours;
+extern signed short alarmMinutes;
 
 void switchInit(void);
