@@ -71,20 +71,27 @@ void main(void) {
   asm cli   // allows debugger to run
   for(;;) {
     error = LCD_ErrorCheck();
-    LCD_Clear();  
+    LCD_GoTo(0,0);  
     totalsecs = seconds;
     hrs = (unsigned short) (totalsecs/3600) + hours;
     mins = (unsigned short) ((totalsecs%3600)/60) + minutes;
     secs = (unsigned short) (totalsecs%60);
     if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {
       LCD_OutString(buffer);
-      if((alarmSet || PTP & 0x40) && 
-        sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes))
+      if((alarmSet || PTP & 0x40) && sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
         LCD_GoTo(1,0);
         LCD_OutString(buffer);
+      }
+      else {
+        LCD_GoTo(1,0);
+        LCD_OutString("        ");
+      }
+    }
+    if(alarmSet && hrs == alarmHours && mins == alarmMinutes) {
+      alarmOn = 1; 
     }
     //LCD_GoTo(0,0); 
-    while(totalsecs == seconds) {};
+    //while(totalsecs == seconds) {};
   } 
 }
 #endif

@@ -4,7 +4,7 @@ interrupt 8 void TOC0handler(void){ // executes at 100 Hz
   TFLG1 = 0x01;         // acknowledge OC0
   seconds++;
   TC0 = TC0 + 62500;      // 1 s
-  PTP ^= 0x80;          // debugging monitor
+  //PTP ^= 0x80;          // debugging monitor
 }
 
 //---------------------OC_Init0---------------------
@@ -38,6 +38,7 @@ void OC_Init1(void) {
   alarmOn = 0;
   DDRP |= 0x01;
   DDRT |= 0xFC;
+  PTT |= 0xFC;
   TIOS |= 0x02;
   TIE |= 0x02;
   TC1 = TCNT+50;   
@@ -46,6 +47,7 @@ void OC_Init1(void) {
 interrupt 9 void TOC1handler(void) {
   static short thingies = 0;
   TFLG1 = 0x02;
+  asm cli
   if(alarmOn) {
     thingies++;
     PTP ^= 0x01;
@@ -53,6 +55,10 @@ interrupt 9 void TOC1handler(void) {
       PTT ^= 0xFC;
       thingies = 0;
     }
+  }
+  else {
+    PTP &= ~0x01;
+    PTT |= 0xFC;
   }
   TC1 = TCNT + 39;
 }
