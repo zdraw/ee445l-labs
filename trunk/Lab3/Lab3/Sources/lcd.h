@@ -30,35 +30,40 @@ addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
 */
 
 //---------------------LCD_Open---------------------
-// initialize the LCD display, called once at beginning
-// Input: none
-// Output: true if successful
+// Initialize the LCD display, called once at beginning
+// Input: None
+// Output: Sets internal flag if Open succeeds
+// Returns: None
 void LCD_Open(void);
 
 //---------------------LCD_Clear---------------------
-// clear the LCD display, send cursor to home
-// Input: none
-// Output: true if successful
+// Clear the LCD display, send cursor to home
+// Input: None
+// Output: Sets internal flag if LCD is not open or LCD is busy.
+// Returns: None
 void LCD_Clear(void);
 
 
 //---------------------LCD_OutChar---------------------
-// sends one ASCII to the LCD display
-// Input: letter is ASCII code
-// Output: true if successful
+// Sends one ASCII to the LCD display
+// Input: Letter is ASCII code
+// Output: Sets internal error flag if failure occurs
+// Returns: None
 void LCD_OutChar(unsigned char letter);
 
 
 //---------------------LCD_OutString--------------
 // Display String
-// Input: pointer to NULL-terminationed ASCII string 
-// Output: true if successful
+// Input: Pointer to NULL-terminationed ASCII string 
+// Output: Set internal error code if failure occurs
+// Returns: None
 void LCD_OutString(char *pt); 
 
 //---------------------LCD_GoTo--------------
 // Move the cursor to a particular row and column
 // Input: Parameters (row, column)   First row and and column is 0
-// Output: None
+// Output: Sets internal error code if failure occurs
+// Returns: None
 void LCD_GoTo(unsigned char row, unsigned char col);
 
 //---------------------LCD_ErrorCheck--------------
