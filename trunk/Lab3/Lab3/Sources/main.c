@@ -60,7 +60,7 @@ unsigned short startTime;
 void main(void) {  
   char buffer[10];
   unsigned long totalsecs;
-  unsigned short hrs, mins, secs,error;
+  unsigned short hrs, mins, secs, hrs2, mins2, secs2, error;
   //PLL_Init();       // set E clock to 8 MHz
   //TimerInit();      // enable timer0     
   OC_Init0();           
@@ -72,23 +72,36 @@ void main(void) {
   for(;;) {
     error = LCD_ErrorCheck();
     LCD_GoTo(0,0);  
-    totalsecs = seconds;
-    hrs = (unsigned short) (totalsecs/3600) + hours;
-    mins = (unsigned short) ((totalsecs%3600)/60) + minutes;
-    secs = (unsigned short) (totalsecs%60);
-    if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {
-      LCD_OutString(buffer);
-      if((alarmSet || PTP & 0x40) && sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
-        LCD_GoTo(1,0);
+    //totalsecs = seconds;
+    //totalsecs += ((unsigned long) (hours))*3600;
+    //totalsecs += minutes*60;
+    hrs = hours;
+    mins = minutes;
+    secs = seconds;
+    
+    hrs2 = hours;
+    mins2 = minutes;
+    secs2 = seconds;
+    
+    if(hrs == hrs2 && mins == mins2 && secs == secs2) {
+      hrs += setHours;
+      hrs %= 24;
+      mins += setMinutes;
+      mins %= 60;
+      if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {
         LCD_OutString(buffer);
+        if((alarmSet || PTP & 0x40) && sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
+          LCD_GoTo(1,0);
+          LCD_OutString(buffer);
+        }
+        else {
+          LCD_GoTo(1,0);
+          LCD_OutString("        ");
+        }
       }
-      else {
-        LCD_GoTo(1,0);
-        LCD_OutString("        ");
+      if(alarmSet && hrs == alarmHours && mins == alarmMinutes) {
+        alarmOn = 1; 
       }
-    }
-    if(alarmSet && hrs == alarmHours && mins == alarmMinutes) {
-      alarmOn = 1; 
     }
     //LCD_GoTo(0,0); 
     //while(totalsecs == seconds) {};

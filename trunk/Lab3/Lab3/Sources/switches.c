@@ -3,15 +3,15 @@
 #define BOUNCE_DELAY 3125
                   
 unsigned int alarmSet;                 
-signed short hours;
-signed short minutes;
+signed short setHours;
+signed short setMinutes;
 signed short alarmHours;
 signed short alarmMinutes;
 
 void switchInit(void) {
   alarmSet = 0; 
-  hours = 0;
-  minutes = 0;
+  setHours = 0;
+  setMinutes = 0;
   alarmHours = 0;
   alarmMinutes = 0;
   DDRP &= ~0x7E;
@@ -39,7 +39,7 @@ interrupt 56 void switchHandler() {
           alarmMinutes++;
         }
         else {
-          seconds -= seconds%60; 
+          seconds = 0; 
           minutes++;
         }
         PIFP = 0x04;
@@ -49,7 +49,7 @@ interrupt 56 void switchHandler() {
           alarmMinutes--;
         }
         else {          
-          seconds -= seconds%60; 
+          seconds = 0; 
           minutes--;
         }
         PIFP = 0x08;
@@ -59,7 +59,7 @@ interrupt 56 void switchHandler() {
           alarmHours++;
         }
         else {     
-          seconds -= seconds%60;
+          seconds = 0;
           hours++;
         }
         PIFP = 0x10;
@@ -69,7 +69,7 @@ interrupt 56 void switchHandler() {
           alarmHours--;
         }
         else {    
-          seconds -= seconds%60; 
+          seconds = 0; 
           hours--;
         }
         PIFP = 0x20;
@@ -78,12 +78,27 @@ interrupt 56 void switchHandler() {
         PIFP = 0x40;
       }
       
+      /*if(setHours >= 24) {
+        setHours = 0;
+      }
+      if(setHours < 0) {
+        setHours = 23;
+      }
+      
+      if(setMinutes >= 60) {
+        setMinutes = 0;
+      }
+      if(setMinutes < 0) {
+        setMinutes = 59;
+      }          */
+      
       if(hours >= 24) {
         hours = 0;
       }
       if(hours < 0) {
         hours = 23;
       }
+      
       if(minutes >= 60) {
         minutes = 0;
       }
