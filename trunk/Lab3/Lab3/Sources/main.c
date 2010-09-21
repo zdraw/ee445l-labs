@@ -1,51 +1,66 @@
-// filename ******** Main.C ************** 
-// LCD Display (HD44780) on Port H for the 9S12DP512   
-// Jonathan W. Valvano 9/18/09
-// TCNT runs at 667ns,
-
-//  This example accompanies the books
-//   "Embedded Microcomputer Systems: Real Time Interfacing",
-//        Thompson, copyright (c) 2006,
-//   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
-//        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
-
-// Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
-//    You may use, edit, run or distribute this file 
-//    as long as the above copyright notice remains 
-// Purpose: test program for 4-bit LCD.C driver
-
-/*   
-  size is 1*16 
-  if do not need to read busy, then you can tie R/W=ground 
-  ground = pin 1    Vss
-  power  = pin 2    Vdd   +5V
-  ground = pin 3    Vlc   grounded for highest contrast
-  PH4    = pin 4    RS    (1 for data, 0 for control/status)
-  PH5    = pin 5    R/W   (1 for read, 0 for write)
-  PH6    = pin 6    E     (enable)
-  PH3    = pin 14   DB7   (4-bit data)
-  PH2    = pin 13   DB6
-  PH1    = pin 12   DB5
-  PH0    = pin 11   DB4
-16 characters are configured as 2 rows of 8
-addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
-*/
-
 #include <hidef.h>      /* common defines and macros */
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
 #include "LCD.h"
 #include <stdio.h>
-#include "PLL.h"
 #include "OC.h"
 #include "switches.h"
+
+#define PROCEDURE 1 // 1 = clock; 2 = LCD test code
+
+#if PROCEDURE == 1
+void main(void) {  
+  char buffer[10];  // stores time for LCD printing
+  unsigned short hrs, mins, secs, hrs2, mins2, secs2, error;    
+  OC_Init0();       // enables 1 Hz clock interrupt           
+  OC_Init1();       // enables 800 Hz alarm interrupt
+  switchInit();     // enables switch interrupts
+  LCD_Open();       // initializes LCD
+  LCD_Clear();      // clears LCD screen
+  asm cli           // enables interrupts
+  for(;;) {
+    error = LCD_ErrorCheck(); // gets LCD error code for debugging
+    LCD_GoTo(0,0);  // cursors to home  
+    
+    // samples globals twice to prevent critical section
+    hrs = hours;    
+    mins = minutes;
+    secs = seconds;
+    
+    hrs2 = hours;
+    mins2 = minutes;
+    secs2 = seconds;
+    
+    if(hrs == hrs2 && mins == mins2 && secs == secs2) { // if critical section avoided
+      if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {  // formats the time
+        LCD_OutString(buffer);  // prints time
+        
+        // if alarm is set or alarm setting button is pressed, formats the alarm time
+        if((alarmSet || PTP & 0x40) && sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
+          LCD_GoTo(1,0);          // goes to row 1 (second 8 characters)
+          LCD_OutString(buffer);  // prints alarm time
+        }
+        else {  // if alarm is not set and button isn't pressed, clear last eight characters
+          LCD_GoTo(1,0);
+          LCD_OutString("        ");
+        }
+      }
+      if(alarmSet && hrs == alarmHours && mins == alarmMinutes) {
+        alarmOn = 1;  // sounds alarm if needed 
+      }
+    }
+  } 
+}
+#endif
+
+#if PROCEDURE == 2
 
 //---------------------mwait---------------------
 // wait specified number of msec
 // Input: number of msec to wait
 // Output: none
-// assumes TCNT timer is running at 667ns
+// assumes TCNT timer is running at 16 us
 void mwait(unsigned short msec){ 
 unsigned short startTime;
   for(; msec>0; msec--){
@@ -54,75 +69,21 @@ unsigned short startTime;
   }
 }
 
-#define PROCEDURE 1
-
-#if PROCEDURE == 1
-void main(void) {  
-  char buffer[10];
-  unsigned long totalsecs;
-  unsigned short hrs, mins, secs, hrs2, mins2, secs2, error;
-  //PLL_Init();       // set E clock to 8 MHz
-  //TimerInit();      // enable timer0     
-  OC_Init0();           
-  OC_Init1();
-  switchInit(); 
-  LCD_Open();
-  LCD_Clear();
-  asm cli   // allows debugger to run
-  for(;;) {
-    error = LCD_ErrorCheck();
-    LCD_GoTo(0,0);  
-    //totalsecs = seconds;
-    //totalsecs += ((unsigned long) (hours))*3600;
-    //totalsecs += minutes*60;
-    hrs = hours;
-    mins = minutes;
-    secs = seconds;
-    
-    hrs2 = hours;
-    mins2 = minutes;
-    secs2 = seconds;
-    
-    if(hrs == hrs2 && mins == mins2 && secs == secs2) {
-      hrs += setHours;
-      hrs %= 24;
-      mins += setMinutes;
-      mins %= 60;
-      if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {
-        LCD_OutString(buffer);
-        if((alarmSet || PTP & 0x40) && sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
-          LCD_GoTo(1,0);
-          LCD_OutString(buffer);
-        }
-        else {
-          LCD_GoTo(1,0);
-          LCD_OutString("        ");
-        }
-      }
-      if(alarmSet && hrs == alarmHours && mins == alarmMinutes) {
-        alarmOn = 1; 
-      }
-    }
-    //LCD_GoTo(0,0); 
-    //while(totalsecs == seconds) {};
-  } 
-}
-#endif
-
-#if PROCEDURE == 2
-
 void main(void) {  
   unsigned short error; 
-  OC_Init0(); 
-  LCD_Open();
-  LCD_Clear();
-  asm cli   // allows debugger to run
+  OC_Init0();   // arms debugging interrupt (flashing PP7) 
+  LCD_Open();   // opens LCD
+  LCD_Clear();  // clears LCD
+  asm cli       // allows debugger to run
   for(;;) {   
-    error = LCD_ErrorCheck();
+    error = LCD_ErrorCheck();   // gets error code for debugging
+    
+    // tests LCD_OutString which tests LCD_OutChar
     LCD_OutString("ABCDEFGH"); 
+    // tests LCD_GoTo
     LCD_GoTo(1,0);
     LCD_OutString("IJKLMNOP");
-    mwait(2000);  
+    mwait(2000);  // pauses display  
     LCD_Clear();
     LCD_OutString("01234567");
     LCD_GoTo(1,0);
@@ -138,6 +99,7 @@ void main(void) {
     LCD_GoTo(1,0);
     LCD_OutString("()_+-=[]");
     mwait(2000);  
+    // tests LCD_Clear
     LCD_Clear();
   } 
 }

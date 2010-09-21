@@ -7,5 +7,15 @@ extern signed short volatile minutes;
 extern signed short volatile seconds;  
 extern int volatile alarmOn;
 
-void OC_Init0(void);
+//---------------------OC_Init0---------------------
+// arm output compare 0 for 1 Hz periodic interrupt
+// also enables timer to 16 us period
+// Input: none
+// Output: none                
+void OC_Init0(void); 
+
+//---------------------OC_Init1---------------------
+// arm output compare 0 for 800 Hz periodic interrupt
+// Input: none
+// Output: none 
 void OC_Init1(void);
