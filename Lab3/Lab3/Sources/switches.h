@@ -5,8 +5,8 @@
 #include "OC.h"
 
 extern unsigned int alarmSet;
-extern signed short hours;
-extern signed short minutes;
+extern signed short setHours;
+extern signed short setMinutes;
 extern signed short alarmHours;
 extern signed short alarmMinutes;
 

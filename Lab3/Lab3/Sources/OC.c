@@ -3,6 +3,11 @@
 interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
   TFLG1 = 0x01;         // acknowledge OC0
   seconds++;
+  minutes += seconds/60;
+  seconds %= 60;
+  hours += minutes/60;
+  minutes %= 60;
+  hours %= 24;
   TC0 = TC0 + 62500;      // 1 s
   //PTP ^= 0x80;          // debugging monitor
 }
@@ -10,8 +15,10 @@ interrupt 8 void TOC0handler(void){ // executes at 100 Hz
 //---------------------OC_Init0---------------------
 // arm output compare 0 for 100Hz periodic interrupt
 // Input: none
-// Output: none 
-unsigned long volatile seconds;
+// Output: none                
+signed short volatile hours;
+signed short volatile minutes;
+signed short volatile seconds;
 void OC_Init0(void){
   seconds = 0;     // debugging monitor
   DDRP |= 0x80;   // debugging monitor
