@@ -5,9 +5,11 @@
 #include "OC.h"
 
 extern unsigned int alarmSet;
-extern signed short setHours;
-extern signed short setMinutes;
 extern signed short alarmHours;
 extern signed short alarmMinutes;
 
+//---------------------switchInit---------------------
+// arm external interrupts for PP1-PP6
+// Input: none
+// Output: none 
 void switchInit(void);
