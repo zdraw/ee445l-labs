@@ -68,7 +68,8 @@ void LCD_GoTo(unsigned char row, unsigned char col);
 
 //---------------------LCD_ErrorCheck--------------
 // LCD_ErrorCheck Check to see if the LCD driver has had any errors
-// Returns an error code if LCD has had any errors since initialization or since the last call to ErrorCheck
+// Returns an error code if LCD has had any errors 
+//   since initialization or since the last call to ErrorCheck
 // Input Parameter(none)
 // Output Parameter(error code)
 // Typical calling sequence

@@ -32,16 +32,20 @@ void main(void) {
     mins2 = minutes;
     secs2 = seconds;
     
-    if(hrs == hrs2 && mins == mins2 && secs == secs2) { // if critical section avoided
+    if(hrs == hrs2 && mins == mins2 && secs == secs2) { 
+      // if critical section avoided
       if(sprintf(buffer, "%02d:%02d:%02d", hrs,mins,secs)) {  // formats the time
         LCD_OutString(buffer);  // prints time
         
-        // if alarm is set or alarm setting button is pressed, formats the alarm time
-        if((alarmSet || PTP & 0x40) && sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
+        // if alarm is set or alarm setting button is pressed, 
+	//formats the alarm time
+        if((alarmSet || PTP & 0x40) && 
+	    sprintf(buffer, "   %02d:%02d", alarmHours, alarmMinutes)) {
           LCD_GoTo(1,0);          // goes to row 1 (second 8 characters)
           LCD_OutString(buffer);  // prints alarm time
         }
-        else {  // if alarm is not set and button isn't pressed, clear last eight characters
+        else { 
+	  // if alarm isn't set and button isn't pressed, clear last 8 characters
           LCD_GoTo(1,0);
           LCD_OutString("        ");
         }
