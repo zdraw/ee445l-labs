@@ -41,7 +41,7 @@ static unsigned short GotoFlag=1;
 
 //---------------------wait---------------------
 // Time delay
-// Input: Time in 0.667usec
+// Input: Time in 0.667 usec
 // Output: None
 // Returns: None
 void static wait(unsigned short delay){ 
@@ -51,7 +51,7 @@ unsigned short startTime;
 }
 //---------------------1mswait---------------------
 // time delay
-// Input: time in msec                s
+// Input: time in msecs
 // Output: none
 // Returns: none
 void static wait1ms(unsigned short msec){ 
@@ -68,12 +68,12 @@ void static wait1ms(unsigned short msec){
 unsigned char readStatus(void) {
   unsigned char busy, trash;
 						//4-bit protocol read Busy
-  DDRH &= ~0x0F;    //1) data direction input on 4 data bits (control lines remain output)
+  DDRH &= ~0x0F;    //1) data direction input on 4 data bits
   PTH_PTH5 = 1;     //2) R/W=1, RS=0
   PTH_PTH4 = 0;
   PTH_PTH6 = 1;     //3) E=1
-  asm nop           //4) Wait a little time (2 nops) [it does not work without delay]
-  asm nop
+  asm nop           //4) Wait a little time (2 nops) 
+  asm nop			//   [it does not work without delay]
   busy = ((PTH & 0x08) >> 3); //5) Read 4-bit MS nibble data (bit 3 is busy)
   PTH_PTH6 = 0;     //6) E=0
   PTH_PTH6 = 1;     //7) E=1
@@ -82,7 +82,8 @@ unsigned char readStatus(void) {
   trash = PTH;      //9) Read 4-bit LS nibble data (nothing interesting)
   PTH_PTH6 = 0;     //10) E=0
   PTH_PTH5 = 0;     //11) R/W=0 (default settings)
-  DDRH |= 0x0F;     //12) direction on four data lines go back to outputs (default settings)
+  DDRH |= 0x0F;     //12) direction on four data lines go back to outputs 
+					//    (default settings)
   return busy;  //BUSY = 1 and NOTBUSY = 0
 }
 
@@ -313,6 +314,6 @@ void LCD_GoTo(unsigned char row, unsigned char col){
 // Err = ErrorCheck();
 // if(Err) Handle(Err);
 short LCD_ErrorCheck(void) {
-  short error = (StringFlag<<4) + (CharFlag<<3) + (GotoFlag<<2) + (ClearFlag<<1) + OpenFlag;
+  short error = (StringFlag<<4)+(CharFlag<<3)+(GotoFlag<<2)+(ClearFlag<<1)+OpenFlag;
   return error&0x1F;
 }
