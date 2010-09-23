@@ -1,14 +1,5 @@
 #include <hidef.h>      /* common defines and macros */
 #include "derivative.h"      /* derivative-specific definitions */
 
-#include "stepper.h"
-#include "switch.h"
-
-void main(void) {
-  OC_Init0();
-  switch_Init(); 
-  
-  for(;;) {
-  
-  }
-}
+void switch_Init(void);
+unsigned short switch_getInput();
