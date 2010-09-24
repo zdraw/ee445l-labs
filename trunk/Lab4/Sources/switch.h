@@ -2,4 +2,3 @@
 #include "derivative.h"      /* derivative-specific definitions */
 
 void switch_Init(void);
-unsigned short switch_getInput();

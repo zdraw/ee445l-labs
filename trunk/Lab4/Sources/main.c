@@ -4,13 +4,11 @@
 #include "stepper.h"
 #include "switch.h"
 
-void main(void) {
-  OC_Init0();
+void main(void) {  
   switch_Init(); 
+  OC_Init0();
   
   asm cli
   
-  for(;;) {
-  
-  }
+  for(;;) {}
 }
