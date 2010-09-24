@@ -63,14 +63,18 @@ StateType fsm[24]={
 };
 StatePtr Pt;  // Current State
 
+unsigned short array[100];
+int index;
+
 //---------------------OC_Init0---------------------
 // arm output compare 0 for 1 Hz periodic interrupt
 // also enables timer to 16 us period
 // Input: none
 // Output: none               
 void OC_Init0(void){
+  index = 0;
   Pt = Normal5;
-  DDRP |= 0x0F;   
+  DDRP |= 0x8F;   
   TIOS |= 0x01;   // activate TC0 as output compare
   TIE  |= 0x01;   // arm OC0
   TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
@@ -79,12 +83,17 @@ void OC_Init0(void){
   TC0   = TCNT+50;// first interrupt right away
 }
 
+
 interrupt 8 void TOC0handler(void){ // executes at 4 Hz
   TFLG1 = 0x01;         // acknowledge OC0
+  PTP ^= 0x80;  
+  //PTP = PTP&0xF0 + Pt->Out;
+  if(index < 100) {
+    array[index++] = Pt->Out;
+  }
   
-  PTP = PTP&0xF0 + Pt->Out;
-    
   TC0 = TC0 + Pt->delay;    // interrupts again after 0.25 second
   
-  Pt = Pt->Next[PTP&0x70 >> 4];
+  //Pt = Pt->Next[PTP&0x70 >> 4];
+  Pt = Pt->Next[0b110];
 }

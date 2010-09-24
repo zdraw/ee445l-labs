@@ -8,6 +8,8 @@ void main(void) {
   OC_Init0();
   switch_Init(); 
   
+  asm cli
+  
   for(;;) {
   
   }
