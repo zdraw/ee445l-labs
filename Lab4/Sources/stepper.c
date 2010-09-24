@@ -34,7 +34,7 @@ typedef StateType *	StatePtr;
 #define Vib13    &fsm[20]
 #define Vib14    &fsm[21]
                                  
-StateType fsm[24]={
+StateType fsm[22]={
   {0x05, DELAY, { Normal5,  Vib1,  One5,  Normal5,  Normal6,  Normal5,  Normal9,  Normal5}}, // Normal5
   {0x06, DELAY, { Normal6,  Vib2,  One6,  Normal6, Normal10,  Normal6,  Normal5,  Normal6}}, // Normal6
   {0x0A, DELAY, {Normal10,  Vib3, One10, Normal10,  Normal9, Normal10,  Normal6, Normal10}}, // Normal10
@@ -63,16 +63,12 @@ StateType fsm[24]={
 };
 StatePtr Pt;  // Current State
 
-unsigned short array[100];
-int index;
-
 //---------------------OC_Init0---------------------
 // arm output compare 0 for 1 Hz periodic interrupt
 // also enables timer to 16 us period
 // Input: none
 // Output: none               
 void OC_Init0(void){
-  index = 0;
   Pt = Normal5;
   DDRP |= 0x8F;   
   TIOS |= 0x01;   // activate TC0 as output compare
@@ -85,15 +81,8 @@ void OC_Init0(void){
 
 
 interrupt 8 void TOC0handler(void){ // executes at 4 Hz
-  TFLG1 = 0x01;         // acknowledge OC0
-  PTP ^= 0x80;  
-  //PTP = PTP&0xF0 + Pt->Out;
-  if(index < 100) {
-    array[index++] = Pt->Out;
-  }
-  
+  TFLG1 = 0x01;         // acknowledge OC0 
+  PTP = PTP&0xF0 + Pt->Out;
   TC0 = TC0 + Pt->delay;    // interrupts again after 0.25 second
-  
-  //Pt = Pt->Next[PTP&0x70 >> 4];
-  Pt = Pt->Next[0b110];
+  Pt = Pt->Next[PTP&0x70 >> 4];
 }
