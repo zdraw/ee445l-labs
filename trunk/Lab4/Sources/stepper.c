@@ -1,7 +1,8 @@
 #include "stepper.h"
 
-#define DELAY1 1375
-#define DELAY2 1875
+#define DELAY1 975
+#define DELAY2 1500
+#define DELAY3 1875
 
 const struct State{
   unsigned char Out;            // Output to Port T
@@ -46,19 +47,19 @@ StateType fsm[22]={
   {0x0A,     50, { Normal9,  Vib3, One10,    One10,  Normal9,    One10,  Normal6,    One10}}, // One10
   {0x09,     50, { Normal5,  Vib4,  One9,     One9,  Normal5,     One9, Normal10,     One9}}, // One9
   
-  {0x06, DELAY1, {    Vib1,  Vib2,  One6,     Vib1, Normal10,     Vib1,  Normal5,     Vib1}}, // Vib1
+  {0x06, DELAY3, {    Vib1,  Vib2,  One6,     Vib1, Normal10,     Vib1,  Normal5,     Vib1}}, // Vib1
   {0x0A, DELAY1, {    Vib2,  Vib3, One10,     Vib2,  Normal9,     Vib2,  Normal6,     Vib2}}, // Vib2
   {0x09, DELAY1, {    Vib3,  Vib4,  One9,     Vib3,  Normal5,     Vib3, Normal10,     Vib3}}, // Vib3
   {0x05, DELAY1, {    Vib4,  Vib5,  One5,     Vib4,  Normal6,     Vib4,  Normal9,     Vib4}}, // Vib4
-  {0x06, DELAY1, {    Vib5,  Vib6,  One6,     Vib5, Normal10,     Vib5,  Normal5,     Vib5}}, // Vib5
+  {0x06, DELAY3, {    Vib5,  Vib6,  One6,     Vib5, Normal10,     Vib5,  Normal5,     Vib5}}, // Vib5
   {0x0A, DELAY2, {    Vib6,  Vib7, One10,     Vib6,  Normal9,     Vib6,  Normal6,     Vib6}}, // Vib6
   {0x09, DELAY2, {    Vib7,  Vib8,  One9,     Vib7,  Normal5,     Vib7, Normal10,     Vib7}}, // Vib7
   
-  {0x0A, DELAY1, {    Vib8,  Vib9, One10,     Vib8,  Normal9,     Vib8,  Normal6,     Vib8}}, // Vib8
+  {0x0A, DELAY3, {    Vib8,  Vib9, One10,     Vib8,  Normal9,     Vib8,  Normal6,     Vib8}}, // Vib8
   {0x06, DELAY1, {    Vib9, Vib10,  One6,     Vib9, Normal10,     Vib9,  Normal5,     Vib9}}, // Vib9
   {0x05, DELAY1, {   Vib10, Vib11,  One5,    Vib10,  Normal6,    Vib10,  Normal9,    Vib10}}, // Vib10
   {0x09, DELAY1, {   Vib11, Vib12,  One9,    Vib11,  Normal5,    Vib11, Normal10,    Vib11}}, // Vib11
-  {0x0A, DELAY1, {   Vib12, Vib13, One10,    Vib12,  Normal9,    Vib12,  Normal6,    Vib12}}, // Vib12
+  {0x0A, DELAY3, {   Vib12, Vib13, One10,    Vib12,  Normal9,    Vib12,  Normal6,    Vib12}}, // Vib12
   {0x06, DELAY2, {   Vib13, Vib14,  One6,    Vib13, Normal10,    Vib13,  Normal5,    Vib13}}, // Vib13
   {0x05, DELAY2, {   Vib14,  Vib1,  One5,    Vib14,  Normal6,    Vib14,  Normal9,    Vib14}}, // Vib14
 };
