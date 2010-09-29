@@ -1,9 +1,9 @@
 #include <hidef.h>      /* common defines and macros */
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
-
-#include "DAC.h"
+              
 #include "PLL.h"
+#include "DAC.h"
 #include "music.h"
 #include "switch.h"
 
@@ -17,10 +17,12 @@ void initOC0(void){
   TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
   TSCR2 = 0x07;   // divide by 128 TCNT prescale, TOI disarm, sets period to 5.33us
   PACTL = 0;      // timer prescale used for TCNT
+  DDRP |= 0x80;
+  PTP |= 0x80;
   
-  //TIOS |= 0x01;   // activate TC0 as output compare
-  //TIE  |= 0x01;   // arm OC0
-  //TC0   = TCNT+50;// first interrupt right away
+  TIOS |= 0x01;   // activate TC0 as output compare
+  TIE  |= 0x01;   // arm OC0
+  TC0   = TCNT+50;// first interrupt right away
 }
 
 //---------------------initOC1---------------------
@@ -54,6 +56,18 @@ void initOC3(void){
   //TIOS |= 0x08;   // activate TC0 as output compare
   //TIE  |= 0x08;   // arm OC0
   //TC3   = TCNT+50;// first interrupt right away
+}    
+
+
+unsigned static short output0;
+interrupt 8 void TC0Handler() {
+  unsigned static char i = 0;
+  TFLG1 = 0x01;
+  
+  DAC_Out(SinWave[i]);
+  //PTP ^= 0x80;
+      
+  TC0 = TC0 + 11719; 
 }
 
 void main(void) {
@@ -61,9 +75,11 @@ void main(void) {
   DAC_Init();
   Switch_Init();
   initOC0();
-  initOC1();
-  initOC2();
-  initOC3();
+  //initOC1();
+  //initOC2();
+  //initOC3();
+  
+  asm cli
 
   for(;;) {}
 }

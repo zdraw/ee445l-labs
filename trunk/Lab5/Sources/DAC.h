@@ -3,4 +3,5 @@
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
 void DAC_Init(void);
-void DAC_Out(unsigned short data);
+//void DAC_Out(unsigned short data);
+void DAC_Out(unsigned char data);
