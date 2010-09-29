@@ -16,7 +16,6 @@ mc9s12dp512.c.o                         Model: SMALL,         Lang: ANSI-C
 main.c.o                                Model: SMALL,         Lang: ANSI-C
 Start12.c.o                             Model: SMALL,         Lang: ANSI-C
 DAC.c.o                                 Model: SMALL,         Lang: ANSI-C
-music.c.o                               Model: SMALL,         Lang: ANSI-C
 PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 switch.c.o                              Model: SMALL,         Lang: ANSI-C
 
@@ -27,7 +26,7 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     0
-  _Copy    *toCopyDownBeg 0xC08F
+  _Copy    *toCopyDownBeg 0xC097
 } _startupData;
 
 *********************************************************************************************
@@ -36,8 +35,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.text                             74     R     0xC045     0xC08E   ROM_C000
-.copy                              2     R     0xC08F     0xC090   ROM_C000
+.text                             82     R     0xC045     0xC096   ROM_C000
+.copy                              2     R     0xC097     0xC098   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -567,7 +566,7 @@ Section Name                    Size  Type     From       To       Segment
 .vectSeg525_vect                   2     R     0xFFFE     0xFFFF   .vectSeg525
 
 Summary of section sizes per section type:
-READ_ONLY (R):          93 (dec:      147)
+READ_ONLY (R):          9B (dec:      155)
 READ_WRITE (R/W):      100 (dec:      256)
 NO_INIT (N/I):         24E (dec:      590)
 
@@ -1111,7 +1110,11 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      C045       E      14       1   .text       
+     initOC0                                   C045       B      11       1   .text       
+     initOC1                                   C050       1       1       1   .text       
+     initOC2                                   C051       1       1       1   .text       
+     initOC3                                   C052       1       1       1   .text       
+     main                                      C053      13      19       1   .text       
 - VARIABLES:
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
@@ -1123,19 +1126,15 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- DAC.c.o --
 - PROCEDURES:
-     DAC_Init                                  C053      17      23       1   .text       
-- VARIABLES:
-MODULE:                 -- music.c.o --
-- PROCEDURES:
-     OC0_Init                                  C06A       B      11       1   .text       
+     DAC_Init                                  C066      17      23       1   .text       
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  C075      15      21       1   .text       
+     PLL_Init                                  C07D      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Switch_Init                               C08A       5       5       1   .text       
+     Switch_Init                               C092       5       5       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -1143,10 +1142,9 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     0     14      0
+  main.c.o                                     0     33      0
   Start12.c.o                                  0     59      0
   DAC.c.o                                      0     23      0
-  music.c.o                                    0     11      0
   PLL.c.o                                      0     21      0
   switch.c.o                                   0      5      0
   other                                      256     12      2
@@ -1155,7 +1153,7 @@ MODULE STATISTIC
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  main DAC_Init OC0_Init PLL_Init Switch_Init 
+  initOC0 initOC1 initOC2 initOC3 main DAC_Init PLL_Init Switch_Init 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".abs_section_8"
@@ -2740,11 +2738,14 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     main                                      C045       E      14       1   .text       
-     DAC_Init                                  C053      17      23       1   .text       
-     OC0_Init                                  C06A       B      11       1   .text       
-     PLL_Init                                  C075      15      21       1   .text       
-     Switch_Init                               C08A       5       5       1   .text       
+     initOC0                                   C045       B      11       1   .text       
+     initOC1                                   C050       1       1       1   .text       
+     initOC2                                   C051       1       1       1   .text       
+     initOC3                                   C052       1       1       1   .text       
+     main                                      C053      13      19       1   .text       
+     DAC_Init                                  C066      17      23       1   .text       
+     PLL_Init                                  C07D      15      21       1   .text       
+     Switch_Init                               C092       5       5       1   .text       
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
@@ -2758,7 +2759,7 @@ switch.c.o:
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC08F ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC097 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2767,9 +2768,10 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-main                      USES PLL_Init DAC_Init Switch_Init OC0_Init 
+initOC0                   USES _TSCR1 _TSCR2 _PACTL 
+main                      USES PLL_Init DAC_Init Switch_Init initOC0 initOC1 
+                                initOC2 initOC3 
 DAC_Init                  USES _DDRS _SPI0CR1 _SPI0CR2 _SPI0BR _PTIS 
-OC0_Init                  USES _TSCR1 _TSCR2 _PACTL 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
 Switch_Init               USES _DDRP 
 
@@ -2786,7 +2788,13 @@ DEPENDENCY TREE
  |  |    
  |  +- Switch_Init         
  |  |    
- |  +- OC0_Init            
+ |  +- initOC0             
+ |  |    
+ |  +- initOC1             
+ |  |    
+ |  +- initOC2             
+ |  |    
+ |  +- initOC3             
  |       
  +- _Startup            
     | 
@@ -2801,5 +2809,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 5
-Total size of all blocks to be downloaded: 147
+Total size of all blocks to be downloaded: 155
 
