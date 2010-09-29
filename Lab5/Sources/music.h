@@ -14,3 +14,9 @@ typedef const struct Note{
   unsigned long length;
   
 } NoteType;
+
+
+extern unsigned const char SinWave[256];
+extern const NoteType melody[554];
+extern const NoteType harmony[541];
+extern const NoteType bass[571];

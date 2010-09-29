@@ -16,6 +16,7 @@ mc9s12dp512.c.o                         Model: SMALL,         Lang: ANSI-C
 main.c.o                                Model: SMALL,         Lang: ANSI-C
 Start12.c.o                             Model: SMALL,         Lang: ANSI-C
 DAC.c.o                                 Model: SMALL,         Lang: ANSI-C
+music.c.o                               Model: SMALL,         Lang: ANSI-C
 PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 switch.c.o                              Model: SMALL,         Lang: ANSI-C
 
@@ -25,8 +26,9 @@ STARTUP SECTION
 Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
-  unsigned nofZeroOut     0
-  _Copy    *toCopyDownBeg 0xC097
+  unsigned nofZeroOut     1
+  _Range   pZeroOut       0x900     1
+  _Copy    *toCopyDownBeg 0xC1E8
 } _startupData;
 
 *********************************************************************************************
@@ -35,8 +37,9 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.text                             82     R     0xC045     0xC096   ROM_C000
-.copy                              2     R     0xC097     0xC098   ROM_C000
+.rodata                          256     R     0xC045     0xC144   ROM_C000
+.text                            163     R     0xC145     0xC1E7   ROM_C000
+.copy                              2     R     0xC1E8     0xC1E9   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -563,11 +566,13 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_23e                   2   N/I      0x23E      0x23F   .absSeg522
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg523
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
-.vectSeg525_vect                   2     R     0xFFFE     0xFFFF   .vectSeg525
+.abs_section_ffee                  2     R     0xFFEE     0xFFEF   .absSeg525
+.bss                               1   R/W      0x900      0x900   RAM
+.vectSeg526_vect                   2     R     0xFFFE     0xFFFF   .vectSeg526
 
 Summary of section sizes per section type:
-READ_ONLY (R):          9B (dec:      155)
-READ_WRITE (R/W):      100 (dec:      256)
+READ_ONLY (R):         1EE (dec:      494)
+READ_WRITE (R/W):      101 (dec:      257)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -620,7 +625,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
-     _TIOS                                       40       1       1       0   .abs_section_40
+     _TIOS                                       40       1       1       1   .abs_section_40
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
@@ -630,9 +635,9 @@ MODULE:                 -- mc9s12dp512.c.o --
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
-     _TIE                                        4C       1       1       0   .abs_section_4c
+     _TIE                                        4C       1       1       1   .abs_section_4c
      _TSCR2                                      4D       1       1       1   .abs_section_4d
-     _TFLG1                                      4E       1       1       0   .abs_section_4e
+     _TFLG1                                      4E       1       1       1   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
      _PACTL                                      60       1       1       1   .abs_section_60
      _PAFLG                                      61       1       1       0   .abs_section_61
@@ -670,9 +675,9 @@ MODULE:                 -- mc9s12dp512.c.o --
      _SCI1SR2                                    D5       1       1       0   .abs_section_d5
      _SCI1DRH                                    D6       1       1       0   .abs_section_d6
      _SCI1DRL                                    D7       1       1       0   .abs_section_d7
-     _SPI0CR1                                    D8       1       1       1   .abs_section_d8
-     _SPI0CR2                                    D9       1       1       1   .abs_section_d9
-     _SPI0BR                                     DA       1       1       1   .abs_section_da
+     _SPI0CR1                                    D8       1       1       0   .abs_section_d8
+     _SPI0CR2                                    D9       1       1       0   .abs_section_d9
+     _SPI0BR                                     DA       1       1       0   .abs_section_da
      _SPI0SR                                     DB       1       1       0   .abs_section_db
      _SPI0DR                                     DD       1       1       0   .abs_section_dd
      _IBAD                                       E0       1       1       0   .abs_section_e0
@@ -687,11 +692,11 @@ MODULE:                 -- mc9s12dp512.c.o --
      _DLCBARD                                    EC       1       1       0   .abs_section_ec
      _DLCBRSR                                    ED       1       1       0   .abs_section_ed
      _DLCSCR                                     EE       1       1       0   .abs_section_ee
-     _SPI1CR1                                    F0       1       1       0   .abs_section_f0
-     _SPI1CR2                                    F1       1       1       0   .abs_section_f1
-     _SPI1BR                                     F2       1       1       0   .abs_section_f2
-     _SPI1SR                                     F3       1       1       0   .abs_section_f3
-     _SPI1DR                                     F5       1       1       0   .abs_section_f5
+     _SPI1CR1                                    F0       1       1       1   .abs_section_f0
+     _SPI1CR2                                    F1       1       1       1   .abs_section_f1
+     _SPI1BR                                     F2       1       1       1   .abs_section_f2
+     _SPI1SR                                     F3       1       1       2   .abs_section_f3
+     _SPI1DR                                     F5       1       1       2   .abs_section_f5
      _SPI2CR1                                    F8       1       1       0   .abs_section_f8
      _SPI2CR2                                    F9       1       1       0   .abs_section_f9
      _SPI2BR                                     FA       1       1       0   .abs_section_fa
@@ -948,8 +953,8 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PERT                                      244       1       1       0   .abs_section_244
      _PPST                                      245       1       1       0   .abs_section_245
      _PTS                                       248       1       1       0   .abs_section_248
-     _PTIS                                      249       1       1       1   .abs_section_249
-     _DDRS                                      24A       1       1       2   .abs_section_24a
+     _PTIS                                      249       1       1       0   .abs_section_249
+     _DDRS                                      24A       1       1       0   .abs_section_24a
      _RDRS                                      24B       1       1       0   .abs_section_24b
      _PERS                                      24C       1       1       0   .abs_section_24c
      _PPSS                                      24D       1       1       0   .abs_section_24d
@@ -962,17 +967,17 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       0   .abs_section_258
+     _PTP                                       258       1       1       3   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       1   .abs_section_25a
+     _DDRP                                      25A       1       1       2   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1       0   .abs_section_260
+     _PTH                                       260       1       1       3   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
-     _DDRH                                      262       1       1       0   .abs_section_262
+     _DDRH                                      262       1       1       2   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
      _PERH                                      264       1       1       0   .abs_section_264
      _PPSH                                      265       1       1       0   .abs_section_265
@@ -1046,8 +1051,8 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PORTAB                                      0       2       2       0   .abs_section_0
      _DDRAB                                       2       2       2       0   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
-     _TCNT                                       44       2       2       0   .abs_section_44
-     _TC0                                        50       2       2       0   .abs_section_50
+     _TCNT                                       44       2       2       1   .abs_section_44
+     _TC0                                        50       2       2       3   .abs_section_50
      _TC1                                        52       2       2       0   .abs_section_52
      _TC2                                        54       2       2       0   .abs_section_54
      _TC3                                        56       2       2       0   .abs_section_56
@@ -1110,12 +1115,12 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     initOC0                                   C045       B      11       1   .text       
-     initOC1                                   C050       1       1       1   .text       
-     initOC2                                   C051       1       1       1   .text       
-     initOC3                                   C052       1       1       1   .text       
-     main                                      C053      13      19       1   .text       
+     initOC0                                   C145      20      32       1   .text       
+     TC0Handler                                C165      17      23       1   .text       
+     main                                      C17C       F      15       1   .text       
 - VARIABLES:
+     i.1                                        900       1       1       1   .bss        
+     _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      C000      29      41       1   .init       
@@ -1126,15 +1131,21 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- DAC.c.o --
 - PROCEDURES:
-     DAC_Init                                  C066      17      23       1   .text       
+     DAC_Init                                  C18B      17      23       1   .text       
+     transmitByte                              C1A2      11      17       2   .text       
+     DAC_Out                                   C1B3      1B      27       1   .text       
 - VARIABLES:
+MODULE:                 -- music.c.o --
+- PROCEDURES:
+- VARIABLES:
+     SinWave                                   C045     100     256       1   .rodata     
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  C07D      15      21       1   .text       
+     PLL_Init                                  C1CE      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Switch_Init                               C092       5       5       1   .text       
+     Switch_Init                               C1E3       5       5       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -1142,9 +1153,10 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     0     33      0
+  main.c.o                                     1     70      2
   Start12.c.o                                  0     59      0
-  DAC.c.o                                      0     23      0
+  DAC.c.o                                      0     67      0
+  music.c.o                                    0      0    256
   PLL.c.o                                      0     21      0
   switch.c.o                                   0      5      0
   other                                      256     12      2
@@ -1153,9 +1165,13 @@ MODULE STATISTIC
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  initOC0 initOC1 initOC2 initOC3 main DAC_Init PLL_Init Switch_Init 
+  initOC0 TC0Handler main DAC_Init transmitByte DAC_Out PLL_Init Switch_Init 
+SECTION: ".bss"
+  i.1 
 SECTION: ".init"
   Init _Startup 
+SECTION: ".rodata"
+  SinWave 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -2206,6 +2222,8 @@ SECTION: ".abs_section_2ae"
   _CAN4RXTSR 
 SECTION: ".abs_section_2be"
   _CAN4TXTSR 
+SECTION: ".abs_section_ffee"
+  _Vector_8 
 
 *********************************************************************************************
 OBJECT LIST SORTED BY ADDRESS
@@ -2251,22 +2269,22 @@ OBJECT LIST SORTED BY ADDRESS
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
-     _TIOS                                       40       1       1       0   .abs_section_40
+     _TIOS                                       40       1       1       1   .abs_section_40
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
-     _TCNT                                       44       2       2       0   .abs_section_44
+     _TCNT                                       44       2       2       1   .abs_section_44
      _TSCR1                                      46       1       1       1   .abs_section_46
      _TTOV                                       47       1       1       0   .abs_section_47
      _TCTL1                                      48       1       1       0   .abs_section_48
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
-     _TIE                                        4C       1       1       0   .abs_section_4c
+     _TIE                                        4C       1       1       1   .abs_section_4c
      _TSCR2                                      4D       1       1       1   .abs_section_4d
-     _TFLG1                                      4E       1       1       0   .abs_section_4e
+     _TFLG1                                      4E       1       1       1   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
-     _TC0                                        50       2       2       0   .abs_section_50
+     _TC0                                        50       2       2       3   .abs_section_50
      _TC1                                        52       2       2       0   .abs_section_52
      _TC2                                        54       2       2       0   .abs_section_54
      _TC3                                        56       2       2       0   .abs_section_56
@@ -2343,9 +2361,9 @@ OBJECT LIST SORTED BY ADDRESS
      _SCI1SR2                                    D5       1       1       0   .abs_section_d5
      _SCI1DRH                                    D6       1       1       0   .abs_section_d6
      _SCI1DRL                                    D7       1       1       0   .abs_section_d7
-     _SPI0CR1                                    D8       1       1       1   .abs_section_d8
-     _SPI0CR2                                    D9       1       1       1   .abs_section_d9
-     _SPI0BR                                     DA       1       1       1   .abs_section_da
+     _SPI0CR1                                    D8       1       1       0   .abs_section_d8
+     _SPI0CR2                                    D9       1       1       0   .abs_section_d9
+     _SPI0BR                                     DA       1       1       0   .abs_section_da
      _SPI0SR                                     DB       1       1       0   .abs_section_db
      _SPI0DR                                     DD       1       1       0   .abs_section_dd
      _IBAD                                       E0       1       1       0   .abs_section_e0
@@ -2360,11 +2378,11 @@ OBJECT LIST SORTED BY ADDRESS
      _DLCBARD                                    EC       1       1       0   .abs_section_ec
      _DLCBRSR                                    ED       1       1       0   .abs_section_ed
      _DLCSCR                                     EE       1       1       0   .abs_section_ee
-     _SPI1CR1                                    F0       1       1       0   .abs_section_f0
-     _SPI1CR2                                    F1       1       1       0   .abs_section_f1
-     _SPI1BR                                     F2       1       1       0   .abs_section_f2
-     _SPI1SR                                     F3       1       1       0   .abs_section_f3
-     _SPI1DR                                     F5       1       1       0   .abs_section_f5
+     _SPI1CR1                                    F0       1       1       1   .abs_section_f0
+     _SPI1CR2                                    F1       1       1       1   .abs_section_f1
+     _SPI1BR                                     F2       1       1       1   .abs_section_f2
+     _SPI1SR                                     F3       1       1       2   .abs_section_f3
+     _SPI1DR                                     F5       1       1       2   .abs_section_f5
      _SPI2CR1                                    F8       1       1       0   .abs_section_f8
      _SPI2CR2                                    F9       1       1       0   .abs_section_f9
      _SPI2BR                                     FA       1       1       0   .abs_section_fa
@@ -2639,8 +2657,8 @@ OBJECT LIST SORTED BY ADDRESS
      _PERT                                      244       1       1       0   .abs_section_244
      _PPST                                      245       1       1       0   .abs_section_245
      _PTS                                       248       1       1       0   .abs_section_248
-     _PTIS                                      249       1       1       1   .abs_section_249
-     _DDRS                                      24A       1       1       2   .abs_section_24a
+     _PTIS                                      249       1       1       0   .abs_section_249
+     _DDRS                                      24A       1       1       0   .abs_section_24a
      _RDRS                                      24B       1       1       0   .abs_section_24b
      _PERS                                      24C       1       1       0   .abs_section_24c
      _PPSS                                      24D       1       1       0   .abs_section_24d
@@ -2653,17 +2671,17 @@ OBJECT LIST SORTED BY ADDRESS
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       0   .abs_section_258
+     _PTP                                       258       1       1       3   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       1   .abs_section_25a
+     _DDRP                                      25A       1       1       2   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1       0   .abs_section_260
+     _PTH                                       260       1       1       3   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
-     _DDRH                                      262       1       1       0   .abs_section_262
+     _DDRH                                      262       1       1       2   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
      _PERH                                      264       1       1       0   .abs_section_264
      _PPSH                                      265       1       1       0   .abs_section_265
@@ -2736,30 +2754,38 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
+     i.1                                        900       1       1       1   .bss        
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     initOC0                                   C045       B      11       1   .text       
-     initOC1                                   C050       1       1       1   .text       
-     initOC2                                   C051       1       1       1   .text       
-     initOC3                                   C052       1       1       1   .text       
-     main                                      C053      13      19       1   .text       
-     DAC_Init                                  C066      17      23       1   .text       
-     PLL_Init                                  C07D      15      21       1   .text       
-     Switch_Init                               C092       5       5       1   .text       
+     SinWave                                   C045     100     256       1   .rodata     
+     initOC0                                   C145      20      32       1   .text       
+     TC0Handler                                C165      17      23       1   .text       
+     main                                      C17C       F      15       1   .text       
+     DAC_Init                                  C18B      17      23       1   .text       
+     transmitByte                              C1A2      11      17       2   .text       
+     DAC_Out                                   C1B3      1B      27       1   .text       
+     PLL_Init                                  C1CE      15      21       1   .text       
+     Switch_Init                               C1E3       5       5       1   .text       
+     _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
 ---------------------------------------------------------------------------------------------
 NOT USED PROCEDURES
-DAC.c.o:
-  transmitByte DAC_Out 
+main.c.o:
+  initOC1 initOC2 initOC3 
 switch.c.o:
   Switch_Data 
+NOT USED VARIABLES
+main.c.o:
+  output0 
+music.c.o:
+  melody harmony bass 
 
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC097 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC1E8 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2768,12 +2794,16 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-initOC0                   USES _TSCR1 _TSCR2 _PACTL 
-main                      USES PLL_Init DAC_Init Switch_Init initOC0 initOC1 
-                                initOC2 initOC3 
-DAC_Init                  USES _DDRS _SPI0CR1 _SPI0CR2 _SPI0BR _PTIS 
+initOC0                   USES _TSCR1 _TSCR2 _PACTL _DDRP _PTP _TIOS _TIE 
+                                _TCNT _TC0 
+TC0Handler                USES _TFLG1 i.1 SinWave DAC_Out _TC0 
+main                      USES PLL_Init DAC_Init Switch_Init initOC0 
+DAC_Init                  USES _DDRH _SPI1CR1 _SPI1CR2 _SPI1BR _PTH 
+transmitByte              USES _SPI1SR _SPI1DR 
+DAC_Out                   USES _PTP _PTH transmitByte 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
 Switch_Init               USES _DDRP 
+_Vector_8                 USES TC0Handler 
 
 *********************************************************************************************
 DEPENDENCY TREE
@@ -2789,12 +2819,6 @@ DEPENDENCY TREE
  |  +- Switch_Init         
  |  |    
  |  +- initOC0             
- |  |    
- |  +- initOC1             
- |  |    
- |  +- initOC2             
- |  |    
- |  +- initOC3             
  |       
  +- _Startup            
     | 
@@ -2802,12 +2826,20 @@ DEPENDENCY TREE
     |    
     +- main                 (see above)
        
+ _Vector_8           
+ | 
+ +- TC0Handler          
+    | 
+    +- DAC_Out             
+       | 
+       +- transmitByte        
+            
 *********************************************************************************************
 STATISTIC SECTION
 ---------------------------------------------------------------------------------------------
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 5
-Total size of all blocks to be downloaded: 155
+Number of blocks to be downloaded: 6
+Total size of all blocks to be downloaded: 494
 
