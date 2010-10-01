@@ -1,5 +1,5 @@
 *** EVALUATION ***
-PROGRAM "C:\Users\Raz\Documents\EE 445L\Lab4\bin\Project.absHCS12_Serial_Monitor.abs"
+PROGRAM "C:\Program Files\TExaS\445L\ee445l-labs\Lab4\bin\Project.absHCS12_Serial_Monitor.abs"
 
 *********************************************************************************************
 TARGET SECTION
@@ -16,8 +16,8 @@ mc9s12dp512.c.o                         Model: SMALL,         Lang: ANSI-C
 main.c.o                                Model: SMALL,         Lang: ANSI-C
 Start12.c.o                             Model: SMALL,         Lang: ANSI-C
 stepper.c.o                             Model: SMALL,         Lang: ANSI-C
-PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 switch.c.o                              Model: SMALL,         Lang: ANSI-C
+PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 
 *********************************************************************************************
 STARTUP SECTION
@@ -1132,13 +1132,13 @@ MODULE:                 -- stepper.c.o --
      fsm                                       C045     1A2     418     177   .rodata     
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
      Pt                                         900       2       2       5   .common     
-MODULE:                 -- PLL.c.o --
-- PROCEDURES:
-     PLL_Init                                  C249      15      21       1   .text       
-- VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     switch_Init                               C25E       5       5       1   .text       
+     switch_Init                               C249       5       5       1   .text       
+- VARIABLES:
+MODULE:                 -- PLL.c.o --
+- PROCEDURES:
+     PLL_Init                                  C24E      15      21       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -1149,15 +1149,15 @@ MODULE STATISTIC
   main.c.o                                     0     13      0
   Start12.c.o                                  0     59      0
   stepper.c.o                                  2     85    420
-  PLL.c.o                                      0     21      0
   switch.c.o                                   0      5      0
+  PLL.c.o                                      0     21      0
   other                                      256     12      2
 
 *********************************************************************************************
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  main OC_Init0 TOC0handler PLL_Init switch_Init 
+  main OC_Init0 TOC0handler switch_Init PLL_Init 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".rodata"
@@ -2753,8 +2753,8 @@ OBJECT LIST SORTED BY ADDRESS
      main                                      C1E7       D      13       1   .text       
      OC_Init0                                  C1F4      26      38       1   .text       
      TOC0handler                               C21A      2F      47       1   .text       
-     PLL_Init                                  C249      15      21       1   .text       
-     switch_Init                               C25E       5       5       1   .text       
+     switch_Init                               C249       5       5       1   .text       
+     PLL_Init                                  C24E      15      21       1   .text       
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
 *********************************************************************************************
@@ -2778,8 +2778,8 @@ main                      USES PLL_Init switch_Init OC_Init0
 OC_Init0                  USES fsm Pt _DDRP _PTP _TIOS _TIE _TSCR1 _TSCR2 
                                 _PACTL _TCNT _TC0 
 TOC0handler               USES _TFLG1 _PTP Pt _TC0 
-PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
 switch_Init               USES _DDRP 
+PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
 _Vector_8                 USES TOC0handler 
 
 *********************************************************************************************

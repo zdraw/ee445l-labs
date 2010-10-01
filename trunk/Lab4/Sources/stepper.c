@@ -82,10 +82,12 @@ void OC_Init0(void){
   TC0   = TCNT+50;// first interrupt right away
 }
 
-
-interrupt 8 void TOC0handler(void){ // executes at 4 Hz
+//---------------------Output Compare Interrupt---------------------
+// output, set up delay, go to next state
+//
+interrupt 8 void TOC0handler(void){ // executes at 1/delay Hz
   TFLG1 = 0x01;         // acknowledge OC0
-  PTP = (PTP&0xF0) + Pt->Out;
-  TC0 = TC0 + Pt->delay;    // interrupts again after 0.25 second
-  Pt = Pt->Next[(PTP&0x70) >> 4];
+  PTP = (PTP&0xF0) + Pt->Out; // output to stepper motor
+  TC0 = TC0 + Pt->delay;    // interrupts again after state delay
+  Pt = Pt->Next[(PTP&0x70) >> 4]; // change to next state
 }
