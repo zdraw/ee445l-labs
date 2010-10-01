@@ -12,5 +12,5 @@ void main(void) {
   
   asm cli
   
-  for(;;) {}
+  for(;;) {} // Everything important runs in background
 }
