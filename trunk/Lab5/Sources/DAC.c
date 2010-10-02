@@ -24,7 +24,7 @@ void transmitByte(unsigned char data) {
   data = SPI1DR;            // 4) clear the SPIF flag by reading the data
                             // dummy = SPI0DR;
 }
-
+/*
 void DAC_Out(unsigned char data) {
   PTP ^= 0x80;
   PTH &= ~0x08;                    // 1) set PS7=CS low
@@ -32,10 +32,11 @@ void DAC_Out(unsigned char data) {
   transmitByte(data);        // 3) transmit least significant 8-bit data to the DAC
   PTH |=  0x08;                    // 4) set PS7=CS high
 } 
-
-/*void DAC_Out(unsigned short data) {
-  PTH &= ~0x80;                    // 1) set PS7=CS low
-  transmitByte((data&0x3F00) >> 8); // 2) transmit most significant 8-bit data to the DAC
+*/
+/* TLV chip bits 15-12 are control. x spd pwr x, spd=1=fast pwr=1=off spd=0=slow pwr=0=normal*/
+void DAC_Out(unsigned short data) {
+  PTH &= ~0x08;                    // 1) set PS7=CS low
+  transmitByte(0x40+((data&0x3F00) >> 8)); // 2) transmit most significant 8-bit data to the DAC
   transmitByte(data&0x00FF);        // 3) transmit least significant 8-bit data to the DAC
-  PTH |=  0x80;                    // 4) set PS7=CS high
-} */
+  PTH |=  0x08;                    // 4) set PS7=CS high
+}

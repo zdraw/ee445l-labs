@@ -65,7 +65,7 @@ interrupt 8 void TC0Handler() {
   TFLG1 = 0x01;
   
   DAC_Out(SinWave[i]);
-  //PTP ^= 0x80;
+  PTP ^= 0x80;
       
   TC0 = TC0 + 11719; 
 }

@@ -1,5 +1,5 @@
 *** EVALUATION ***
-PROGRAM "C:\Users\Raz\Documents\EE 445L\Lab5\bin\Project.absHCS12_Serial_Monitor.abs"
+PROGRAM "C:\Program Files\TExaS\445L\ee445l-labs\Lab5\bin\Project.absHCS12_Serial_Monitor.abs"
 
 *********************************************************************************************
 TARGET SECTION
@@ -28,7 +28,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x900     1
-  _Copy    *toCopyDownBeg 0xC1E8
+  _Copy    *toCopyDownBeg 0xC1ED
 } _startupData;
 
 *********************************************************************************************
@@ -38,8 +38,8 @@ Section Name                    Size  Type     From       To       Segment
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
 .rodata                          256     R     0xC045     0xC144   ROM_C000
-.text                            163     R     0xC145     0xC1E7   ROM_C000
-.copy                              2     R     0xC1E8     0xC1E9   ROM_C000
+.text                            168     R     0xC145     0xC1EC   ROM_C000
+.copy                              2     R     0xC1ED     0xC1EE   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -571,7 +571,7 @@ Section Name                    Size  Type     From       To       Segment
 .vectSeg526_vect                   2     R     0xFFFE     0xFFFF   .vectSeg526
 
 Summary of section sizes per section type:
-READ_ONLY (R):         1EE (dec:      494)
+READ_ONLY (R):         1F3 (dec:      499)
 READ_WRITE (R/W):      101 (dec:      257)
 NO_INIT (N/I):         24E (dec:      590)
 
@@ -1116,8 +1116,8 @@ MODULE:                 -- mc9s12dp512.c.o --
 MODULE:                 -- main.c.o --
 - PROCEDURES:
      initOC0                                   C145      20      32       1   .text       
-     TC0Handler                                C165      17      23       1   .text       
-     main                                      C17C       F      15       1   .text       
+     TC0Handler                                C165      20      32       1   .text       
+     main                                      C185       F      15       1   .text       
 - VARIABLES:
      i.1                                        900       1       1       1   .bss        
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
@@ -1131,9 +1131,9 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- DAC.c.o --
 - PROCEDURES:
-     DAC_Init                                  C18B      17      23       1   .text       
-     transmitByte                              C1A2      11      17       2   .text       
-     DAC_Out                                   C1B3      1B      27       1   .text       
+     DAC_Init                                  C194      17      23       1   .text       
+     transmitByte                              C1AB      11      17       2   .text       
+     DAC_Out                                   C1BC      17      23       1   .text       
 - VARIABLES:
 MODULE:                 -- music.c.o --
 - PROCEDURES:
@@ -1141,11 +1141,11 @@ MODULE:                 -- music.c.o --
      SinWave                                   C045     100     256       1   .rodata     
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  C1CE      15      21       1   .text       
+     PLL_Init                                  C1D3      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Switch_Init                               C1E3       5       5       1   .text       
+     Switch_Init                               C1E8       5       5       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -1153,9 +1153,9 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     1     70      2
+  main.c.o                                     1     79      2
   Start12.c.o                                  0     59      0
-  DAC.c.o                                      0     67      0
+  DAC.c.o                                      0     63      0
   music.c.o                                    0      0    256
   PLL.c.o                                      0     21      0
   switch.c.o                                   0      5      0
@@ -2759,13 +2759,13 @@ OBJECT LIST SORTED BY ADDRESS
      _Startup                                  C029      12      18       0   .init       
      SinWave                                   C045     100     256       1   .rodata     
      initOC0                                   C145      20      32       1   .text       
-     TC0Handler                                C165      17      23       1   .text       
-     main                                      C17C       F      15       1   .text       
-     DAC_Init                                  C18B      17      23       1   .text       
-     transmitByte                              C1A2      11      17       2   .text       
-     DAC_Out                                   C1B3      1B      27       1   .text       
-     PLL_Init                                  C1CE      15      21       1   .text       
-     Switch_Init                               C1E3       5       5       1   .text       
+     TC0Handler                                C165      20      32       1   .text       
+     main                                      C185       F      15       1   .text       
+     DAC_Init                                  C194      17      23       1   .text       
+     transmitByte                              C1AB      11      17       2   .text       
+     DAC_Out                                   C1BC      17      23       1   .text       
+     PLL_Init                                  C1D3      15      21       1   .text       
+     Switch_Init                               C1E8       5       5       1   .text       
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
 *********************************************************************************************
@@ -2785,7 +2785,7 @@ music.c.o:
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC1E8 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC1ED ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2796,11 +2796,11 @@ Init                      USES _startupData
 _Startup                  USES __SEG_END_SSTACK Init main 
 initOC0                   USES _TSCR1 _TSCR2 _PACTL _DDRP _PTP _TIOS _TIE 
                                 _TCNT _TC0 
-TC0Handler                USES _TFLG1 i.1 SinWave DAC_Out _TC0 
+TC0Handler                USES _TFLG1 i.1 SinWave DAC_Out _PTP _TC0 
 main                      USES PLL_Init DAC_Init Switch_Init initOC0 
 DAC_Init                  USES _DDRH _SPI1CR1 _SPI1CR2 _SPI1BR _PTH 
 transmitByte              USES _SPI1SR _SPI1DR 
-DAC_Out                   USES _PTP _PTH transmitByte 
+DAC_Out                   USES _PTH transmitByte 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
 Switch_Init               USES _DDRP 
 _Vector_8                 USES TC0Handler 
@@ -2840,6 +2840,6 @@ STATISTIC SECTION
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 6
-Total size of all blocks to be downloaded: 494
+Number of blocks to be downloaded: 5
+Total size of all blocks to be downloaded: 499
 
