@@ -164,7 +164,7 @@ unsigned char i = 0;
     initOC3();
   #endif
   
-  asm cli
+  asm sei
       
   for(;;) {
     if(PTP&0x08) {
@@ -174,7 +174,8 @@ unsigned char i = 0;
       asm sei 
     }
     if(PTP&0x02) {
-      note = 0;  
+      note = 0;
+      note2 = 0;
     }
   }
 }
