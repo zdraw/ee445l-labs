@@ -29,7 +29,7 @@ void transmitByte(unsigned char data) {
 
 void DAC_Out(unsigned short data) {
   PTS &= ~0x80;                    // 1) set PS7=CS low
-  transmitByte(((data&0x3F00) >> 8)); // 2) transmit most significant 8-bit data to the DAC
+  transmitByte((data&0x3F00) >> 8); // 2) transmit most significant 8-bit data to the DAC
   transmitByte(data&0x00FF);        // 3) transmit least significant 8-bit data to the DAC
   PTS |=  0x80;                    // 4) set PS7=CS high
 }
