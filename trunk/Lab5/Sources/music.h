@@ -1,12 +1,11 @@
 #include <hidef.h>      /* common defines and macros */
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
-
-#define WHOLE   2400000 * 12 / 128
-#define HALF    2400000 * 6  / 128
-#define QUARTER 2400000 * 3  / 128 
-#define EIGHTH  240000  * 15 / 128
-#define TRIP8TH 2400000 * 1  / 128
+                                      
+#define PROCEDURE 32
+#define FREQUENCY 24000000/PROCEDURE
+#define EIGHTH  240000  * 15 / 60000
+#define TRIP8TH 2400000 * 1  / 60000
 
 
 typedef const struct Note{
@@ -16,7 +15,7 @@ typedef const struct Note{
 } NoteType;
 
 
-extern unsigned const char SinWave[256];
-extern const NoteType melody[554];
-extern const NoteType harmony[541];
-extern const NoteType bass[571];
+extern unsigned const short SinWave[];
+extern const NoteType melody[];
+extern const NoteType harmony[];
+extern const NoteType bass[];
