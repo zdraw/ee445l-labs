@@ -15,6 +15,7 @@ typedef const struct Note{
 } NoteType;
 
 
+extern unsigned const short Envelope[];
 extern unsigned const short SinWave[];
 extern const NoteType melody[];
 extern const NoteType harmony[];
