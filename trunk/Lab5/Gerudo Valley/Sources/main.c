@@ -42,7 +42,7 @@ void initOC1(void){
 // Input: none
 // Output: none    
 unsigned static short envelope1;
-unsigned static short envelope2;           
+//unsigned static short envelope2;           
 void initOC2(void){
   TIOS |= 0x04;   // activate TC0 as output compare
   TIE  |= 0x04;   // arm OC0
@@ -82,14 +82,14 @@ interrupt 8 void TC0Handler() {
                
 interrupt 9 void TC1Handler() {
   unsigned static short interrupts = 0;
-  unsigned static short interrupts2 = 0;
+  //unsigned static short interrupts2 = 0;
   
   TFLG1 = 0x02; 
   interrupts++;
-  interrupts2++;
+  //interrupts2++;
   
-  envelope1 = (interrupts <= 50 ? 1 : 0);
-  envelope2 = (interrupts2 <= 50 ? 1 : 0);
+  envelope1 = (interrupts <= (melody[note].length*5)/6 ? 1 : 0);
+  //envelope2 = (interrupts2 <= 50 ? 1 : 0);
   
   
   if(interrupts >= melody[note].length) {
@@ -102,7 +102,7 @@ interrupt 9 void TC1Handler() {
       interrupts = 0;
       envelope1 = 1;
   }
-  if(interrupts2 >= bass[note2].length) {
+  /*if(interrupts2 >= bass[note2].length) {
       if(PTP&0x01) {
         note2--;
       }
@@ -111,13 +111,13 @@ interrupt 9 void TC1Handler() {
       }
       interrupts2 = 0;
       envelope2 = 1;
-  }
+  }*/
   
   TC1 = TC1 + 60000;
       
 } 
 
-interrupt 10 void TC2Handler() {
+/*interrupt 10 void TC2Handler() {
   unsigned static char i = 0;
   
   TFLG1 = 0x04;
@@ -151,7 +151,7 @@ interrupt 11 void TC3Handler() {
     output2 = 0;
     TC3 = TC3 + 480;  
   }      
-}  
+}*/  
 
 void main(void) {
 unsigned char i = 0;
@@ -161,8 +161,8 @@ unsigned char i = 0;
   initOC0();
   initOC1();
   #if PROCEDURE == 32
-    initOC2();
-    initOC3();
+    //initOC2();
+    //initOC3();
   #endif
   
   asm sei
