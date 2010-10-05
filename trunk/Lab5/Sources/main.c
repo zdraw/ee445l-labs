@@ -68,8 +68,8 @@ interrupt 8 void TC0Handler() {
   TFLG1 = 0x01;
   
   if(note < 618 && melody[note].frequency) {
-    DAC_Out((SinWave[i%PROCEDURE] * envelope1) + output1 + output2);
-    output0 = SinWave[i%PROCEDURE] * envelope1; 
+    DAC_Out((SinWave[i%PROCEDURE] * envelope1)/100 + output1 + output2);
+    output0 = (SinWave[i%PROCEDURE] * envelope1)/100; 
     i++;
     TC0 = TC0 + melody[note].frequency;
   }
@@ -87,8 +87,8 @@ interrupt 9 void TC1Handler() {
   TFLG1 = 0x02; 
   interrupts++;
   interrupts2++;
-  envelope1 = (interrupts > 50 ? 0 : 1);
-  envelope2 = (interrupts2 > 50 ? 0 : 1);
+  envelope1 = Envelope[interrupts];
+  envelope2 = Envelope[interrupts2];
   
   
   if(interrupts >= melody[note].length) {
@@ -121,8 +121,8 @@ interrupt 10 void TC2Handler() {
   
   
   if(note < 618 && harmony[note].frequency) {
-    DAC_Out(SinWave[i%32] * envelope1 + output0 + output2);
-    output1 = SinWave[i%32] * envelope1;   
+    DAC_Out((SinWave[i%32] * envelope1)/100 + output0 + output2);
+    output1 = (SinWave[i%32] * envelope1)/100;   
     i++;
     TC2 = TC2 + harmony[note].frequency;
   }
@@ -140,8 +140,8 @@ interrupt 11 void TC3Handler() {
   TFLG1 = 0x08;
   
   if(note2 < 606 && bass[note2].frequency) {
-    DAC_Out((SinWave[i%32] * envelope2) + output0 + output1);
-    output2 = SinWave[i%32] * envelope2; 
+    DAC_Out((SinWave[i%32] * envelope2)/100 + output0 + output1);
+    output2 = (SinWave[i%32] * envelope2)/100; 
     i++;
     TC3 = TC3 + bass[note2].frequency;
   }
