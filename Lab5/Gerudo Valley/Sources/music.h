@@ -2,13 +2,12 @@
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
                                       
-#define PROCEDURE 32
+#define PROCEDURE 64
 #define FREQUENCY 24000000/PROCEDURE
 #define EIGHTH  240000  * 15 / 60000
 #define TRIP8TH 2400000 * 1  / 60000
-#define MELODY  618
-#define HARMONY 618
-#define BASS    606 
+
+#define MELODY  234
 
 
 typedef const struct Note{
@@ -20,5 +19,3 @@ typedef const struct Note{
 
 extern unsigned const short SinWave[];
 extern const NoteType melody[];
-extern const NoteType harmony[];
-extern const NoteType bass[];
