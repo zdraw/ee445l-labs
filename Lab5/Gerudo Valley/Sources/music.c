@@ -106,7 +106,7 @@ const unsigned short SinWave[64] = {
 };
 #endif
 
-const NoteType melody[618] = {
+const NoteType melody[MELODY] = {
 {FREQUENCY/659, EIGHTH},
 {FREQUENCY/659, EIGHTH},
 {0, EIGHTH},
@@ -727,7 +727,7 @@ const NoteType melody[618] = {
 {0, EIGHTH}
 };             
 
-const NoteType harmony[618] = {
+const NoteType harmony[HARMONY] = {
 {FREQUENCY/370, EIGHTH},
 {FREQUENCY/370, EIGHTH},
 {0, EIGHTH},
@@ -1348,7 +1348,7 @@ const NoteType harmony[618] = {
 {0, EIGHTH}
 };
 
-const NoteType bass[606] = {
+const NoteType bass[BASS] = {
 {FREQUENCY/147, EIGHTH},
 {FREQUENCY/147, EIGHTH},
 {0, EIGHTH},
