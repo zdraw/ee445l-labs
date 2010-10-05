@@ -10,7 +10,7 @@
 void DAC_Init(void) {
   DDRS |=  0xE0;  // 1) make PH1, PH2, PH3 outputs, PH0 input
                   // DDRH
-  SPI0CR1 = 0x50; // 2) enable SPI, no interrupts, master, CPOL, CPHA
+  SPI0CR1 = 0x58; // 2) enable SPI, no interrupts, master, CPOL, CPHA
                   // SPI0CR1 = 0101 0000
   SPI0CR2 = 0x00; // 3) set up PH7 as a regular output
                   // SSOE=0, MODFEN=0 SPI0CR1, SPI0CR2
