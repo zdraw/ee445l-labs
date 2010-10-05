@@ -1,69 +1,5 @@
 #include "music.h"
 
-unsigned const short Envelope[61] = {
-0,
-67,
-100,
-100,
-100,
-98,
-95,
-92,
-90,
-89,
-88,
-87,
-86,
-85,
-84,
-83,
-83,
-82,
-81,
-80,
-79,
-78,
-77,
-76,
-75,
-75,
-74,
-73,
-72,
-71,
-70,
-69,
-68,
-68,
-67,
-66,
-65,
-64,
-63,
-62,
-61,
-60,
-60,
-59,
-58,
-57,
-56,
-55,
-54,
-53,
-53,
-52,
-51,
-50,
-49,
-48,
-47,
-46,
-45,
-30
-};
-
-
 #if PROCEDURE == 32
 const unsigned short SinWave[32] = {
 683,
@@ -168,9 +104,7 @@ const unsigned short SinWave[64] = {
 1649,
 1847
 };
-#endif 
-
-
+#endif
 
 const NoteType melody[618] = {
 {FREQUENCY/659, EIGHTH},
@@ -791,7 +725,7 @@ const NoteType melody[618] = {
 {0, EIGHTH},
 {0, EIGHTH},
 {0, EIGHTH}
-};
+};             
 
 const NoteType harmony[618] = {
 {FREQUENCY/370, EIGHTH},

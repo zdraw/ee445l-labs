@@ -28,7 +28,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x900     21
-  _Copy    *toCopyDownBeg 0xEEE6
+  _Copy    *toCopyDownBeg 0xEE32
 } _startupData;
 
 *********************************************************************************************
@@ -37,9 +37,9 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.rodata                        11238     R     0xC045     0xEC2A   ROM_C000
-.text                            699     R     0xEC2B     0xEEE5   ROM_C000
-.copy                              2     R     0xEEE6     0xEEE7   ROM_C000
+.rodata                        11116     R     0xC045     0xEBB0   ROM_C000
+.text                            641     R     0xEBB1     0xEE31   ROM_C000
+.copy                              2     R     0xEE32     0xEE33   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -570,12 +570,11 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_ffec                  2     R     0xFFEC     0xFFED   .absSeg526
 .abs_section_ffea                  2     R     0xFFEA     0xFFEB   .absSeg527
 .abs_section_ffe8                  2     R     0xFFE8     0xFFE9   .absSeg528
-.bss                              11   R/W      0x900      0x90A   RAM
-.common                           10   R/W      0x90B      0x914   RAM
+.bss                              21   R/W      0x900      0x914   RAM
 .vectSeg529_vect                   2     R     0xFFFE     0xFFFF   .vectSeg529
 
 Summary of section sizes per section type:
-READ_ONLY (R):        2EF2 (dec:    12018)
+READ_ONLY (R):        2E3E (dec:    11838)
 READ_WRITE (R/W):      115 (dec:      277)
 NO_INIT (N/I):         24E (dec:      590)
 
@@ -971,7 +970,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       5   .abs_section_258
+     _PTP                                       258       1       1       6   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
      _DDRP                                      25A       1       1       2   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
@@ -1119,32 +1118,32 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     initOC0                                   EC2B      1C      28       1   .text       
-     initOC1                                   EC47       E      14       1   .text       
-     initOC2                                   EC55       E      14       1   .text       
-     initOC3                                   EC63       E      14       1   .text       
-     TC0Handler                                EC71      70     112       1   .text       
-     TC1Handler                                ECE1      9A     154       1   .text       
-     TC2Handler                                ED7B      70     112       1   .text       
-     TC3Handler                                EDEB      70     112       1   .text       
-     main                                      EE5B      38      56       1   .text       
+     initOC0                                   EBB1      1C      28       1   .text       
+     initOC1                                   EBCD       E      14       1   .text       
+     initOC2                                   EBDB      12      18       1   .text       
+     initOC3                                   EBED       E      14       1   .text       
+     TC0Handler                                EBFB      5B      91       1   .text       
+     TC1Handler                                EC56      9B     155       1   .text       
+     TC2Handler                                ECF1      5B      91       1   .text       
+     TC3Handler                                ED4C      5B      91       1   .text       
+     main                                      EDA7      38      56       1   .text       
 - VARIABLES:
      note                                       900       2       2       9   .bss        
      note2                                      902       2       2       7   .bss        
      i.1                                        904       1       1       2   .bss        
-     interrupts.2                               905       2       2       5   .bss        
-     interrupts2.3                              907       2       2       5   .bss        
+     interrupts.2                               905       2       2       4   .bss        
+     interrupts2.3                              907       2       2       4   .bss        
      i.4                                        909       1       1       2   .bss        
      i.5                                        90A       1       1       2   .bss        
+     envelope1                                  90B       2       2       4   .bss        
+     envelope2                                  90D       2       2       3   .bss        
+     output0                                    90F       2       2       4   .bss        
+     output1                                    911       2       2       4   .bss        
+     output2                                    913       2       2       4   .bss        
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
      _Vector_9                                 FFEC       2       2       0   .abs_section_ffec
      _Vector_10                                FFEA       2       2       0   .abs_section_ffea
      _Vector_11                                FFE8       2       2       0   .abs_section_ffe8
-     envelope1                                  90B       2       2       3   .common     
-     envelope2                                  90D       2       2       2   .common     
-     output0                                    90F       2       2       6   .common     
-     output1                                    911       2       2       6   .common     
-     output2                                    913       2       2       6   .common     
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      C000      29      41       1   .init       
@@ -1155,25 +1154,24 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- DAC.c.o --
 - PROCEDURES:
-     DAC_Init                                  EE93      13      19       1   .text       
-     transmitByte                              EEA6      11      17       2   .text       
-     DAC_Out                                   EEB7      15      21       6   .text       
+     DAC_Init                                  EDDF      13      19       1   .text       
+     transmitByte                              EDF2      11      17       2   .text       
+     DAC_Out                                   EE03      15      21       3   .text       
 - VARIABLES:
 MODULE:                 -- music.c.o --
 - PROCEDURES:
 - VARIABLES:
-     Envelope                                  C045      7A     122       2   .rodata     
-     SinWave                                   C0BF      40      64       3   .rodata     
-     melody                                    C0FF     E7C    3708       4   .rodata     
-     harmony                                   CF7B     E7C    3708       2   .rodata     
-     bass                                      DDF7     E34    3636       4   .rodata     
+     SinWave                                   C045      40      64       3   .rodata     
+     melody                                    C085     E7C    3708       4   .rodata     
+     harmony                                   CF01     E7C    3708       2   .rodata     
+     bass                                      DD7D     E34    3636       4   .rodata     
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  EECC      15      21       1   .text       
+     PLL_Init                                  EE18      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Switch_Init                               EEE1       5       5       1   .text       
+     Switch_Init                               EE2D       5       5       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -1181,10 +1179,10 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                    21    616      8
+  main.c.o                                    21    558      8
   Start12.c.o                                  0     59      0
   DAC.c.o                                      0     57      0
-  music.c.o                                    0      0  11238
+  music.c.o                                    0      0  11116
   PLL.c.o                                      0     21      0
   switch.c.o                                   0      5      0
   other                                      256     12      2
@@ -1196,11 +1194,12 @@ SECTION: ".text"
   initOC0 initOC1 initOC2 initOC3 TC0Handler TC1Handler TC2Handler TC3Handler 
   main DAC_Init transmitByte DAC_Out PLL_Init Switch_Init 
 SECTION: ".bss"
-  note note2 i.1 interrupts.2 interrupts2.3 i.4 i.5 
+  note note2 i.1 interrupts.2 interrupts2.3 i.4 i.5 envelope1 envelope2 
+  output0 output1 output2 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".rodata"
-  Envelope SinWave melody harmony bass 
+  SinWave melody harmony bass 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -2259,8 +2258,6 @@ SECTION: ".abs_section_ffea"
   _Vector_10 
 SECTION: ".abs_section_ffe8"
   _Vector_11 
-SECTION: ".common"
-  envelope1 envelope2 output0 output1 output2 
 
 *********************************************************************************************
 OBJECT LIST SORTED BY ADDRESS
@@ -2708,7 +2705,7 @@ OBJECT LIST SORTED BY ADDRESS
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       5   .abs_section_258
+     _PTP                                       258       1       1       6   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
      _DDRP                                      25A       1       1       2   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
@@ -2794,36 +2791,35 @@ OBJECT LIST SORTED BY ADDRESS
      note                                       900       2       2       9   .bss        
      note2                                      902       2       2       7   .bss        
      i.1                                        904       1       1       2   .bss        
-     interrupts.2                               905       2       2       5   .bss        
-     interrupts2.3                              907       2       2       5   .bss        
+     interrupts.2                               905       2       2       4   .bss        
+     interrupts2.3                              907       2       2       4   .bss        
      i.4                                        909       1       1       2   .bss        
      i.5                                        90A       1       1       2   .bss        
-     envelope1                                  90B       2       2       3   .common     
-     envelope2                                  90D       2       2       2   .common     
-     output0                                    90F       2       2       6   .common     
-     output1                                    911       2       2       6   .common     
-     output2                                    913       2       2       6   .common     
+     envelope1                                  90B       2       2       4   .bss        
+     envelope2                                  90D       2       2       3   .bss        
+     output0                                    90F       2       2       4   .bss        
+     output1                                    911       2       2       4   .bss        
+     output2                                    913       2       2       4   .bss        
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     Envelope                                  C045      7A     122       2   .rodata     
-     SinWave                                   C0BF      40      64       3   .rodata     
-     melody                                    C0FF     E7C    3708       4   .rodata     
-     harmony                                   CF7B     E7C    3708       2   .rodata     
-     bass                                      DDF7     E34    3636       4   .rodata     
-     initOC0                                   EC2B      1C      28       1   .text       
-     initOC1                                   EC47       E      14       1   .text       
-     initOC2                                   EC55       E      14       1   .text       
-     initOC3                                   EC63       E      14       1   .text       
-     TC0Handler                                EC71      70     112       1   .text       
-     TC1Handler                                ECE1      9A     154       1   .text       
-     TC2Handler                                ED7B      70     112       1   .text       
-     TC3Handler                                EDEB      70     112       1   .text       
-     main                                      EE5B      38      56       1   .text       
-     DAC_Init                                  EE93      13      19       1   .text       
-     transmitByte                              EEA6      11      17       2   .text       
-     DAC_Out                                   EEB7      15      21       6   .text       
-     PLL_Init                                  EECC      15      21       1   .text       
-     Switch_Init                               EEE1       5       5       1   .text       
+     SinWave                                   C045      40      64       3   .rodata     
+     melody                                    C085     E7C    3708       4   .rodata     
+     harmony                                   CF01     E7C    3708       2   .rodata     
+     bass                                      DD7D     E34    3636       4   .rodata     
+     initOC0                                   EBB1      1C      28       1   .text       
+     initOC1                                   EBCD       E      14       1   .text       
+     initOC2                                   EBDB      12      18       1   .text       
+     initOC3                                   EBED       E      14       1   .text       
+     TC0Handler                                EBFB      5B      91       1   .text       
+     TC1Handler                                EC56      9B     155       1   .text       
+     TC2Handler                                ECF1      5B      91       1   .text       
+     TC3Handler                                ED4C      5B      91       1   .text       
+     main                                      EDA7      38      56       1   .text       
+     DAC_Init                                  EDDF      13      19       1   .text       
+     transmitByte                              EDF2      11      17       2   .text       
+     DAC_Out                                   EE03      15      21       3   .text       
+     PLL_Init                                  EE18      15      21       1   .text       
+     Switch_Init                               EE2D       5       5       1   .text       
      _Vector_11                                FFE8       2       2       0   .abs_section_ffe8
      _Vector_10                                FFEA       2       2       0   .abs_section_ffea
      _Vector_9                                 FFEC       2       2       0   .abs_section_ffec
@@ -2839,7 +2835,7 @@ switch.c.o:
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xEEE6 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xEE32 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2851,12 +2847,12 @@ _Startup                  USES __SEG_END_SSTACK Init main
 initOC0                   USES _TSCR1 _TSCR2 _PACTL _DDRP _TIOS _TIE _TCNT 
                                 _TC0 
 initOC1                   USES _TIOS _TIE _TCNT _TC1 
-initOC2                   USES _TIOS _TIE _TCNT _TC2 
+initOC2                   USES _TIOS _TIE _TCNT _TC2 _PTP 
 initOC3                   USES _TIOS _TIE _TCNT _TC3 
 TC0Handler                USES _TFLG1 note melody output1 output2 DAC_Out 
                                 output0 i.1 _TC0 SinWave envelope1 
-TC1Handler                USES _TFLG1 interrupts.2 interrupts2.3 Envelope 
-                                envelope1 envelope2 note melody _PTP note2 bass _TC1 
+TC1Handler                USES _TFLG1 interrupts.2 interrupts2.3 envelope1 
+                                envelope2 note melody _PTP note2 bass _TC1 
 TC2Handler                USES _TFLG1 note harmony output0 output2 DAC_Out 
                                 output1 i.4 _TC2 SinWave envelope1 
 TC3Handler                USES _TFLG1 note2 bass output0 output1 DAC_Out 
@@ -2930,6 +2926,6 @@ STATISTIC SECTION
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 10
-Total size of all blocks to be downloaded: 12018
+Number of blocks to be downloaded: 9
+Total size of all blocks to be downloaded: 11838
 
