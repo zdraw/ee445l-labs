@@ -1,8 +1,9 @@
 #include <hidef.h>      /* common defines and macros */
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
-
-#define FREQUENCY 750000
+                              
+#define SIN 16
+#define FREQUENCY 24000000/SIN
 
 #define MREPEAT 36
 #define B1REPEAT 34
