@@ -1,38 +1,22 @@
 #include "music.h"
 
-const unsigned short SinWave[32] = {
+const unsigned short SinWave[SIN] = {
 683,
-816,
 944,
-1062,
 1165,
-1250,
 1313,
-1352,
 1365,
-1352,
 1313,
-1250,
 1165,
-1062,
 944,
-816,
 683,
-550,
 422,
-304,
 201,
-116,
 53,
-14,
 1,
-14,
 53,
-116,
 201,
-304,
-422,
-550
+422
 };
 
 const NoteType melody[MELODY] = {
