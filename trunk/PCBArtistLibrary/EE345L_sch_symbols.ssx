@@ -128,6 +128,8 @@ SPEAKER||2
 StepperMotor||7
 Testpoint||1
 Thermistor||2
+TLV5616||8
+TLV5617||8
 TPS79101||6
 XBee||20
 XTAL||2
