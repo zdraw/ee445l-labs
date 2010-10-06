@@ -42,9 +42,9 @@ void initOC1(void){
 // also enables timer to 16 us period
 // Input: none
 // Output: none    
-unsigned static short envelope1;
-unsigned static short envelope2;
-unsigned static short envelope3;          
+unsigned static short envelope1 = 1;
+unsigned static short envelope2 = 1;
+unsigned static short envelope3 = 1;          
 void initOC2(void){
   TIOS |= 0x04;   // activate TC0 as output compare
   TIE  |= 0x04;   // arm OC0
@@ -65,25 +65,14 @@ void initOC3(void){
 
 unsigned static short output0, output1, output2;
 
-/*interrupt 8 void TC0Handler() {
-  unsigned static char i = 0;
-  
-  TFLG1 = 0x01;
-  
-  DAC_Out(SinWave[i%PROCEDURE]);
-  i++;
-  
-  TC0 = TC0 + 677;   
-}*/
-
 interrupt 8 void TC0Handler() {
   unsigned static char i = 0;
   
   TFLG1 = 0x01;
   
-  if(note < MELODY && melody[note].frequency) {
-    DAC_Out((SinWave[i%PROCEDURE] * envelope1) + output1 + output2);
-    output0 = SinWave[i%PROCEDURE] * envelope1; 
+  if(melody[note].frequency) {
+    DAC_Out((SinWave[i%32] * envelope1) + output1 + output2);
+    output0 = SinWave[i%32] * envelope1; 
     i++;
     TC0 = TC0 + melody[note].frequency;
   }
@@ -103,30 +92,39 @@ interrupt 9 void TC1Handler() {
   interrupts2++;
   interrupts3++;
   
-  envelope1 = (interrupts <= (melody[note].length*5)/6 ? 1 : 0);
-  envelope2 = (interrupts2 <= (bass1[note2].length*5)/6 ? 1 : 0);
-  envelope3 = (interrupts3 <= (bass2[note3].length*5)/6 ? 1 : 0);
-  
-  
+                                
   if(interrupts >= melody[note].length) {
       if(PTP&0x01) {
         note--;
       }
       else {
-        note++;      
+        note++;
+        if(note >= MELODY) {
+          note = MREPEAT;  
+        }
       }
       interrupts = 0;
       envelope1 = 1;
   }
+  else if(interrupts >= (melody[note].length*2)/3) {
+    envelope1 = 0;  
+  }
+  
   if(interrupts2 >= bass1[note2].length) {
       if(PTP&0x01) {
         note2--;
       }
       else {
-        note2++;      
+        note2++;
+        if(note2 >= BASS1) {
+          note2 = B1REPEAT;  
+        }      
       }
       interrupts2 = 0;
       envelope2 = 1;
+  }
+  else if(interrupts2 >= (bass1[note2].length*2)/3) {
+    envelope2 = 0;  
   }
   
   if(interrupts3 >= bass2[note3].length) {
@@ -134,15 +132,44 @@ interrupt 9 void TC1Handler() {
         note3--;
       }
       else {
-        note3++;      
+        note3++; 
+        if(note3 >= BASS2) {
+          note3 = B2REPEAT;  
+        }      
       }
       interrupts3 = 0;
       envelope3 = 1;
   }
+  else if(interrupts3 >= (bass2[note3].length*2)/3) {
+    envelope3 = 0;  
+  }
   
-  TC1 = TC1 + 60000;
+  TC1 = TC1 + 32000;
       
-} 
+}
+
+/*interrupt 8 void TC0Handler() {
+  unsigned static char i = 0;
+  
+  TFLG1 = 0x01;
+  
+  DAC_Out(SinWave[i%32]);
+  i++;
+  
+  TC0 = TC0 + 677;   
+}   
+               
+interrupt 9 void TC1Handler() {
+  unsigned static char i = 0;
+  
+  TFLG1 = 0x02;
+  
+  DAC_Out(SinWave[i%32]);
+  i++;
+  
+  TC1 = TC1 + 1138;
+      
+} */
 
 interrupt 10 void TC2Handler() {
   unsigned static char i = 0;
@@ -150,9 +177,9 @@ interrupt 10 void TC2Handler() {
   TFLG1 = 0x04;
   
   
-  if(note2 < BASS1 && bass1[note2].frequency) {
-    DAC_Out((SinWave[i%PROCEDURE] * envelope2) + output0 + output2);
-    output1 = SinWave[i%PROCEDURE] * envelope2;   
+  if(bass1[note2].frequency) {
+    DAC_Out((SinWave[i%32] * envelope2) + output0 + output2);
+    output1 = SinWave[i%32] * envelope2;   
     i++;
     TC2 = TC2 + bass1[note2].frequency;
   }
@@ -181,16 +208,13 @@ interrupt 11 void TC3Handler() {
 }  
 
 void main(void) {
-unsigned char i = 0;
   PLL_Init(); 
   DAC_Init();
   Switch_Init();
   initOC0();
   initOC1();
-  #if PROCEDURE == 32
-    initOC2();
-    initOC3();
-  #endif
+  initOC2();
+  initOC3();
   
   asm sei
       
