@@ -125,6 +125,7 @@ TIP120||#TO220=3||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Di
 TIRF2500BOARD||#MODULE=6||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=
 TLC2272||#DIP=8||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=
 TLC2274||#DIP=14||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=
+TLV5616||#SKDIP=8||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=
 TPS77501POWERPAD||#TSSOP20=21||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=
 TPS79101||#SM=6||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=
 Variable Resistor(POT)||#RV=3||@Manufacturer=||@Manufacturer Part Number=||@Distributor=||@Distributor Part Number=||@Value=
