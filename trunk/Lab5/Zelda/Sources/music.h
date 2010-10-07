@@ -6,22 +6,47 @@
 #define FREQUENCY 24000000/SIN
 
 #define MREPEAT 36
-#define B1REPEAT 34
-#define B2REPEAT 29
+#define HREPEAT 34
+#define BREPEAT 29
 
 #define MELODY  146
-#define BASS1  181
-#define BASS2  163
+#define HARMONY  181
+#define BASS  163
 
 
 typedef const struct Note{
-  unsigned short frequency;            // Output to Port T
+  unsigned short frequency;
   unsigned long length;
   
 } NoteType;
 
+//---------------------Music_InitOC0---------------------
+// arm output compare 0 for melody
+// also enables timer to 43 ns period
+// Input: none
+// Output: none               
+void Music_InitOC0(void);
 
-extern unsigned const short SinWave[];
-extern const NoteType melody[];
-extern const NoteType bass1[];
-extern const NoteType bass2[];
+//---------------------Music_InitOC1---------------------
+// arm output compare 1 for harmony
+// Input: none
+// Output: none               
+void Music_InitOC1(void);
+
+//---------------------Music_InitOC2---------------------
+// arm output compare 2 for bass
+// Input: none
+// Output: none             
+void Music_InitOC2(void);
+
+//---------------------Music_InitOC3---------------------
+// arm output compare 3 for envelopes at 750 Hz
+// Input: none
+// Output: none               
+void Music_InitOC3(void);
+
+//---------------------Music_Restart---------------------
+// arm output compare 3 for envelopes at 750 Hz
+// Input: none
+// Output: none               
+void Music_Restart(void);
