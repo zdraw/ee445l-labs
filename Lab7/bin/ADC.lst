@@ -1,0 +1,45 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include "ADC.h"
+    2:  
+    3:  
+    4:  unsigned short TempTable[1024] = {
+    5:    0
+    6:  };
+    7:  
+    8:  void ADC0_Init(void) {
+*** EVALUATION ***
+
+Function: ADC0_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\ADC.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\ADC.c.o" -WmsgSd1106
+
+    9:    ATD0CTL2 = 0x80;
+  0000 cc0880       [2]     LDD   #2176
+  0003 5b00         [2]     STAB  _ATD0CTL23
+   10:    ATD0CTL3 = 0x08;
+  0005 5a00         [2]     STAA  _ATD0CTL23:1
+   11:    ATD0CTL4 = 0x85; 
+  0007 c685         [1]     LDAB  #133
+  0009 5b00         [2]     STAB  _ATD0CTL45
+   12:  }
+  000b 3d           [5]     RTS   
+   13:  
+   14:  unsigned short ADC0_In(unsigned char channel) {
+*** EVALUATION ***
+
+Function: ADC0_In
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\ADC.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\ADC.c.o" -WmsgSd1106
+
+   15:    unsigned short data;
+   16:    ATD0CTL5 = channel;
+  0000 5b00         [2]     STAB  _ATD0CTL45:1
+   17:    while(!(ATD0STAT1&0x01)) {}
+  0002 4f0001fc     [4]     BRCLR _ATD0STAT1,#1,*+0 ;abs = 0002
+   18:    data = ATD0DR0;
+  0006 dc00         [3]     LDD   _ATD0DR0
+   19:    return data;
+   20:  }
+  0008 3d           [5]     RTS   

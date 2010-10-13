@@ -1,0 +1,643 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename  ***************  LCD.C ****************************** 
+    2:  // LCD Display (HD44780) on Port H for the 9S12DP512   
+    3:  // Jonathan W. Valvano 9/18/09
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //        Thompson, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+    9:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   10:  
+   11:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  
+   15:  /*   
+   16:    size is 1*16 
+   17:    if do not need to read busy, then you can tie R/W=ground 
+   18:    ground = pin 1    Vss
+   19:    power  = pin 2    Vdd   +5V
+   20:    ground = pin 3    Vlc   grounded for highest contrast
+   21:    PH4    = pin 4    RS    (1 for data, 0 for control/status)
+   22:    PH5    = pin 5    R/W   (1 for read, 0 for write)
+   23:    PH6    = pin 6    E     (enable)
+   24:    PH3    = pin 14   DB7   (4-bit data)
+   25:    PH2    = pin 13   DB6
+   26:    PH1    = pin 12   DB5
+   27:    PH0    = pin 11   DB4
+   28:  16 characters are configured as 2 rows of 8
+   29:  addr  00 01 02 03 04 05 06 07 40 41 42 43 44 45 46 47
+   30:  */
+   31:  
+   32:  #include <mc9s12dp512.h>     /* derivative information */
+   33:  #include "LCD.H"
+   34:  #define BUSY 1
+   35:  #define NOTBUSY 0
+   36:  static unsigned short OpenFlag=0;
+   37:  static unsigned short ClearFlag=1;
+   38:  static unsigned short CharFlag=1;
+   39:  static unsigned short StringFlag=1;
+   40:  static unsigned short GotoFlag=1;
+   41:  
+   42:  //---------------------wait---------------------
+   43:  // Time delay
+   44:  // Input: Time in 0.667 usec
+   45:  // Output: None
+   46:  // Returns: None
+   47:  void static wait(unsigned short delay){ 
+*** EVALUATION ***
+
+Function: wait
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+   48:  unsigned short startTime;
+   49:    startTime = TCNT;
+  0002 dc00         [3]     LDD   _TCNT
+  0004 6c82         [2]     STD   2,SP
+   50:    while((TCNT-startTime) <= ((delay/24)+1)){}  // Divide by 24 to scale for 8MHz
+  0006 dc00         [3]     LDD   _TCNT
+  0008 a382         [3]     SUBD  2,SP
+  000a b746         [1]     TFR   D,Y
+  000c ec80         [3]     LDD   0,SP
+  000e ce0018       [2]     LDX   #24
+  0011 1810         [12]    IDIV  
+  0013 08           [1]     INX   
+  0014 34           [2]     PSHX  
+  0015 adb1         [3]     CPY   2,SP+
+  0017 23ed         [3/1]   BLS   *-17 ;abs = 0006
+   51:  }
+  0019 1b84         [2]     LEAS  4,SP
+  001b 3d           [5]     RTS   
+   52:  //---------------------1mswait---------------------
+   53:  // time delay
+   54:  // Input: time in msecs
+   55:  // Output: none
+   56:  // Returns: none
+   57:  void static wait1ms(unsigned short msec){ 
+*** EVALUATION ***
+
+Function: wait1ms
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+   58:    for(;msec;msec--){
+  0000 b745         [1]     TFR   D,X
+  0002 2008         [3]     BRA   *+10 ;abs = 000c
+   59:      wait(1500);    // 1ms wait
+  0004 cc05dc       [2]     LDD   #1500
+  0007 34           [2]     PSHX  
+  0008 0700         [4]     BSR   wait
+  000a 30           [3]     PULX  
+  000b 09           [1]     DEX   
+  000c 0475f5       [3]     TBNE  X,*-8 ;abs = 0004
+   60:    }
+   61:  }
+  000f 3d           [5]     RTS   
+   62:  
+   63:  //---------------------readStatus----------------------
+   64:  // Checks the LCD's internal busy flag
+   65:  // Input: None
+   66:  // Output: None
+   67:  // Returns: State of busy flag: BUSY = 1 and NOTBUSY = 0
+   68:  unsigned char readStatus(void) {
+*** EVALUATION ***
+
+Function: readStatus
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+   69:    unsigned char busy, trash;
+   70:  						//4-bit protocol read Busy
+   71:    DDRH &= ~0x0F;    //1) data direction input on 4 data bits
+  0000 1d00000f     [4]     BCLR  _DDRH,#15
+   72:    PTH_PTH5 = 1;     //2) R/W=1, RS=0
+  0004 1c000020     [4]     BSET  _PTH,#32
+   73:    PTH_PTH4 = 0;
+  0008 1d000010     [4]     BCLR  _PTH,#16
+   74:    PTH_PTH6 = 1;     //3) E=1
+  000c 1c000040     [4]     BSET  _PTH,#64
+   75:    asm nop           //4) Wait a little time (2 nops) 
+  0010 a7           [1]     NOP   
+   76:    asm nop			//   [it does not work without delay]
+  0011 a7           [1]     NOP   
+   77:    busy = ((PTH & 0x08) >> 3); //5) Read 4-bit MS nibble data (bit 3 is busy)
+  0012 f60000       [3]     LDAB  _PTH
+  0015 c408         [1]     ANDB  #8
+  0017 54           [1]     LSRB  
+  0018 54           [1]     LSRB  
+  0019 54           [1]     LSRB  
+  001a 6bae         [2]     STAB  2,-SP
+   78:    PTH_PTH6 = 0;     //6) E=0
+  001c 1d000040     [4]     BCLR  _PTH,#64
+   79:    PTH_PTH6 = 1;     //7) E=1
+  0020 1c000040     [4]     BSET  _PTH,#64
+   80:    asm nop           //8) Wait a little time (2 nops)
+  0024 a7           [1]     NOP   
+   81:    asm nop 
+  0025 a7           [1]     NOP   
+   82:    trash = PTH;      //9) Read 4-bit LS nibble data (nothing interesting)
+  0026 f60000       [3]     LDAB  _PTH
+  0029 6b81         [2]     STAB  1,SP
+   83:    PTH_PTH6 = 0;     //10) E=0
+  002b 1d000040     [4]     BCLR  _PTH,#64
+   84:    PTH_PTH5 = 0;     //11) R/W=0 (default settings)
+  002f 1d000020     [4]     BCLR  _PTH,#32
+   85:    DDRH |= 0x0F;     //12) direction on four data lines go back to outputs 
+  0033 1c00000f     [4]     BSET  _DDRH,#15
+   86:  					//    (default settings)
+   87:    return busy;  //BUSY = 1 and NOTBUSY = 0
+  0037 e680         [3]     LDAB  0,SP
+   88:  }
+  0039 30           [3]     PULX  
+  003a 3d           [5]     RTS   
+   89:  
+   90:  //---------------------checkStatus----------------------
+   91:  // Checks the LCD's internal busy flag and timeouts out after a given amount of cycles
+   92:  // Input: Cycles to wait before timing-out
+   93:  // Output: None
+   94:  // Returns: BUSY if the flag is set or it times out
+   95:  unsigned char checkStatus(unsigned short cycles) {
+*** EVALUATION ***
+
+Function: checkStatus
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 6caa         [2]     STD   6,-SP
+   96:    unsigned short startTime, tempTime;
+   97:    startTime = TCNT;
+  0002 dc00         [3]     LDD   _TCNT
+  0004 6c84         [2]     STD   4,SP
+   98:    tempTime = 0;
+  0006 c7           [1]     CLRB  
+  0007 87           [1]     CLRA  
+   99:    while(tempTime <= cycles && readStatus() == BUSY) {
+  0008 2004         [3]     BRA   *+6 ;abs = 000e
+  100:      tempTime = TCNT-startTime;
+  000a dc00         [3]     LDD   _TCNT
+  000c a384         [3]     SUBD  4,SP
+  000e 6c82         [2]     STD   2,SP
+  0010 ac80         [3]     CPD   0,SP
+  0012 2205         [3/1]   BHI   *+7 ;abs = 0019
+  0014 0700         [4]     BSR   readStatus
+  0016 0411f1       [3]     DBEQ  B,*-12 ;abs = 000a
+  101:    }
+  102:    if(tempTime > cycles){ // Wait time exceeded
+  0019 ec82         [3]     LDD   2,SP
+  001b ac80         [3]     CPD   0,SP
+  001d 2303         [3/1]   BLS   *+5 ;abs = 0022
+  103:      return BUSY;
+  001f c601         [1]     LDAB  #1
+  0021 21           [1]     SKIP1 
+  104:    }    
+  105:    return NOTBUSY;
+  0022 c7           [1]     CLRB  
+  106:  }
+  0023 1b86         [2]     LEAS  6,SP
+  0025 3d           [5]     RTS   
+  107:  
+  108:  
+  109:  
+  110:  
+  111:  //---------------------outCsrNibble---------------------
+  112:  // Sends one command code to the LCD control/status
+  113:  // Input: Command is 4-bit function to execute
+  114:  // Output: 4-bit command to LCD peripheral
+  115:  // Returns: None
+  116:  static void outCsrNibble(unsigned char command){
+*** EVALUATION ***
+
+Function: outCsrNibble
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  117:    PTH = (PTH&0x80)+(command&0x0F);    // nibble, E=0, RS=0
+  0001 f60000       [3]     LDAB  _PTH
+  0004 c480         [1]     ANDB  #128
+  0006 32           [3]     PULA  
+  0007 840f         [1]     ANDA  #15
+  0009 1806         [2]     ABA   
+  000b 7a0000       [3]     STAA  _PTH
+  118:    PTH |= 0x40;             // E goes 0,1
+  000e 1c000040     [4]     BSET  _PTH,#64
+  119:    asm nop
+  0012 a7           [1]     NOP   
+  120:    asm nop                  // 5 cycles wide = 208ns
+  0013 a7           [1]     NOP   
+  121:    PTH &= ~0x40;            // E goes 1,0
+  0014 1d000040     [4]     BCLR  _PTH,#64
+  122:  }
+  0018 3d           [5]     RTS   
+  123:  
+  124:  //---------------------outCsr---------------------
+  125:  // Sends one command code to the LCD control/status
+  126:  // Input: Command is 8-bit function to execute
+  127:  // Output: None
+  128:  // Returns: None
+  129:  static void outCsr(unsigned char command){
+*** EVALUATION ***
+
+Function: outCsr
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  130:    outCsrNibble(command>>4);   // ms nibble, E=0, RS=0
+  0001 54           [1]     LSRB  
+  0002 54           [1]     LSRB  
+  0003 54           [1]     LSRB  
+  0004 54           [1]     LSRB  
+  0005 0700         [4]     BSR   outCsrNibble
+  131:    outCsrNibble(command);      // ls nibble, E=0, RS=0
+  0007 e680         [3]     LDAB  0,SP
+  0009 0700         [4]     BSR   outCsrNibble
+  132:    wait(135);
+  000b c687         [1]     LDAB  #135
+  000d 87           [1]     CLRA  
+  000e 160000       [4]     JSR   wait
+  133:  }
+  0011 32           [3]     PULA  
+  0012 3d           [5]     RTS   
+  134:  
+  135:  //---------------------LCD_Clear---------------------
+  136:  // Clear the LCD display, send cursor to home
+  137:  // Input: None
+  138:  // Output: Sets internal flag if LCD is not open or LCD is busy.
+  139:  // Returns: None
+  140:  void LCD_Clear(void){
+*** EVALUATION ***
+
+Function: LCD_Clear
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  141:    if(OpenFlag==0){
+  0000 fc0000       [3]     LDD   OpenFlag
+  0003 2718         [3/1]   BEQ   *+26 ;abs = 001d
+  142:      ClearFlag = 0;     // Not open, set error flag
+  143:      return;
+  144:    }
+  145:    outCsr(0x01);        // Clear Display
+  0005 c601         [1]     LDAB  #1
+  0007 0700         [4]     BSR   outCsr
+  146:    if(checkStatus(350) == BUSY) {
+  0009 cc015e       [2]     LDD   #350
+  000c 0700         [4]     BSR   checkStatus
+  000e 04010c       [3]     DBEQ  B,*+15 ;abs = 001d
+  147:      ClearFlag = 0;     // Set error flag, LCD is busy
+  148:      return;
+  149:    }         
+  150:    outCsr(0x02);        // Cursor to home
+  0011 c602         [1]     LDAB  #2
+  0013 0700         [4]     BSR   outCsr
+  151:    if(checkStatus(350) == BUSY) { 
+  0015 cc015e       [2]     LDD   #350
+  0018 0700         [4]     BSR   checkStatus
+  001a 042102       [3]     DBNE  B,*+5 ;abs = 001f
+  152:      ClearFlag = 0;     // Set error flag, LCD is busy
+  001d c7           [1]     CLRB  
+  001e 8f           [2]     SKIP2 
+  153:      return;
+  154:    }   
+  155:    ClearFlag = 1;	   // Success
+  001f c601         [1]     LDAB  #1
+  0021 87           [1]     CLRA  
+  0022 7c0000       [3]     STD   ClearFlag
+  156:    return;
+  157:  }
+  0025 3d           [5]     RTS   
+  158:  #define LCDINC 2
+  159:  #define LCDDEC 0
+  160:  #define LCDSHIFT 1
+  161:  #define LCDNOSHIFT 0
+  162:  #define LCDCURSOR 2
+  163:  #define LCDNOCURSOR 0
+  164:  #define LCDBLINK 1
+  165:  #define LCDNOBLINK 0
+  166:  #define LCDSCROLL 8
+  167:  #define LCDNOSCROLL 0
+  168:  #define LCDLEFT 0
+  169:  #define LCDRIGHT 4
+  170:  #define LCD2LINE 8
+  171:  #define LCD1LINE 0
+  172:  #define LCD10DOT 4
+  173:  #define LCD7DOT 0
+  174:  
+  175:  //---------------------LCD_Open---------------------
+  176:  // Initialize the LCD display, called once at beginning
+  177:  // Input: None
+  178:  // Output: Sets internal flag if Open succeeds
+  179:  // Returns: None
+  180:  void LCD_Open(void){
+*** EVALUATION ***
+
+Function: LCD_Open
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  181:    if(OpenFlag){
+  0000 fc0000       [3]     LDD   OpenFlag
+  0003 2643         [3/1]   BNE   *+69 ;abs = 0048
+  182:      return;      // error if already open
+  183:    }
+  184:    DDRH |= 0x7F;    // PH6-0 output to LCD
+  0005 1c00007f     [4]     BSET  _DDRH,#127
+  185:    PTH &= ~0x20;    // PH5=R/W=0 means write
+  0009 1d000020     [4]     BCLR  _PTH,#32
+  186:    //TSCR1 = 0x80;    // Enable TCNT, 24MHz boot mode, 4MHz in run mode
+  187:    //TSCR2 = 0x04;    // divide by 16 TCNT prescale, TCNT at 667nsec
+  188:    PACTL = 0;       // timer prescale used for TCNT
+  000d 790000       [3]     CLR   _PACTL
+  189:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
+  190:      divide  FastMode(24MHz)    Slow Mode (8MHz)
+  191:  000   1     42ns  TOF  2.73ms  125ns TOF 8.192ms
+  192:  001   2     84ns  TOF  5.46ms  250ns TOF 16.384ms 
+  193:  010   4    167ns  TOF  10.9ms  500ns TOF 32.768ms   
+  194:  011   8    333ns  TOF  21.8ms 	 1us TOF 65.536ms
+  195:  100  16    667ns  TOF  43.7ms 	 2us TOF 131.072ms
+  196:  101  32   1.33us  TOF  87.4ms		 4us TOF 262.144ns
+  197:  110  64   2.67us  TOF 174.8ms    8us TOF 524.288ms
+  198:  111 128   5.33us  TOF 349.5ms   16us TOF 1.048576s */ 
+  199:  // Be careful, TSCR1 and TSCR2 maybe set in other rituals
+  200:    wait1ms(20);        // to allow LCD powerup
+  0010 c614         [1]     LDAB  #20
+  0012 87           [1]     CLRA  
+  0013 160000       [4]     JSR   wait1ms
+  201:    outCsrNibble(0x03); // (DL=1 8-bit mode)
+  0016 c603         [1]     LDAB  #3
+  0018 0700         [4]     BSR   outCsrNibble
+  202:    wait1ms(5);         //  blind cycle 5ms wait
+  001a c605         [1]     LDAB  #5
+  001c 87           [1]     CLRA  
+  001d 160000       [4]     JSR   wait1ms
+  203:    outCsrNibble(0x03); // (DL=1 8-bit mode)
+  0020 c603         [1]     LDAB  #3
+  0022 0700         [4]     BSR   outCsrNibble
+  204:    wait(150);          // blind cycle 100us wait
+  0024 c696         [1]     LDAB  #150
+  0026 87           [1]     CLRA  
+  0027 160000       [4]     JSR   wait
+  205:    outCsrNibble(0x03); // (DL=1 8-bit mode)
+  002a c603         [1]     LDAB  #3
+  002c 071b         [4]     BSR   *+29 ;abs = 0049
+  206:    wait(150);          //  blind cycle 100us wait (not called for, but do it anyway)
+  207:    outCsrNibble(0x02); // (DL=0 4-bit mode)
+  002e c602         [1]     LDAB  #2
+  0030 0717         [4]     BSR   *+25 ;abs = 0049
+  208:    wait(150);          // blind cycle 100 us wait
+  209:  /* Entry Mode Set 0,0,0,0,0,1,I/D,S
+  210:       I/D=1 for increment cursor move direction
+  211:          =0 for decrement cursor move direction
+  212:       S  =1 for display shift
+  213:          =0 for no display shift	 */
+  214:    outCsr(0x04+LCDINC+LCDNOSHIFT);        // I/D=1 Increment, S=0 no displayshift
+  0032 c606         [1]     LDAB  #6
+  0034 0700         [4]     BSR   outCsr
+  215:  /* Display On/Off Control 0,0,0,0,1,D,C,B
+  216:       D  =1 for display on
+  217:          =0 for display off
+  218:       C  =1 for cursor on
+  219:          =0 for cursor off
+  220:       B  =1 for blink of cursor position character
+  221:          =0 for no blink	 */
+  222:    outCsr(0x0C+LCDNOCURSOR+LCDNOBLINK);   // D=1 displayon, C=0 cursoroff, B=0 blink off
+  0036 c60c         [1]     LDAB  #12
+  0038 0700         [4]     BSR   outCsr
+  223:  /* Cursor/Display Shift  0,0,0,1,S/C,R/L,*,*
+  224:       S/C=1 for display shift
+  225:          =0 for cursor movement
+  226:       R/L=1 for shift to left
+  227:          =0 for shift to right	 */
+  228:    outCsr(0x10+LCDNOSCROLL+LCDRIGHT);   // S/C=0 cursormove, R/L=1 shiftright
+  003a c614         [1]     LDAB  #20
+  003c 0700         [4]     BSR   outCsr
+  229:  /* Function Set   0,0,1,DL,N,F,*,*
+  230:       DL=1 for 8 bit
+  231:         =0 for 4 bit
+  232:       N =1 for 2 lines
+  233:         =0 for 1 line
+  234:       F =1 for 5 by 10 dots
+  235:         =0 for 5 by 7 dots */
+  236:    outCsr(0x20+LCD2LINE+LCD7DOT);   // DL=0 4bit, N=1 2 line, F=0 5by7 dots
+  003e c628         [1]     LDAB  #40
+  0040 0700         [4]     BSR   outCsr
+  237:    OpenFlag = 1;         // device open
+  0042 c601         [1]     LDAB  #1
+  0044 87           [1]     CLRA  
+  0045 7c0000       [3]     STD   OpenFlag
+  238:    return;   // clear display
+  239:  }
+  0048 3d           [5]     RTS   
+  0049 160000       [4]     JSR   outCsrNibble
+  004c c696         [1]     LDAB  #150
+  004e 87           [1]     CLRA  
+  004f 060000       [3]     JMP   wait
+  240:  
+  241:  //---------------------LCD_OutChar---------------------
+  242:  // Sends one ASCII to the LCD display
+  243:  // Input: Letter is ASCII code
+  244:  // Output: Sets internal error flag if failure occurs
+  245:  // Returns: None
+  246:  void LCD_OutChar(unsigned char letter){
+*** EVALUATION ***
+
+Function: LCD_OutChar
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  247:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 272d         [3/1]   BEQ   *+47 ;abs = 0033
+  248:      CharFlag = 0;  // not open
+  249:      return;
+  250:    }
+  251:    PTH = (PTH&0x80)+(0x10+(0x0F&(letter>>4)));   // ms nibble, E=0, RS=1
+  0006 f60000       [3]     LDAB  _PTH
+  0009 c480         [1]     ANDB  #128
+  000b a680         [3]     LDAA  0,SP
+  000d 44           [1]     LSRA  
+  000e 44           [1]     LSRA  
+  000f 44           [1]     LSRA  
+  0010 44           [1]     LSRA  
+  0011 072a         [4]     BSR   *+44 ;abs = 003d
+  252:    PTH |= 0x40;       // E goes 0,1
+  253:    asm nop
+  0013 a7           [1]     NOP   
+  254:    asm nop            // 5 cycles wide = 208ns
+  0014 a7           [1]     NOP   
+  255:    PTH &= ~0x40;      // E goes 1,0
+  0015 1d000040     [4]     BCLR  _PTH,#64
+  256:    PTH = (PTH&0x80)+(0x10+(letter&0x0F));        // ls nibble, E=0, RS=1
+  0019 f60000       [3]     LDAB  _PTH
+  001c c480         [1]     ANDB  #128
+  001e a680         [3]     LDAA  0,SP
+  0020 840f         [1]     ANDA  #15
+  0022 0719         [4]     BSR   *+27 ;abs = 003d
+  257:    PTH |= 0x40;       // E goes 0,1
+  258:    asm nop
+  0024 a7           [1]     NOP   
+  259:    asm nop            // 5 cycles wide = 208ns
+  0025 a7           [1]     NOP   
+  260:    PTH &= ~0x40;      // E goes 1,0
+  0026 1d000040     [4]     BCLR  _PTH,#64
+  261:    if(checkStatus(6) == BUSY) { // 6 cycle timeout
+  002a c606         [1]     LDAB  #6
+  002c 87           [1]     CLRA  
+  002d 160000       [4]     JSR   checkStatus
+  0030 042102       [3]     DBNE  B,*+5 ;abs = 0035
+  262:      CharFlag = 0;
+  0033 c7           [1]     CLRB  
+  0034 8f           [2]     SKIP2 
+  263:      return;
+  264:    }       
+  265:    CharFlag = 1;	         // success
+  0035 c601         [1]     LDAB  #1
+  0037 87           [1]     CLRA  
+  0038 7c0000       [3]     STD   CharFlag
+  266:    return;
+  267:  }
+  003b 32           [3]     PULA  
+  003c 3d           [5]     RTS   
+  003d 8b10         [1]     ADDA  #16
+  003f 1806         [2]     ABA   
+  0041 7a0000       [3]     STAA  _PTH
+  0044 1c000040     [4]     BSET  _PTH,#64
+  0048 3d           [5]     RTS   
+  268:  
+  269:  //---------------------LCD_OutString--------------
+  270:  // Display String
+  271:  // Input: Pointer to NULL-terminationed ASCII string 
+  272:  // Output: Set internal error code if failure occurs
+  273:  // Returns: None
+  274:  void LCD_OutString(char *pt){ 
+*** EVALUATION ***
+
+Function: LCD_OutString
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  275:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 260a         [3/1]   BNE   *+12 ;abs = 0010
+  276:      StringFlag=0;
+  0006 c7           [1]     CLRB  
+  277:      return;
+  0007 200f         [3]     BRA   *+17 ;abs = 0018
+  278:    }
+  279:    while(*pt){
+  280:      LCD_OutChar((unsigned char)*pt);
+  0009 0700         [4]     BSR   LCD_OutChar
+  281:      pt++;
+  000b ee80         [3]     LDX   0,SP
+  000d 08           [1]     INX   
+  000e 6e80         [2]     STX   0,SP
+  0010 ee80         [3]     LDX   0,SP
+  0012 e600         [3]     LDAB  0,X
+  0014 26f3         [3/1]   BNE   *-11 ;abs = 0009
+  282:    }
+  283:    StringFlag=1;	  // success
+  0016 c601         [1]     LDAB  #1
+  0018 87           [1]     CLRA  
+  0019 7c0000       [3]     STD   StringFlag
+  284:    return;
+  285:  }
+  001c 3a           [3]     PULD  
+  001d 3d           [5]     RTS   
+  286:  
+  287:  //---------------------LCD_GoTo--------------
+  288:  // Move the cursor to a particular row and column
+  289:  // Input: Parameters (row, column)   First row and and column is 0
+  290:  // Output: Sets internal error code if failure occurs
+  291:  // Returns: None
+  292:  void LCD_GoTo(unsigned char row, unsigned char col){
+*** EVALUATION ***
+
+Function: LCD_GoTo
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  293:    //int i;
+  294:    if(OpenFlag==0 || col > 7 || row > 1){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 270c         [3/1]   BEQ   *+14 ;abs = 0012
+  0006 e680         [3]     LDAB  0,SP
+  0008 c107         [1]     CMPB  #7
+  000a 2206         [3/1]   BHI   *+8 ;abs = 0012
+  000c a683         [3]     LDAA  3,SP
+  000e 8101         [1]     CMPA  #1
+  0010 2303         [3/1]   BLS   *+5 ;abs = 0015
+  295:      GotoFlag = 0;  // not open
+  0012 c7           [1]     CLRB  
+  296:      return;
+  0013 200d         [3]     BRA   *+15 ;abs = 0022
+  297:    }
+  298:    if(row) {
+  0015 044003       [3]     TBEQ  A,*+6 ;abs = 001b
+  299:      outCsr(0xC0 + col); // Jump to second 8 characters then to correct column
+  0018 cbc0         [1]     ADDB  #192
+  300:    }
+  001a 8f           [2]     SKIP2 
+  301:    else {
+  302:      outCsr(0x80 + col); // Jump to correct column
+  001b cb80         [1]     ADDB  #128
+  001d 160000       [4]     JSR   outCsr
+  303:    }
+  304:    GotoFlag = 1;		// success
+  0020 c601         [1]     LDAB  #1
+  0022 87           [1]     CLRA  
+  0023 7c0000       [3]     STD   GotoFlag
+  305:    return;
+  306:  }
+  0026 32           [3]     PULA  
+  0027 3d           [5]     RTS   
+  307:  
+  308:  //---------------------LCD_ErrorCheck--------------
+  309:  // LCD_ErrorCheck Check to see if the LCD driver has had any errors
+  310:  // Returns an error code if LCD has had any errors since initialization or since the last call to ErrorCheck
+  311:  // Input Parameter(none)
+  312:  // Output Parameter(error code)
+  313:  // Typical calling sequence
+  314:  // Err = ErrorCheck();
+  315:  // if(Err) Handle(Err);
+  316:  short LCD_ErrorCheck(void) {
+*** EVALUATION ***
+
+Function: LCD_ErrorCheck
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+
+  317:    short error = (StringFlag<<4)+(CharFlag<<3)+(GotoFlag<<2)+(ClearFlag<<1)+OpenFlag;
+  0000 fc0000       [3]     LDD   StringFlag
+  0003 59           [1]     LSLD  
+  0004 59           [1]     LSLD  
+  0005 59           [1]     LSLD  
+  0006 59           [1]     LSLD  
+  0007 b745         [1]     TFR   D,X
+  0009 fc0000       [3]     LDD   CharFlag
+  000c 59           [1]     LSLD  
+  000d 59           [1]     LSLD  
+  000e 59           [1]     LSLD  
+  000f 1ae6         [2]     LEAX  D,X
+  0011 fc0000       [3]     LDD   GotoFlag
+  0014 59           [1]     LSLD  
+  0015 59           [1]     LSLD  
+  0016 1ae6         [2]     LEAX  D,X
+  0018 fc0000       [3]     LDD   ClearFlag
+  001b 59           [1]     LSLD  
+  001c 1ae6         [2]     LEAX  D,X
+  001e b754         [1]     TFR   X,D
+  0020 f30000       [3]     ADDD  OpenFlag
+  318:    return error&0x1F;
+  0023 c41f         [1]     ANDB  #31
+  0025 87           [1]     CLRA  
+  319:  }
+  0026 3d           [5]     RTS   

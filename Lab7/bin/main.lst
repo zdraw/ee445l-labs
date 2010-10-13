@@ -1,0 +1,140 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  /*
+    2:    Initiating ADC Conversion:
+    3:      1. Writing to ATD0CTL5
+    4:      2. Edge on external trigger
+    5:      3. Level on external trigger
+    6:    
+    7:    Completed Conversion
+    8:      1. Reading ATD0STAT1
+    9:      2. Interrupt when complete
+   10:  */
+   11:  
+   12:  #include <hidef.h>      /* common defines and macros */
+   13:  #include <mc9s12dp512.h>     /* derivative information */
+   14:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+   15:                
+   16:  #define PROCEDURE 1
+   17:  #include "PLL.h"
+   18:  #include "ADC.h"
+   19:  #include "OC.h"
+   20:  
+   21:  #if PROCEDURE == 1
+   22:  #include "SCI0.h"
+   23:  
+   24:  unsigned short DataBuffer[100];
+   25:  unsigned short Count=0;
+   26:  void back(void) {
+*** EVALUATION ***
+
+Function: back
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+
+   27:    unsigned short data;
+   28:    if(Count<100) {
+  0000 fc0000       [3]     LDD   Count
+  0003 8c0064       [2]     CPD   #100
+  0006 2418         [3/1]   BCC   *+26 ;abs = 0020
+   29:      data = ADC0_In(0x85); // your program that samples channel 5
+  0008 c685         [1]     LDAB  #133
+  000a 160000       [4]     JSR   ADC0_In
+   30:      DataBuffer[Count++] = data;
+  000d fe0000       [3]     LDX   Count
+  0010 1901         [2]     LEAY  1,X
+  0012 7d0000       [3]     STY   Count
+  0015 b746         [1]     TFR   D,Y
+  0017 b754         [1]     TFR   X,D
+  0019 59           [1]     LSLD  
+  001a b745         [1]     TFR   D,X
+  001c 6de20000     [3]     STY   DataBuffer,X
+   31:    }
+   32:  }
+  0020 3d           [5]     RTS   
+   33:  void main(void){unsigned short i;
+*** EVALUATION ***
+
+Function: main
+Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   34:    PLL_Init(); // 24 MHz
+  0001 160000       [4]     JSR   PLL_Init
+   35:    ADC0_Init(); // your module
+  0004 160000       [4]     JSR   ADC0_Init
+   36:    SCI0_Init(115200); // SCI output to PC
+  0007 86c2         [1]     LDAA  #194
+  0009 c7           [1]     CLRB  
+  000a ce0001       [2]     LDX   #1
+  000d 160000       [4]     JSR   SCI0_Init
+   37:    OC0_Init(1000,&back); // your module sampling at 1000 Hz
+  0010 cc03e8       [2]     LDD   #1000
+  0013 3b           [2]     PSHD  
+  0014 cc0000       [2]     LDD   #back
+  0017 160000       [4]     JSR   OC0_Init
+  001a 1b82         [2]     LEAS  2,SP
+   38:    while(Count<100) {}; // copy ADC to buffer in background
+  001c fc0000       [3]     LDD   Count
+  001f 8c0064       [2]     CPD   #100
+  0022 25f8         [3/1]   BCS   *-6 ;abs = 001c
+   39:    for(i=0; i<100; i++) {
+  0024 c7           [1]     CLRB  
+  0025 87           [1]     CLRA  
+  0026 6c80         [2]     STD   0,SP
+   40:      SCI0_OutUDec(DataBuffer[i]); SCI0_OutChar(10);SCI0_OutChar(13);
+  0028 ec80         [3]     LDD   0,SP
+  002a 59           [1]     LSLD  
+  002b b745         [1]     TFR   D,X
+  002d ece20000     [4]     LDD   DataBuffer,X
+  0031 160000       [4]     JSR   SCI0_OutUDec
+  0034 c60a         [1]     LDAB  #10
+  0036 160000       [4]     JSR   SCI0_OutChar
+  0039 c60d         [1]     LDAB  #13
+  003b 160000       [4]     JSR   SCI0_OutChar
+  003e ee80         [3]     LDX   0,SP
+  0040 08           [1]     INX   
+  0041 6e80         [2]     STX   0,SP
+  0043 8e0064       [2]     CPX   #100
+  0046 25e0         [3/1]   BCS   *-30 ;abs = 0028
+   41:    }
+   42:    for(;;){};
+  0048 20fe         [3]     BRA   *+0 ;abs = 0048
+   43:  }
+   44:  
+   45:  #else
+   46:  #include "FIFO.h"
+   47:  
+   48:  void getData(void) {
+   49:    unsigned short data;
+   50:    data = ADC0_In(0x80);
+   51:    while(!Fifo_Put(data)) {}    
+   52:  }
+   53:  
+   54:  void main(void) {
+   55:    // Initialize needed modules
+   56:    PLL_Init();
+   57:    Fifo_Init();
+   58:    ADC0_Init();
+   59:    LCD_Open();
+   60:    OC0_Init(10, &getData);
+   61:    
+   62:    LCD_Clear();
+   63:    LCD_OutString("    %cC");
+   64:    
+   65:    for(;;) {
+   66:      unsigned short data;
+   67:      unsigned char temperature;
+   68:      unsigned char *buffer = "";
+   69:      while(!Fifo_Get(&data)) {}
+   70:      
+   71:      temperature = ADCTable[data];
+   72:      sprintf(buffer, "%2d.%01d", temperature/10, temperature%10);
+   73:      LCD_GoTo(0,0);
+   74:      LCD_OutString(buffer);
+   75:                                   
+   76:    }
+   77:  }
+   78:  #endif
