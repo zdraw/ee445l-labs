@@ -28,8 +28,8 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x900     27
-  _Copy    *toCopyDownBeg 0xD033
+  _Range   pZeroOut       0x900     31
+  _Copy    *toCopyDownBeg 0xD032
 } _startupData;
 
 *********************************************************************************************
@@ -38,9 +38,9 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.rodata                         3068     R     0xC045     0xCC40   ROM_C000
-.text                            781     R     0xCC41     0xCF4D   ROM_C000
-.copy                             17     R     0xD033     0xD043   ROM_C000
+.rodata                         2972     R     0xC045     0xCBE0   ROM_C000
+.text                            876     R     0xCBE1     0xCF4C   ROM_C000
+.copy                             17     R     0xD032     0xD042   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .data                             12   R/W      0x900      0x90B   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
@@ -572,13 +572,13 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_ffec                  2     R     0xFFEC     0xFFED   .absSeg526
 .abs_section_ffea                  2     R     0xFFEA     0xFFEB   .absSeg527
 .abs_section_ffe8                  2     R     0xFFE8     0xFFE9   .absSeg528
-.bss                              15   R/W      0x90C      0x91A   RAM
-RUNTIME                          229     R     0xCF4E     0xD032   ROM_C000
+.bss                              19   R/W      0x90C      0x91E   RAM
+RUNTIME                          229     R     0xCF4D     0xD031   ROM_C000
 .vectSeg529_vect                   2     R     0xFFFE     0xFFFF   .vectSeg529
 
 Summary of section sizes per section type:
-READ_ONLY (R):        104E (dec:     4174)
-READ_WRITE (R/W):      11B (dec:      283)
+READ_ONLY (R):        104D (dec:     4173)
+READ_WRITE (R/W):      11F (dec:      287)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -631,7 +631,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
-     _TIOS                                       40       1       1       1   .abs_section_40
+     _TIOS                                       40       1       1       2   .abs_section_40
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
@@ -641,7 +641,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
-     _TIE                                        4C       1       1       1   .abs_section_4c
+     _TIE                                        4C       1       1       2   .abs_section_4c
      _TSCR2                                      4D       1       1       1   .abs_section_4d
      _TFLG1                                      4E       1       1       4   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
@@ -1057,9 +1057,9 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PORTAB                                      0       2       2       0   .abs_section_0
      _DDRAB                                       2       2       2       0   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
-     _TCNT                                       44       2       2       1   .abs_section_44
-     _TC0                                        50       2       2       3   .abs_section_50
-     _TC1                                        52       2       2       3   .abs_section_52
+     _TCNT                                       44       2       2       5   .abs_section_44
+     _TC0                                        50       2       2       4   .abs_section_50
+     _TC1                                        52       2       2       4   .abs_section_52
      _TC2                                        54       2       2       3   .abs_section_54
      _TC3                                        56       2       2       2   .abs_section_56
      _TC4                                        58       2       2       0   .abs_section_58
@@ -1121,7 +1121,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      CC41      2E      46       1   .text       
+     main                                      CBE1      31      49       1   .text       
 - VARIABLES:
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
@@ -1133,56 +1133,59 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _LCMP                                     CF4E      19      25       3   RUNTIME     
-     _lDivMod                                  CF67      BE     190       1   RUNTIME     
-     _LDIVU                                    D025       E      14       1   RUNTIME     
+     _LCMP                                     CF4D      19      25       3   RUNTIME     
+     _lDivMod                                  CF66      BE     190       1   RUNTIME     
+     _LDIVU                                    D024       E      14       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- DAC.c.o --
 - PROCEDURES:
-     DAC_Init                                  CC6F      17      23       1   .text       
-     transmitByte                              CC86      11      17       2   .text       
-     DAC_Out                                   CC97      15      21       3   .text       
+     DAC_Init                                  CC12      17      23       1   .text       
+     transmitByte                              CC29      11      17       2   .text       
+     DAC_Out                                   CC3A      15      21       3   .text       
 - VARIABLES:
 MODULE:                 -- music.c.o --
 - PROCEDURES:
-     Music_InitOC0                             CCAC      1C      28       1   .text       
-     TC0Handler                                CCC8      27      39       1   .text       
-     TC1Handler                                CCEF      56      86       1   .text       
-     TC2Handler                                CD45      5B      91       1   .text       
-     TC3Handler                                CDA0     16F     367       6   .text       
-     Music_Restart                             CF0F      1F      31       1   .text       
+     Music_InitOC0                             CC4F      1C      28       1   .text       
+     Music_InitOC1                             CC6B       E      14       1   .text       
+     TC0Handler                                CC79      75     117       1   .text       
+     TC1Handler                                CCEE      56      86       1   .text       
+     TC2Handler                                CD44      5B      91       1   .text       
+     TC3Handler                                CD9F     16F     367       6   .text       
+     Music_Restart                             CF0E      1F      31       1   .text       
 - VARIABLES:
-     SinWave                                   C045      80     128       3   .rodata     
-     melody                                    C0C5     36C     876       4   .rodata     
-     harmony                                   C431     43E    1086       6   .rodata     
-     bass                                      C86F     3D2     978       6   .rodata     
-     envelope1                                  900       2       2       3   .data       
+     SinWave                                   C045      20      32       3   .rodata     
+     melody                                    C065     36C     876       6   .rodata     
+     harmony                                   C3D1     43E    1086       6   .rodata     
+     bass                                      C80F     3D2     978       6   .rodata     
+     envelope1                                  900       2       2       4   .data       
      envelope2                                  902       2       2       4   .data       
      envelope3                                  904       2       2       4   .data       
      interrupts1                                906       2       2       6   .data       
      interrupts2                                908       2       2       6   .data       
      interrupts3                                90A       2       2       6   .data       
-     note1                                      90C       2       2       8   .bss        
+     note1                                      90C       2       2      10   .bss        
      note2                                      90E       2       2      10   .bss        
      note3                                      910       2       2      10   .bss        
-     output1                                    912       2       2       2   .bss        
-     output2                                    914       2       2       3   .bss        
-     output3                                    916       2       2       3   .bss        
-     i.1                                        918       1       1       2   .bss        
-     i.2                                        919       1       1       2   .bss        
-     i.3                                        91A       1       1       2   .bss        
+     output1                                    912       2       2       4   .bss        
+     output2                                    914       2       2       4   .bss        
+     output3                                    916       2       2       4   .bss        
+     startTime                                  918       2       2       3   .bss        
+     totalTime                                  91A       2       2       2   .bss        
+     i.1                                        91C       1       1       2   .bss        
+     i.2                                        91D       1       1       2   .bss        
+     i.3                                        91E       1       1       2   .bss        
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
      _Vector_9                                 FFEC       2       2       0   .abs_section_ffec
      _Vector_10                                FFEA       2       2       0   .abs_section_ffea
      _Vector_11                                FFE8       2       2       0   .abs_section_ffe8
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  CF2E      15      21       1   .text       
+     PLL_Init                                  CF2D      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Switch_Init                               CF43       5       5       1   .text       
-     Switch_Data                               CF48       6       6       6   .text       
+     Switch_Init                               CF42       5       5       1   .text       
+     Switch_Data                               CF47       6       6       6   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -1190,11 +1193,11 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     0     46      0
+  main.c.o                                     0     49      0
   Start12.c.o                                  0     59      0
   rtshc12.c.o (ansisi.lib)                     0    229      0
   DAC.c.o                                      0     61      0
-  music.c.o                                   27    642   3076
+  music.c.o                                   31    734   2980
   PLL.c.o                                      0     21      0
   switch.c.o                                   0     11      0
   other                                      256     12     17
@@ -1203,12 +1206,13 @@ MODULE STATISTIC
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  main DAC_Init transmitByte DAC_Out Music_InitOC0 TC0Handler TC1Handler 
-  TC2Handler TC3Handler Music_Restart PLL_Init Switch_Init Switch_Data 
+  main DAC_Init transmitByte DAC_Out Music_InitOC0 Music_InitOC1 TC0Handler 
+  TC1Handler TC2Handler TC3Handler Music_Restart PLL_Init Switch_Init 
+  Switch_Data 
 SECTION: ".data"
   envelope1 envelope2 envelope3 interrupts1 interrupts2 interrupts3 
 SECTION: ".bss"
-  note1 note2 note3 output1 output2 output3 i.1 i.2 i.3 
+  note1 note2 note3 output1 output2 output3 startTime totalTime i.1 i.2 i.3 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".rodata"
@@ -2318,23 +2322,23 @@ OBJECT LIST SORTED BY ADDRESS
      _RTICTL                                     3B       1       1       0   .abs_section_3b
      _COPCTL                                     3C       1       1       0   .abs_section_3c
      _ARMCOP                                     3F       1       1       0   .abs_section_3f
-     _TIOS                                       40       1       1       1   .abs_section_40
+     _TIOS                                       40       1       1       2   .abs_section_40
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
-     _TCNT                                       44       2       2       1   .abs_section_44
+     _TCNT                                       44       2       2       5   .abs_section_44
      _TSCR1                                      46       1       1       1   .abs_section_46
      _TTOV                                       47       1       1       0   .abs_section_47
      _TCTL1                                      48       1       1       0   .abs_section_48
      _TCTL2                                      49       1       1       0   .abs_section_49
      _TCTL3                                      4A       1       1       0   .abs_section_4a
      _TCTL4                                      4B       1       1       0   .abs_section_4b
-     _TIE                                        4C       1       1       1   .abs_section_4c
+     _TIE                                        4C       1       1       2   .abs_section_4c
      _TSCR2                                      4D       1       1       1   .abs_section_4d
      _TFLG1                                      4E       1       1       4   .abs_section_4e
      _TFLG2                                      4F       1       1       0   .abs_section_4f
-     _TC0                                        50       2       2       3   .abs_section_50
-     _TC1                                        52       2       2       3   .abs_section_52
+     _TC0                                        50       2       2       4   .abs_section_50
+     _TC1                                        52       2       2       4   .abs_section_52
      _TC2                                        54       2       2       3   .abs_section_54
      _TC3                                        56       2       2       2   .abs_section_56
      _TC4                                        58       2       2       0   .abs_section_58
@@ -2803,43 +2807,46 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
-     envelope1                                  900       2       2       3   .data       
+     envelope1                                  900       2       2       4   .data       
      envelope2                                  902       2       2       4   .data       
      envelope3                                  904       2       2       4   .data       
      interrupts1                                906       2       2       6   .data       
      interrupts2                                908       2       2       6   .data       
      interrupts3                                90A       2       2       6   .data       
-     note1                                      90C       2       2       8   .bss        
+     note1                                      90C       2       2      10   .bss        
      note2                                      90E       2       2      10   .bss        
      note3                                      910       2       2      10   .bss        
-     output1                                    912       2       2       2   .bss        
-     output2                                    914       2       2       3   .bss        
-     output3                                    916       2       2       3   .bss        
-     i.1                                        918       1       1       2   .bss        
-     i.2                                        919       1       1       2   .bss        
-     i.3                                        91A       1       1       2   .bss        
+     output1                                    912       2       2       4   .bss        
+     output2                                    914       2       2       4   .bss        
+     output3                                    916       2       2       4   .bss        
+     startTime                                  918       2       2       3   .bss        
+     totalTime                                  91A       2       2       2   .bss        
+     i.1                                        91C       1       1       2   .bss        
+     i.2                                        91D       1       1       2   .bss        
+     i.3                                        91E       1       1       2   .bss        
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     SinWave                                   C045      80     128       3   .rodata     
-     melody                                    C0C5     36C     876       4   .rodata     
-     harmony                                   C431     43E    1086       6   .rodata     
-     bass                                      C86F     3D2     978       6   .rodata     
-     main                                      CC41      2E      46       1   .text       
-     DAC_Init                                  CC6F      17      23       1   .text       
-     transmitByte                              CC86      11      17       2   .text       
-     DAC_Out                                   CC97      15      21       3   .text       
-     Music_InitOC0                             CCAC      1C      28       1   .text       
-     TC0Handler                                CCC8      27      39       1   .text       
-     TC1Handler                                CCEF      56      86       1   .text       
-     TC2Handler                                CD45      5B      91       1   .text       
-     TC3Handler                                CDA0     16F     367       6   .text       
-     Music_Restart                             CF0F      1F      31       1   .text       
-     PLL_Init                                  CF2E      15      21       1   .text       
-     Switch_Init                               CF43       5       5       1   .text       
-     Switch_Data                               CF48       6       6       6   .text       
-     _LCMP                                     CF4E      19      25       3   RUNTIME     
-     _lDivMod                                  CF67      BE     190       1   RUNTIME     
-     _LDIVU                                    D025       E      14       1   RUNTIME     
+     SinWave                                   C045      20      32       3   .rodata     
+     melody                                    C065     36C     876       6   .rodata     
+     harmony                                   C3D1     43E    1086       6   .rodata     
+     bass                                      C80F     3D2     978       6   .rodata     
+     main                                      CBE1      31      49       1   .text       
+     DAC_Init                                  CC12      17      23       1   .text       
+     transmitByte                              CC29      11      17       2   .text       
+     DAC_Out                                   CC3A      15      21       3   .text       
+     Music_InitOC0                             CC4F      1C      28       1   .text       
+     Music_InitOC1                             CC6B       E      14       1   .text       
+     TC0Handler                                CC79      75     117       1   .text       
+     TC1Handler                                CCEE      56      86       1   .text       
+     TC2Handler                                CD44      5B      91       1   .text       
+     TC3Handler                                CD9F     16F     367       6   .text       
+     Music_Restart                             CF0E      1F      31       1   .text       
+     PLL_Init                                  CF2D      15      21       1   .text       
+     Switch_Init                               CF42       5       5       1   .text       
+     Switch_Data                               CF47       6       6       6   .text       
+     _LCMP                                     CF4D      19      25       3   RUNTIME     
+     _lDivMod                                  CF66      BE     190       1   RUNTIME     
+     _LDIVU                                    D024       E      14       1   RUNTIME     
      _Vector_11                                FFE8       2       2       0   .abs_section_ffe8
      _Vector_10                                FFEA       2       2       0   .abs_section_ffea
      _Vector_9                                 FFEC       2       2       0   .abs_section_ffec
@@ -2856,7 +2863,7 @@ rtshc12.c.o (ansisi.lib):
   _CASE_DIRECT _CASE_DIRECT_BYTE _CASE_CHECKED _CASE_CHECKED_BYTE _CASE_SEARCH 
   _CASE_SEARCH_BYTE _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE _FCALL _FPCMP 
 music.c.o:
-  Music_InitOC1 Music_InitOC2 Music_InitOC3 
+  Music_InitOC2 Music_InitOC3 
 NOT USED VARIABLES
 rtshc12.c.o (ansisi.lib):
   _PowOfTwo_8 _PowOfTwo_16 _PowOfTwo_32 errno 
@@ -2864,43 +2871,43 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xD033 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD032 ---- SIZE       4 ---
 Filling bytes inserted
  000B0901
-------- ROM-ADDRESS: 0xD037 ---- RAM-ADDRESS: 0x901 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD036 ---- RAM-ADDRESS: 0x901 ---- SIZE       1 ---
 Name of initialized Object : envelope1:1
  01
-------- ROM-ADDRESS: 0xD038 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD037 ---- SIZE       1 ---
 Filling bytes inserted
  00
-------- ROM-ADDRESS: 0xD039 ---- RAM-ADDRESS: 0x903 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD038 ---- RAM-ADDRESS: 0x903 ---- SIZE       1 ---
 Name of initialized Object : envelope2:1
  01
-------- ROM-ADDRESS: 0xD03A ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD039 ---- SIZE       1 ---
 Filling bytes inserted
  00
-------- ROM-ADDRESS: 0xD03B ---- RAM-ADDRESS: 0x905 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD03A ---- RAM-ADDRESS: 0x905 ---- SIZE       1 ---
 Name of initialized Object : envelope3:1
  01
-------- ROM-ADDRESS: 0xD03C ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD03B ---- SIZE       1 ---
 Filling bytes inserted
  00
-------- ROM-ADDRESS: 0xD03D ---- RAM-ADDRESS: 0x907 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD03C ---- RAM-ADDRESS: 0x907 ---- SIZE       1 ---
 Name of initialized Object : interrupts1:1
  01
-------- ROM-ADDRESS: 0xD03E ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD03D ---- SIZE       1 ---
 Filling bytes inserted
  00
-------- ROM-ADDRESS: 0xD03F ---- RAM-ADDRESS: 0x909 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD03E ---- RAM-ADDRESS: 0x909 ---- SIZE       1 ---
 Name of initialized Object : interrupts2:1
  01
-------- ROM-ADDRESS: 0xD040 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD03F ---- SIZE       1 ---
 Filling bytes inserted
  00
-------- ROM-ADDRESS: 0xD041 ---- RAM-ADDRESS: 0x90B ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD040 ---- RAM-ADDRESS: 0x90B ---- SIZE       1 ---
 Name of initialized Object : interrupts3:1
  01
-------- ROM-ADDRESS: 0xD042 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xD041 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2910,13 +2917,16 @@ OBJECT-DEPENDENCIES SECTION
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
 main                      USES PLL_Init DAC_Init Switch_Init Music_InitOC0 
-                                Switch_Data Music_Restart 
+                                Music_InitOC1 Switch_Data Music_Restart 
 DAC_Init                  USES _DDRS _SPI0CR1 _SPI0CR2 _SPI0BR _PTS 
 transmitByte              USES _SPI0SR _SPI0DR 
 DAC_Out                   USES _PTS transmitByte 
 Music_InitOC0             USES _TSCR1 _TSCR2 _PACTL _DDRP _TIOS _TIE _TCNT 
                                 _TC0 
-TC0Handler                USES _TFLG1 _PTP i.1 SinWave DAC_Out _TC0 
+Music_InitOC1             USES _TIOS _TIE _TCNT _TC1 
+TC0Handler                USES _TCNT startTime _TFLG1 _PTP note1 melody 
+                                output2 output3 DAC_Out output1 i.1 _TC0 totalTime 
+                                SinWave envelope1 
 TC1Handler                USES _TFLG1 note2 harmony output1 output3 DAC_Out 
                                 output2 i.2 _TC1 SinWave envelope2 
 TC2Handler                USES _TFLG1 note3 bass output1 output2 DAC_Out 
@@ -2950,6 +2960,8 @@ DEPENDENCY TREE
  |  +- Switch_Init         
  |  |    
  |  +- Music_InitOC0       
+ |  |    
+ |  +- Music_InitOC1       
  |  |    
  |  +- Switch_Data         
  |  |    
@@ -2999,6 +3011,6 @@ STATISTIC SECTION
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 10
-Total size of all blocks to be downloaded: 4174
+Number of blocks to be downloaded: 9
+Total size of all blocks to be downloaded: 4173
 
