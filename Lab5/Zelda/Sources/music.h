@@ -2,7 +2,7 @@
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
                               
-#define SIN 64
+#define SIN 16
 #define FREQUENCY 24000000/SIN
 
 #define MREPEAT 36

@@ -14,7 +14,7 @@ void main(void) {
   DAC_Init();
   Switch_Init();
   Music_InitOC0();
-  //Music_InitOC1();
+  Music_InitOC1();
   //Music_InitOC2();
   //Music_InitOC3();
   

@@ -24,72 +24,7 @@ unsigned static short interrupts3 = 1;
 
 // Stores sin wave
 const unsigned short SinWave[SIN] = {
-2048,
-2249,
-2447,
-2642,
-2831,
-3013,
-3185,
-3347,
-3495,
-3630,
-3750,
-3853,
-3939,
-4007,
-4056,
-4085,
-4095,
-4085,
-4056,
-4007,
-3939,
-3853,
-3750,
-3630,
-3495,
-3347,
-3185,
-3013,
-2831,
-2642,
-2447,
-2249,
-2048,
-1847,
-1649,
-1454,
-1265,
-1083,
-911,
-749,
-601,
-466,
-346,
-243,
-157,
-89,
-40,
-11,
-1,
-11,
-40,
-89,
-157,
-243,
-346,
-466,
-601,
-749,
-911,
-1083,
-1265,
-1454,
-1649,
-1847
-};
-/*  683,
+  683,
   944,
   1165,
   1313,
@@ -105,7 +40,7 @@ const unsigned short SinWave[SIN] = {
   53,
   201,
   422
-};*/
+};
 
 const NoteType melody[MELODY] = {
   {FREQUENCY/466,600},
@@ -651,10 +586,13 @@ void Music_InitOC3(void){
   TIE  |= 0x08;   // arm OC1
   TC3   = TCNT+50;// first interrupt right away
 }          
-
+                         
+  unsigned short startTime = 0;
+  unsigned short totalTime = 0;
 // OC handler for melody
-/*interrupt 8 void TC0Handler() {
-  unsigned static char i = 0;
+interrupt 8 void TC0Handler() {
+  unsigned static char i = 0; 
+  startTime = TCNT;  
   
   TFLG1 = 0x01;  
   
@@ -675,20 +613,11 @@ void Music_InitOC3(void){
     output1 = 0;
     // Arbitrary next interrupt to check if note changed
     TC0 = TC0 + 480;  
+  }
+  if(TCNT - startTime > totalTime) {
+    totalTime = TCNT - startTime; 
   }      
-}*/
-
-interrupt 8 void TC0Handler() {
-  unsigned static char i = 0;
-  
-  TFLG1 = 0x01;  
-  
-  PTP ^= 0x80;
-  
-  DAC_Out(SinWave[i%SIN]);
-  i++;
-  TC0 = TC0 + 1704;
-}   
+}  
     
 // OC handler for harmony
 interrupt 9 void TC1Handler() { 
