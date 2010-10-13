@@ -29,7 +29,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x900     206
-  _Copy    *toCopyDownBeg 0xC23E
+  _Copy    *toCopyDownBeg 0xC288
 } _startupData;
 
 *********************************************************************************************
@@ -38,8 +38,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.text                            301     R     0xC045     0xC171   ROM_C000
-.copy                              2     R     0xC23E     0xC23F   ROM_C000
+.text                            307     R     0xC045     0xC177   ROM_C000
+.copy                              2     R     0xC288     0xC289   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -569,11 +569,11 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_ffee                  2     R     0xFFEE     0xFFEF   .absSeg525
 .bss                               2   R/W      0x900      0x901   RAM
 .common                          204   R/W      0x902      0x9CD   RAM
-RUNTIME                          204     R     0xC172     0xC23D   ROM_C000
+RUNTIME                          272     R     0xC178     0xC287   ROM_C000
 .vectSeg526_vect                   2     R     0xFFFE     0xFFFF   .vectSeg526
 
 Summary of section sizes per section type:
-READ_ONLY (R):         244 (dec:      580)
+READ_ONLY (R):         28E (dec:      654)
 READ_WRITE (R/W):      1CE (dec:      462)
 NO_INIT (N/I):         24E (dec:      590)
 
@@ -1132,8 +1132,10 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _lDivMod                                  C172      BE     190       1   RUNTIME     
-     _LDIVU                                    C230       E      14       1   RUNTIME     
+     _lDivMod                                  C178      BE     190       3   RUNTIME     
+     _LDIVU                                    C236       E      14       1   RUNTIME     
+     _NEG_P                                    C244       F      15       4   RUNTIME     
+     _LDIVS                                    C253      35      53       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
@@ -1152,8 +1154,8 @@ MODULE:                 -- ADC.c.o --
 - VARIABLES:
 MODULE:                 -- OC.c.o --
 - PROCEDURES:
-     TOC0handler                               C137      17      23       1   .text       
-     OC0_Init                                  C14E      24      36       1   .text       
+     TOC0handler                               C137      1D      29       1   .text       
+     OC0_Init                                  C154      24      36       1   .text       
 - VARIABLES:
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
      frequency                                  9CA       2       2       2   .common     
@@ -1166,11 +1168,11 @@ MODULE STATISTIC
   mc9s12dp512.c.o                            590      0      0
   main.c.o                                   202    107      0
   Start12.c.o                                  0     59      0
-  rtshc12.c.o (ansisi.lib)                     0    204      0
+  rtshc12.c.o (ansisi.lib)                     0    272      0
   PLL.c.o                                      0     21      0
   SCI0.c.o                                     0     93      0
   ADC.c.o                                      0     21      0
-  OC.c.o                                       4     59      2
+  OC.c.o                                       4     65      2
   other                                      256     12      2
 
 *********************************************************************************************
@@ -2236,7 +2238,7 @@ SECTION: ".abs_section_2be"
 SECTION: ".common"
   DataBuffer frequency function 
 SECTION: "RUNTIME"
-  _lDivMod _LDIVU 
+  _lDivMod _LDIVU _NEG_P _LDIVS 
 SECTION: ".abs_section_ffee"
   _Vector_8 
 
@@ -2783,10 +2785,12 @@ OBJECT LIST SORTED BY ADDRESS
      SCI0_OutUDec                              C101      21      33       2   .text       
      ADC0_Init                                 C122       C      12       1   .text       
      ADC0_In                                   C12E       9       9       1   .text       
-     TOC0handler                               C137      17      23       1   .text       
-     OC0_Init                                  C14E      24      36       1   .text       
-     _lDivMod                                  C172      BE     190       1   RUNTIME     
-     _LDIVU                                    C230       E      14       1   RUNTIME     
+     TOC0handler                               C137      1D      29       1   .text       
+     OC0_Init                                  C154      24      36       1   .text       
+     _lDivMod                                  C178      BE     190       3   RUNTIME     
+     _LDIVU                                    C236       E      14       1   RUNTIME     
+     _NEG_P                                    C244       F      15       4   RUNTIME     
+     _LDIVS                                    C253      35      53       1   RUNTIME     
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
 *********************************************************************************************
@@ -2796,20 +2800,24 @@ NOT USED PROCEDURES
 rtshc12.c.o (ansisi.lib):
   _BSHL _BSHRS _BSHRU _BDIVMODU _BDIVMODS _ISHL _ISHRU _ISHRS _LSHL _LSHRU 
   _LSHRS _LADD _LSUB _LAND _LOR _LXOR _LCMP _LCMP_P _LCMP_PP _LNEG _LCOM _LINC 
-  _LDEC _LMUL _LMULU16x32 _LMULS16x32 _NEG_P _LDIVS _LMODU _LMODS _ILSEXT _COPY 
-  _CASE_DIRECT _CASE_DIRECT_BYTE _CASE_CHECKED _CASE_CHECKED_BYTE _CASE_SEARCH 
+  _LDEC _LMUL _LMULU16x32 _LMULS16x32 _LMODU _LMODS _ILSEXT _COPY _CASE_DIRECT 
+  _CASE_DIRECT_BYTE _CASE_CHECKED _CASE_CHECKED_BYTE _CASE_SEARCH 
   _CASE_SEARCH_BYTE _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE _FCALL _FPCMP 
 SCI0.c.o:
   SCI0_InChar SCI0_InStatus SCI0_OutStatus SCI0_OutString SCI0_InUDec 
   SCI0_InUHex SCI0_OutUHex SCI0_InString 
 NOT USED VARIABLES
+main.c.o:
+  TempTable 
 rtshc12.c.o (ansisi.lib):
   _PowOfTwo_8 _PowOfTwo_16 _PowOfTwo_32 errno 
+ADC.c.o:
+  TempTable 
 
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC23E ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC288 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2827,10 +2835,11 @@ SCI0_OutChar              USES _SCI0SR1 _SCI0DRL
 SCI0_OutUDec              USES SCI0_OutUDec SCI0_OutChar 
 ADC0_Init                 USES _ATD0CTL23 _ATD0CTL45 
 ADC0_In                   USES _ATD0CTL45 _ATD0STAT1 _ATD0DR0 
-TOC0handler               USES _TFLG1 function frequency _TC0 
+TOC0handler               USES _TFLG1 function frequency _LDIVS _TC0 
 OC0_Init                  USES frequency function _TIOS _TIE _TSCR1 _TSCR2 
                                 _PACTL _TCNT _TC0 
 _LDIVU                    USES _lDivMod 
+_LDIVS                    USES _NEG_P _lDivMod 
 _Vector_8                 USES TOC0handler 
 
 *********************************************************************************************
@@ -2871,7 +2880,13 @@ DEPENDENCY TREE
  _Vector_8           
  | 
  +- TOC0handler         
-      
+    | 
+    +- _LDIVS              
+       | 
+       +- _NEG_P              
+       |    
+       +- _lDivMod             (see above)
+          
 *********************************************************************************************
 STATISTIC SECTION
 ---------------------------------------------------------------------------------------------
@@ -2879,5 +2894,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 6
-Total size of all blocks to be downloaded: 580
+Total size of all blocks to be downloaded: 654
 
