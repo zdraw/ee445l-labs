@@ -2,7 +2,7 @@ Forward Design Changes Report
 -----------------------------
 
 Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab6\Lab6h_Hall_Ahmed (PCB - Forward Design Changes Report).txt
-Report Written : Monday, October 11, 2010
+Report Written : Thursday, October 14, 2010
 Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab6\Lab6h_Hall_Ahmed.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM

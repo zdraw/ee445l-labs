@@ -1,0 +1,94 @@
+/* <?php
+*/
+
+/* Shop Styles here please
+*/
+.legalinfo {
+	background: lightgray;
+	border: 2px solid gray;
+	margin: 10px;
+	padding: 0px 0px 10px 10px;
+}
+/*
+General Formatting
+*/
+.formLabel {
+	float:left;
+	width:30%;
+	text-align:right;
+	font-weight: bold;
+	margin: 2px;
+	white-space: nowrap;
+	clear: left;
+}
+
+.formField {
+	float:left;
+	width:60%;
+	margin: 2px;
+		
+}
+/**
+* Administration Styles
+*/
+.adminListHeader {
+	float:left; height: 48px; background-repeat: no-repeat;
+	text-align: left; font-size: 18px; font-weight: bold;
+	padding-left: 80px;	
+}
+
+.labelcell {
+	margin-left: auto;
+	text-align: right;
+	font-weight: bold;
+	vertical-align: top;
+	width: 30%;
+}
+
+/**
+* Errors, Warnings and Info formatting
+*/
+.shop_error, .shop_warning, .shop_info, .shop_debug, .shop_critical, .shop_tip {
+	font-size: 120%;
+  	margin-top: 0.8em;
+  	margin-left: auto;
+  	margin-right: auto;
+  	width: 70% !important;
+  	clear: both;
+  	text-align: justify;
+  	vertical-align: middle;
+  	border-collapse: collapse;
+  	padding: 15px 20px 15px 80px;
+  	background-position: 20px 50%;
+  	background-repeat: no-repeat;
+  	-moz-border-radius: 20px;
+  	-khtml-border-radius: 20px;
+  	border-radius: 20px;
+}
+.shop_error {
+  	background-color: #fdd;
+	background-image: url( ../shop_image/ps_image/log_error.png );
+}
+.shop_warning {
+  	background-color: #ffc;
+	background-image: url( ../shop_image/ps_image/log_warning.png );
+}
+.shop_info {
+
+  	background-color: #eef;
+  	background-image: url( ../shop_image/ps_image/log_info.png );
+}
+.shop_tip {
+	background-image: url( ../shop_image/ps_image/info.png );
+  	background-color: #dfd;
+}
+.shop_debug {
+	background-color: #F0F8FF;
+	background-image: url( ../shop_image/ps_image/log_debug.png );
+
+}
+.shop_critical {
+	background-color: salmon;
+	font-weight: bold;
+	background-image: url( ../shop_image/ps_image/log_critical.png );
+}
