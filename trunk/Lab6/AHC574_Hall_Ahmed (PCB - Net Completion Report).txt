@@ -1,0 +1,15 @@
+Net Completion Report
+---------------------
+
+Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab6\AHC574_Hall_Ahmed (PCB - Net Completion Report).txt
+Report Written : Friday, October 15, 2010
+Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab6\AHC574_Hall_Ahmed.pcb
+Design Title   : 
+Created        : 9/11/2009 4:58:24 PM
+Last Saved     : 10/15/2010 6:07:46 AM
+Editing Time   : 2134 min
+Units          : mil (precision 3)
+
+
+No breaks found, all nets are fully routed.
+End Of Report.

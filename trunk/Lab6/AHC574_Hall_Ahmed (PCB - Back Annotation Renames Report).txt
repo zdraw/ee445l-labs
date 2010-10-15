@@ -1,0 +1,17 @@
+Back Annotation Renames Report
+------------------------------
+
+Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab6\AHC574_Hall_Ahmed (PCB - Back Annotation Renames Report).txt
+Report Written : Friday, October 15, 2010
+Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab6\AHC574_Hall_Ahmed.pcb
+Design Title   : 
+Created        : 9/11/2009 4:58:24 PM
+Last Saved     : 10/15/2010 5:03:37 AM
+Editing Time   : 2092 min
+Units          : mil (precision 0)
+
+Outstanding PCB renames awaiting back annotation to the Schematics design.
+
+Rename Component from "Vcc1" to "REF2V5".
+
+End Of Report.
