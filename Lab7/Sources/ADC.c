@@ -1,14 +1,9 @@
 #include "ADC.h"
 
-
-unsigned short TempTable[1024] = {
-  0
-};
-
 void ADC0_Init(void) {
   ATD0CTL2 = 0x80;
   ATD0CTL3 = 0x08;
-  ATD0CTL4 = 0x85; 
+  ATD0CTL4 = 0x05; 
 }
 
 unsigned short ADC0_In(unsigned char channel) {

@@ -16,11 +16,11 @@
 
 /* Number of characters in the Fifo
      the FIFO is full when it has FifoSize-1 characters */
-unsigned char static volatile *PutPt;    /* Pointer of where to put next */
-unsigned char static volatile *GetPt;    /* Pointer of where to get next */
+unsigned short static volatile *PutPt;    /* Pointer of where to put next */
+unsigned short static volatile *GetPt;    /* Pointer of where to get next */
                   /* FIFO is empty if PutPt=GetPt */
                   /* FIFO is full  if PutPt+1=GetPt */
-unsigned char static Fifo[FIFOSIZE];     /* The statically allocated fifo data */
+unsigned short static Fifo[FIFOSIZE];     /* The statically allocated fifo data */
 
 /*-----------------------Fifo_Init----------------------------
   Initialize fifo to be empty
@@ -41,8 +41,8 @@ void Fifo_Init(void){
   Inputs: 8-bit data
   Outputs: true if data is properly saved,
            false if data not saved because it was previously full*/
-int Fifo_Put(unsigned char data){
-unsigned char volatile *tempPt;
+int Fifo_Put(unsigned short data){
+unsigned short volatile *tempPt;
   tempPt = PutPt;
   *(tempPt) = data;      // try to Put data into fifo 
   tempPt++;              
@@ -63,7 +63,7 @@ unsigned char volatile *tempPt;
   Inputs: pointer to place to return 8-bit data
   Outputs: true if data is valid, 
            false if fifo was empty at the time of the call*/
-int Fifo_Get(unsigned char *datapt){ 
+int Fifo_Get(unsigned short *datapt){ 
   if(PutPt == GetPt){
     return(0);     // Empty if PutPt=GetPt 
   }

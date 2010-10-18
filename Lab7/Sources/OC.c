@@ -4,7 +4,8 @@ unsigned short frequency;
 void (*function)(void);
 
 interrupt 8 void TOC0handler(void){ // executes at 100 Hz 
-  TFLG1 = 0x01;         // acknowledge OC0
+  TFLG1 = 0x01;         // acknowledge OC0 
+  PTP |= 0x80;
   (*function)();
   TC0 += 187500/frequency; 
 }
