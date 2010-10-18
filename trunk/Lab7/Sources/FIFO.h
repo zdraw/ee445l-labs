@@ -12,6 +12,12 @@
 //    You may use, edit, run or distribute this file 
 //    as long as the above copyright notice remains  
 
+
+
+#include <hidef.h>      /* common defines and macros */
+#include <mc9s12dp512.h>     /* derivative information */
+#pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+
 #define FIFOSIZE 24
 /* Number of characters in the Fifo
      the FIFO is full when it has FifoSize-1 characters */
@@ -22,14 +28,14 @@ void Fifo_Init(void);
   Inputs: 8-bit data
   Outputs: true if data is properly saved,
            false if data not saved because it was previously full*/
-int Fifo_Put(unsigned char data); 
+int Fifo_Put(unsigned short data); 
 
 /*-----------------------Fifo_Get----------------------------
   Remove one character from the fifo
   Inputs: pointer to place to return 8-bit data
   Outputs: true if data is valid, 
            false if fifo was empty at the time of the call*/
-int Fifo_Get(unsigned char *datapt);
+int Fifo_Get(unsigned short *datapt);
 
 /*-----------------------Fifo_Status----------------------------
   Check the status of the fifo

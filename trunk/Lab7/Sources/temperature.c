@@ -1,8 +1,8 @@
-unsigned short const ADCdata[53]={0,8,26,44,63,81,99,118,137,156,175,
-     194,213,232,251,271,291,310,330,350,370,
-     390,410,430,451,471,492,512,533,554,575,
-     596,617,638,659,681,702,723,745,767,788,
-     810,832,854,876,898,920,942,964,986,1009,1023,1024};
+unsigned short const ADCdata[53]={0,60,72,85,97,110,122,135,148,161,174,
+     187,201,214,227,241,255,268,282,296,310,
+     324,338,352,366,381,395,409,424,438,453,
+     468,482,497,512,527,541,556,571,586,601,
+     616,631,646,662,677,692,707,722,737,752,767,1024};
 
 
 unsigned short const Tdata[53]={4000,4000,3960,3920,3880,3840,3800,3760,3720,3680,3640,
@@ -11,12 +11,31 @@ unsigned short const Tdata[53]={4000,4000,3960,3920,3880,3840,3800,3760,3720,368
      2800,2760,2720,2680,2640,2600,2560,2520,2480,2440,
      2400,2360,2320,2280,2240,2200,2160,2120,2080,2040,2000,2000};
 
+
 unsigned short Temp_Data(unsigned short adc) {
-  unsigned char i = 0;
+  unsigned short temp;
   
-  while(ADCdata[i+1] <= adc) {
-    i++;
-  }
-  
-  asm 
+  asm ldd adc
+  asm Lookup: ldx  #ADCdata  // first find x1<=xL<x2
+  asm ldy  #Tdata  
+  asm lookx1: cpd  2,x      // check xL<x2
+  asm blo  found    // stops when X points to x1
+  asm leax 2,x
+  asm leay 2,y
+  asm bra  lookx1
+  asm found:   subd 0,x      // xL-x1
+  asm pshd
+  asm ldd  2,x      // x2
+  asm subd 0,x      // D=x2-x1
+  asm tfr  D,X      // X=x2-x1
+  asm puld          // D=(xL-x1) 
+  asm fdiv          // X=(65536*(xL-x1))/(x2-x1)
+  asm tfr  X,D
+  asm tfr  A,B      
+  // B=(256*(xL-x1))/(x2-x1)
+  // Y=>y1,y2
+  asm etbl 0,y
+  asm std temp        
+   
+   return temp;
 }

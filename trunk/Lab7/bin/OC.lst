@@ -13,30 +13,32 @@ Function: TOC0handler
 Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\OC.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\OC.c.o" -WmsgSd1106
 
-    7:    TFLG1 = 0x01;         // acknowledge OC0
+    7:    TFLG1 = 0x01;         // acknowledge OC0 
   0000 c601         [1]     LDAB  #1
   0002 5b00         [2]     STAB  _TFLG1
-    8:    (*function)();
-  0004 15fb0000     [7]     JSR   [function,PCR]
-    9:    TC0 += 187500/frequency; 
-  0008 fc0000       [3]     LDD   frequency
-  000b 3b           [2]     PSHD  
-  000c c7           [1]     CLRB  
-  000d 87           [1]     CLRA  
-  000e 3b           [2]     PSHD  
-  000f ccdc6c       [2]     LDD   #56428
-  0012 ce0002       [2]     LDX   #2
-  0015 160000       [4]     JSR   _LDIVS
-  0018 d300         [3]     ADDD  _TC0
-  001a 5c00         [2]     STD   _TC0
-   10:  }
-  001c 0b           [8]     RTI   
-   11:  
-   12:  //---------------------OC_Init0---------------------
-   13:  // arm output compare 0 for 100Hz periodic interrupt
-   14:  // Input: none
-   15:  // Output: none 
-   16:  void OC0_Init(unsigned short freq, void (*func)(void)) {
+    8:    PTP |= 0x80;
+  0004 1c000080     [4]     BSET  _PTP,#128
+    9:    (*function)();
+  0008 15fb0000     [7]     JSR   [function,PCR]
+   10:    TC0 += 187500/frequency; 
+  000c fc0000       [3]     LDD   frequency
+  000f 3b           [2]     PSHD  
+  0010 c7           [1]     CLRB  
+  0011 87           [1]     CLRA  
+  0012 3b           [2]     PSHD  
+  0013 ccdc6c       [2]     LDD   #56428
+  0016 ce0002       [2]     LDX   #2
+  0019 160000       [4]     JSR   _LDIVS
+  001c d300         [3]     ADDD  _TC0
+  001e 5c00         [2]     STD   _TC0
+   11:  }
+  0020 0b           [8]     RTI   
+   12:  
+   13:  //---------------------OC_Init0---------------------
+   14:  // arm output compare 0 for 100Hz periodic interrupt
+   15:  // Input: none
+   16:  // Output: none 
+   17:  void OC0_Init(unsigned short freq, void (*func)(void)) {
 *** EVALUATION ***
 
 Function: OC0_Init
@@ -44,27 +46,27 @@ Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\OC.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\OC.c.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
-   17:    frequency = freq;
+   18:    frequency = freq;
   0001 ec84         [3]     LDD   4,SP
   0003 7c0000       [3]     STD   frequency
-   18:    function = func;
+   19:    function = func;
   0006 ec80         [3]     LDD   0,SP
   0008 7c0000       [3]     STD   function
-   19:    TIOS |= 0x01;   // activate TC0 as output compare
+   20:    TIOS |= 0x01;   // activate TC0 as output compare
   000b 4c0001       [4]     BSET  _TIOS,#1
-   20:    TIE  |= 0x01;   // arm OC0
+   21:    TIE  |= 0x01;   // arm OC0
   000e 4c0001       [4]     BSET  _TIE,#1
-   21:    TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
+   22:    TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
   0011 cc0780       [2]     LDD   #1920
   0014 5b00         [2]     STAB  _TSCR1
-   22:    TSCR2 = 0x07;   // divide by 64 TCNT prescale, TOI disarm
+   23:    TSCR2 = 0x07;   // divide by 64 TCNT prescale, TOI disarm
   0016 5a00         [2]     STAA  _TSCR2
-   23:    PACTL = 0;      // timer prescale used for TCNT
+   24:    PACTL = 0;      // timer prescale used for TCNT
   0018 790000       [3]     CLR   _PACTL
-   24:    TC0   = TCNT + 50; // first interrupt right away
+   25:    TC0   = TCNT + 50; // first interrupt right away
   001b de00         [3]     LDX   _TCNT
   001d 1ae032       [2]     LEAX  50,X
   0020 5e00         [2]     STX   _TC0
-   25:  }
+   26:  }
   0022 3a           [3]     PULD  
   0023 3d           [5]     RTS   
