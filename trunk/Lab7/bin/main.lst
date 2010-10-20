@@ -102,8 +102,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   001d 160000       [4]     JSR   Fifo_Init
    65:    ADC0_Init();
   0020 160000       [4]     JSR   ADC0_Init
-   66:    OC0_Init(10, &getData); 
-  0023 c60a         [1]     LDAB  #10
+   66:    OC0_Init(100, &getData); 
+  0023 c664         [1]     LDAB  #100
   0025 87           [1]     CLRA  
   0026 3b           [2]     PSHD  
   0027 cc0000       [2]     LDD   #getData
