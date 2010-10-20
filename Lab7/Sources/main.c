@@ -63,7 +63,7 @@ void main(void) {
   PLL_Init();
   Fifo_Init();
   ADC0_Init();
-  OC0_Init(10, &getData); 
+  OC0_Init(100, &getData); 
   LCD_Open();
   
   LCD_Clear();
