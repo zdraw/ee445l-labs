@@ -1,0 +1,93 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include "DAC.h"
+    2:  
+    3:  // 9S12DP512 SPI1 interface to Max539
+    4:  // PS6 (out) SCLK synchronous clock
+    5:  // PS5 (out) MOSI serial data output
+    6:  // PS7 (out) CS used to latch data into Max539
+    7:  // PS4 (in) is associated with SPI1, but not used
+    8:  
+    9:  //---------------------DAC_Init---------------------
+   10:  // initializes DAC
+   11:  // Input: none
+   12:  // Output: none             
+   13:  void DAC_Init(void) {
+*** EVALUATION ***
+
+Function: DAC_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\DAC.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\DAC.c.o" -WmsgSd1106
+
+   14:    DDRS |=  0xE0;  // 1) make PS5, PS6, PS7 outputs, PS4 input
+  0000 1c0000e0     [4]     BSET  _DDRS,#224
+   15:    DDRS &= ~0x10;  // DDRS                  
+  0004 1d000010     [4]     BCLR  _DDRS,#16
+   16:    SPI0CR1 = 0x58; // 2) enable SPI, no interrupts, master, CPOL=1, CPHA=0
+  0008 c658         [1]     LDAB  #88
+  000a 5b00         [2]     STAB  _SPI0CR1
+   17:                    // SPI0CR1 = 0101 1000
+   18:    SPI0CR2 = 0x00; // 3) set up PS7 as a regular output
+  000c 790000       [3]     CLR   _SPI0CR2
+   19:                    // SSOE=0, MODFEN=0 SPI0CR1, SPI0CR2
+   20:    SPI0BR = 0x00;  // 4) set the baud rate, SPI0BR
+  000f 790000       [3]     CLR   _SPI0BR
+   21:    PTS  |= 0x80;   // 5) make PS7=CS high
+  0012 1c000080     [4]     BSET  _PTS,#128
+   22:  }
+  0016 3d           [5]     RTS   
+   23:  
+   24:  //---------------------transmitByte---------------------
+   25:  // outputs byte to DAC
+   26:  // Input: none
+   27:  // Output: none
+   28:  void transmitByte(unsigned char data) {
+*** EVALUATION ***
+
+Function: transmitByte
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\DAC.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\DAC.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+   29:    unsigned char dummy;
+   30:    while(!(SPI0SR&0x20)) {}  // 1) wait for SPTEF to be 1, SPI0SR
+  0001 4f0020fc     [4]     BRCLR _SPI0SR,#32,*+0 ;abs = 0001
+   31:    SPI0DR = data;            // 2) write 8-bit data to SPI0DR
+  0005 e680         [3]     LDAB  0,SP
+  0007 5b00         [2]     STAB  _SPI0DR
+   32:    while(!(SPI0SR&0x80)) {}  // 3) wait for SPIF to be 1, SPI0SR
+  0009 4f0080fc     [4]     BRCLR _SPI0SR,#128,*+0 ;abs = 0009
+   33:    dummy = SPI0DR;            // 4) clear the SPIF flag by reading the data
+  000d d600         [3]     LDAB  _SPI0DR
+   34:                              // dummy = SPI0DR;
+   35:  }
+  000f 32           [3]     PULA  
+  0010 3d           [5]     RTS   
+   36:  
+   37:  //---------------------DAC_Out---------------------
+   38:  // outputs 12 bits to DAC
+   39:  // Input: none
+   40:  // Output: none 
+   41:  void DAC_Out(unsigned short data) {       
+*** EVALUATION ***
+
+Function: DAC_Out
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\DAC.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\DAC.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   42:    PTS &= ~0x80;                    // 1) set PS7=CS low
+  0001 1d000080     [4]     BCLR  _PTS,#128
+   43:    transmitByte((data&0x3F00) >> 8); // 2) transmit most significant 8-bit data to the DAC
+  0005 843f         [1]     ANDA  #63
+  0007 b701         [1]     TFR   A,B
+  0009 0700         [4]     BSR   transmitByte
+   44:    transmitByte(data&0x00FF);        // 3) transmit least significant 8-bit data to the DAC
+  000b e681         [3]     LDAB  1,SP
+  000d 0700         [4]     BSR   transmitByte
+   45:    PTS |=  0x80;                    // 4) set PS7=CS high
+  000f 1c000080     [4]     BSET  _PTS,#128
+   46:  }
+  0013 3a           [3]     PULD  
+  0014 3d           [5]     RTS   
