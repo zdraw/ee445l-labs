@@ -15,14 +15,11 @@ FILE SECTION
 mc9s12dp512.c.o                         Model: SMALL,         Lang: ANSI-C
 main.c.o                                Model: SMALL,         Lang: ANSI-C
 Start12.c.o                             Model: SMALL,         Lang: ANSI-C
-PRINTF.C.o (ansisi.lib)                 Model: SMALL,         Lang: ANSI-C
 rtshc12.c.o (ansisi.lib)                Model: SMALL,         Lang: ANSI-C
 PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
+SCI0.c.o                                Model: SMALL,         Lang: ANSI-C
 ADC.c.o                                 Model: SMALL,         Lang: ANSI-C
 OC.c.o                                  Model: SMALL,         Lang: ANSI-C
-FIFO.c.o                                Model: SMALL,         Lang: ANSI-C
-temperature.c.o                         Model: SMALL,         Lang: ANSI-C
-lcd.c.o                                 Model: SMALL,         Lang: ANSI-C
 
 *********************************************************************************************
 STARTUP SECTION
@@ -31,8 +28,8 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x900     64
-  _Copy    *toCopyDownBeg 0xCAA5
+  _Range   pZeroOut       0x900     206
+  _Copy    *toCopyDownBeg 0xC28E
 } _startupData;
 
 *********************************************************************************************
@@ -41,10 +38,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.rodata                          328     R     0xC045     0xC18C   ROM_C000
-.rodata1                          18     R     0xC18D     0xC19E   ROM_C000
-.text                           1957     R     0xC19F     0xC943   ROM_C000
-.copy                              2     R     0xCAA5     0xCAA6   ROM_C000
+.text                            313     R     0xC045     0xC17D   ROM_C000
+.copy                              2     R     0xC28E     0xC28F   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -572,14 +567,14 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg523
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
 .abs_section_ffee                  2     R     0xFFEE     0xFFEF   .absSeg525
-.bss                              60   R/W      0x900      0x93B   RAM
-RUNTIME                          353     R     0xC944     0xCAA4   ROM_C000
-.common                            4   R/W      0x93C      0x93F   RAM
+.bss                               2   R/W      0x900      0x901   RAM
+.common                          204   R/W      0x902      0x9CD   RAM
+RUNTIME                          272     R     0xC17E     0xC28D   ROM_C000
 .vectSeg526_vect                   2     R     0xFFFE     0xFFFF   .vectSeg526
 
 Summary of section sizes per section type:
-READ_ONLY (R):         AAB (dec:     2731)
-READ_WRITE (R/W):      140 (dec:      320)
+READ_ONLY (R):         294 (dec:      660)
+READ_WRITE (R/W):      1CE (dec:      462)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -670,12 +665,12 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PWMSCLA                                    A8       1       1       0   .abs_section_a8
      _PWMSCLB                                    A9       1       1       0   .abs_section_a9
      _PWMSDN                                     C4       1       1       0   .abs_section_c4
-     _SCI0CR1                                    CA       1       1       0   .abs_section_ca
-     _SCI0CR2                                    CB       1       1       0   .abs_section_cb
-     _SCI0SR1                                    CC       1       1       0   .abs_section_cc
+     _SCI0CR1                                    CA       1       1       1   .abs_section_ca
+     _SCI0CR2                                    CB       1       1       1   .abs_section_cb
+     _SCI0SR1                                    CC       1       1       1   .abs_section_cc
      _SCI0SR2                                    CD       1       1       0   .abs_section_cd
      _SCI0DRH                                    CE       1       1       0   .abs_section_ce
-     _SCI0DRL                                    CF       1       1       0   .abs_section_cf
+     _SCI0DRL                                    CF       1       1       1   .abs_section_cf
      _SCI1CR1                                    D2       1       1       0   .abs_section_d2
      _SCI1CR2                                    D3       1       1       0   .abs_section_d3
      _SCI1SR1                                    D4       1       1       0   .abs_section_d4
@@ -976,15 +971,15 @@ MODULE:                 -- mc9s12dp512.c.o --
      _MODRR                                     257       1       1       0   .abs_section_257
      _PTP                                       258       1       1       1   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       1   .abs_section_25a
+     _DDRP                                      25A       1       1       0   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1      11   .abs_section_260
+     _PTH                                       260       1       1       0   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
-     _DDRH                                      262       1       1       1   .abs_section_262
+     _DDRH                                      262       1       1       0   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
      _PERH                                      264       1       1       0   .abs_section_264
      _PPSH                                      265       1       1       0   .abs_section_265
@@ -1058,7 +1053,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PORTAB                                      0       2       2       0   .abs_section_0
      _DDRAB                                       2       2       2       0   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
-     _TCNT                                       44       2       2       3   .abs_section_44
+     _TCNT                                       44       2       2       1   .abs_section_44
      _TC0                                        50       2       2       3   .abs_section_50
      _TC1                                        52       2       2       0   .abs_section_52
      _TC2                                        54       2       2       0   .abs_section_54
@@ -1098,7 +1093,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PWMDTY23                                   BE       2       2       0   .abs_section_be
      _PWMDTY45                                   C0       2       2       0   .abs_section_c0
      _PWMDTY67                                   C2       2       2       0   .abs_section_c2
-     _SCI0BD                                     C8       2       2       0   .abs_section_c8
+     _SCI0BD                                     C8       2       2       2   .abs_section_c8
      _SCI1BD                                     D0       2       2       0   .abs_section_d0
      _ATD1CTL23                                 122       2       2       0   .abs_section_122
      _ATD1CTL45                                 124       2       2       0   .abs_section_124
@@ -1122,11 +1117,11 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     getData                                   C19F      12      18       1   .text       
-     main                                      C1B1      85     133       1   .text       
+     back                                      C045      21      33       1   .text       
+     main                                      C066      4C      76       1   .text       
 - VARIABLES:
-     STRING.......cC.2                         C18D       9       9       1   .rodata1    
-     STRING..2d..02d.3                         C196       9       9       1   .rodata1    
+     Count                                      900       2       2       4   .bss        
+     DataBuffer                                 902      C8     200       2   .common     
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      C000      29      41       1   .init       
@@ -1135,107 +1130,61 @@ MODULE:                 -- Start12.c.o --
      _startupData                              C03B       6       6       3   .startData  
 - LABELS:
      __SEG_END_SSTACK                           900       0       0       1               
-MODULE:                 -- PRINTF.C.o (ansisi.lib) --
-- PROCEDURES:
-     vprintf                                   C236     478    1144      49   .text       
-     _out                                      C6AE       C      12       9   .text       
-     deposit_char                              C6BA       F      15       1   .text       
-     sprintf                                   C6C9      29      41       2   .text       
-- VARIABLES:
-     pow10                                     C045      28      40       4   .rodata     
-     pow16                                     C06D      20      32       4   .rodata     
-     pow8                                      C08D      2C      44       4   .rodata     
-     pbuf                                       900       6       6      15   .bss        
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _LCMP_P                                   C944      15      21       3   RUNTIME     
-     _LNEG                                     C959       D      13       1   RUNTIME     
-     _lDivMod                                  C966      BE     190       2   RUNTIME     
-     _NEG_P                                    CA24       F      15       4   RUNTIME     
-     _LDIVS                                    CA33      35      53       1   RUNTIME     
-     _ILSEXT                                   CA68       7       7       2   RUNTIME     
-     _CASE_DIRECT_BYTE                         CA6F       5       5       1   RUNTIME     
-     _CASE_SEARCH_8                            CA74      17      23       1   RUNTIME     
-     _CASE_SEARCH_8_BYTE                       CA8B      1A      26       1   RUNTIME     
+     _lDivMod                                  C17E      BE     190       3   RUNTIME     
+     _LDIVU                                    C23C       E      14       1   RUNTIME     
+     _NEG_P                                    C24A       F      15       4   RUNTIME     
+     _LDIVS                                    C259      35      53       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  C6F2      15      21       1   .text       
+     PLL_Init                                  C0B2      15      21       1   .text       
+- VARIABLES:
+MODULE:                 -- SCI0.c.o --
+- PROCEDURES:
+     SCI0_Init                                 C0C7      33      51       1   .text       
+     SCI0_OutChar                              C0FA       9       9       3   .text       
+     SCI0_OutUDec                              C103      21      33       2   .text       
 - VARIABLES:
 MODULE:                 -- ADC.c.o --
 - PROCEDURES:
-     ADC0_Init                                 C707       C      12       1   .text       
-     ADC0_In                                   C713       9       9       1   .text       
+     ADC0_Init                                 C124       C      12       1   .text       
+     ADC0_In                                   C130       9       9       1   .text       
 - VARIABLES:
 MODULE:                 -- OC.c.o --
 - PROCEDURES:
-     TOC0handler                               C71C      21      33       1   .text       
-     OC0_Init                                  C73D      24      36       1   .text       
+     TOC0handler                               C139      21      33       1   .text       
+     OC0_Init                                  C15A      24      36       1   .text       
 - VARIABLES:
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
-     frequency                                  93C       2       2       2   .common     
-     function                                   93E       2       2       2   .common     
-MODULE:                 -- FIFO.c.o --
-- PROCEDURES:
-     Fifo_Init                                 C761      19      25       1   .text       
-     Fifo_Put                                  C77A      26      38       1   .text       
-     Fifo_Get                                  C7A0      2C      44       1   .text       
-- VARIABLES:
-     PutPt                                      906       2       2       4   .bss        
-     GetPt                                      908       2       2       8   .bss        
-     Fifo                                       90A      30      48       5   .bss        
-MODULE:                 -- temperature.c.o --
-- PROCEDURES:
-     Temp_Data                                 C7CC      2E      46       1   .text       
-- VARIABLES:
-     ADCdata                                   C0B9      6A     106       1   .rodata     
-     Tdata                                     C123      6A     106       1   .rodata     
-MODULE:                 -- lcd.c.o --
-- PROCEDURES:
-     wait                                      C7FA      19      25       7   .text       
-     wait1ms                                   C813      10      16       2   .text       
-     outCsrNibble                              C823      19      25       5   .text       
-     outCsr                                    C83C      12      18       7   .text       
-     LCD_Clear                                 C84E      1C      28       1   .text       
-     LCD_Open                                  C86A      50      80       1   .text       
-     LCD_OutChar                               C8BA      44      68       1   .text       
-     LCD_OutString                             C8FE      20      32       2   .text       
-     LCD_GoTo                                  C91E      26      38       1   .text       
-- VARIABLES:
-     OpenFlag                                   93A       2       2       6   .bss        
+     frequency                                  9CA       2       2       2   .common     
+     function                                   9CC       2       2       2   .common     
 
 *********************************************************************************************
 MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     0    151     18
+  main.c.o                                   202    109      0
   Start12.c.o                                  0     59      0
-  PRINTF.C.o (ansisi.lib)                      6   1212    116
-  rtshc12.c.o (ansisi.lib)                     0    353      0
+  rtshc12.c.o (ansisi.lib)                     0    272      0
   PLL.c.o                                      0     21      0
+  SCI0.c.o                                     0     93      0
   ADC.c.o                                      0     21      0
   OC.c.o                                       4     69      2
-  FIFO.c.o                                    52    107      0
-  temperature.c.o                              0     46    212
-  lcd.c.o                                      2    330      0
   other                                      256     12      2
 
 *********************************************************************************************
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  getData main vprintf _out deposit_char sprintf PLL_Init ADC0_Init ADC0_In 
-  TOC0handler OC0_Init Fifo_Init Fifo_Put Fifo_Get Temp_Data wait wait1ms 
-  outCsrNibble outCsr LCD_Clear LCD_Open LCD_OutChar LCD_OutString LCD_GoTo 
+  back main PLL_Init SCI0_Init SCI0_OutChar SCI0_OutUDec ADC0_Init ADC0_In 
+  TOC0handler OC0_Init 
 SECTION: ".bss"
-  pbuf PutPt GetPt Fifo OpenFlag 
+  Count 
 SECTION: ".init"
   Init _Startup 
-SECTION: ".rodata"
-  pow10 pow16 pow8 ADCdata Tdata 
-SECTION: ".rodata1"
-  STRING.......cC.2 STRING..2d..02d.3 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -2286,11 +2235,10 @@ SECTION: ".abs_section_2ae"
   _CAN4RXTSR 
 SECTION: ".abs_section_2be"
   _CAN4TXTSR 
-SECTION: "RUNTIME"
-  _LCMP_P _LNEG _lDivMod _NEG_P _LDIVS _ILSEXT _CASE_DIRECT_BYTE 
-  _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE 
 SECTION: ".common"
-  frequency function 
+  DataBuffer frequency function 
+SECTION: "RUNTIME"
+  _lDivMod _LDIVU _NEG_P _LDIVS 
 SECTION: ".abs_section_ffee"
   _Vector_8 
 
@@ -2342,7 +2290,7 @@ OBJECT LIST SORTED BY ADDRESS
      _CFORC                                      41       1       1       0   .abs_section_41
      _OC7M                                       42       1       1       0   .abs_section_42
      _OC7D                                       43       1       1       0   .abs_section_43
-     _TCNT                                       44       2       2       3   .abs_section_44
+     _TCNT                                       44       2       2       1   .abs_section_44
      _TSCR1                                      46       1       1       1   .abs_section_46
      _TTOV                                       47       1       1       0   .abs_section_47
      _TCTL1                                      48       1       1       0   .abs_section_48
@@ -2416,13 +2364,13 @@ OBJECT LIST SORTED BY ADDRESS
      _PWMDTY45                                   C0       2       2       0   .abs_section_c0
      _PWMDTY67                                   C2       2       2       0   .abs_section_c2
      _PWMSDN                                     C4       1       1       0   .abs_section_c4
-     _SCI0BD                                     C8       2       2       0   .abs_section_c8
-     _SCI0CR1                                    CA       1       1       0   .abs_section_ca
-     _SCI0CR2                                    CB       1       1       0   .abs_section_cb
-     _SCI0SR1                                    CC       1       1       0   .abs_section_cc
+     _SCI0BD                                     C8       2       2       2   .abs_section_c8
+     _SCI0CR1                                    CA       1       1       1   .abs_section_ca
+     _SCI0CR2                                    CB       1       1       1   .abs_section_cb
+     _SCI0SR1                                    CC       1       1       1   .abs_section_cc
      _SCI0SR2                                    CD       1       1       0   .abs_section_cd
      _SCI0DRH                                    CE       1       1       0   .abs_section_ce
-     _SCI0DRL                                    CF       1       1       0   .abs_section_cf
+     _SCI0DRL                                    CF       1       1       1   .abs_section_cf
      _SCI1BD                                     D0       2       2       0   .abs_section_d0
      _SCI1CR1                                    D2       1       1       0   .abs_section_d2
      _SCI1CR2                                    D3       1       1       0   .abs_section_d3
@@ -2742,15 +2690,15 @@ OBJECT LIST SORTED BY ADDRESS
      _MODRR                                     257       1       1       0   .abs_section_257
      _PTP                                       258       1       1       1   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       1   .abs_section_25a
+     _DDRP                                      25A       1       1       0   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
      _PIEP                                      25E       1       1       0   .abs_section_25e
      _PIFP                                      25F       1       1       0   .abs_section_25f
-     _PTH                                       260       1       1      11   .abs_section_260
+     _PTH                                       260       1       1       0   .abs_section_260
      _PTIH                                      261       1       1       0   .abs_section_261
-     _DDRH                                      262       1       1       1   .abs_section_262
+     _DDRH                                      262       1       1       0   .abs_section_262
      _RDRH                                      263       1       1       0   .abs_section_263
      _PERH                                      264       1       1       0   .abs_section_264
      _PPSH                                      265       1       1       0   .abs_section_265
@@ -2823,70 +2771,41 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
-     pbuf                                       900       6       6      15   .bss        
-     PutPt                                      906       2       2       4   .bss        
-     GetPt                                      908       2       2       8   .bss        
-     Fifo                                       90A      30      48       5   .bss        
-     OpenFlag                                   93A       2       2       6   .bss        
-     frequency                                  93C       2       2       2   .common     
-     function                                   93E       2       2       2   .common     
+     Count                                      900       2       2       4   .bss        
+     DataBuffer                                 902      C8     200       2   .common     
+     frequency                                  9CA       2       2       2   .common     
+     function                                   9CC       2       2       2   .common     
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     pow10                                     C045      28      40       4   .rodata     
-     pow16                                     C06D      20      32       4   .rodata     
-     pow8                                      C08D      2C      44       4   .rodata     
-     ADCdata                                   C0B9      6A     106       1   .rodata     
-     Tdata                                     C123      6A     106       1   .rodata     
-     STRING.......cC.2                         C18D       9       9       1   .rodata1    
-     STRING..2d..02d.3                         C196       9       9       1   .rodata1    
-     getData                                   C19F      12      18       1   .text       
-     main                                      C1B1      85     133       1   .text       
-     vprintf                                   C236     478    1144      49   .text       
-     _out                                      C6AE       C      12       9   .text       
-     deposit_char                              C6BA       F      15       1   .text       
-     sprintf                                   C6C9      29      41       2   .text       
-     PLL_Init                                  C6F2      15      21       1   .text       
-     ADC0_Init                                 C707       C      12       1   .text       
-     ADC0_In                                   C713       9       9       1   .text       
-     TOC0handler                               C71C      21      33       1   .text       
-     OC0_Init                                  C73D      24      36       1   .text       
-     Fifo_Init                                 C761      19      25       1   .text       
-     Fifo_Put                                  C77A      26      38       1   .text       
-     Fifo_Get                                  C7A0      2C      44       1   .text       
-     Temp_Data                                 C7CC      2E      46       1   .text       
-     wait                                      C7FA      19      25       7   .text       
-     wait1ms                                   C813      10      16       2   .text       
-     outCsrNibble                              C823      19      25       5   .text       
-     outCsr                                    C83C      12      18       7   .text       
-     LCD_Clear                                 C84E      1C      28       1   .text       
-     LCD_Open                                  C86A      50      80       1   .text       
-     LCD_OutChar                               C8BA      44      68       1   .text       
-     LCD_OutString                             C8FE      20      32       2   .text       
-     LCD_GoTo                                  C91E      26      38       1   .text       
-     _LCMP_P                                   C944      15      21       3   RUNTIME     
-     _LNEG                                     C959       D      13       1   RUNTIME     
-     _lDivMod                                  C966      BE     190       2   RUNTIME     
-     _NEG_P                                    CA24       F      15       4   RUNTIME     
-     _LDIVS                                    CA33      35      53       1   RUNTIME     
-     _ILSEXT                                   CA68       7       7       2   RUNTIME     
-     _CASE_DIRECT_BYTE                         CA6F       5       5       1   RUNTIME     
-     _CASE_SEARCH_8                            CA74      17      23       1   RUNTIME     
-     _CASE_SEARCH_8_BYTE                       CA8B      1A      26       1   RUNTIME     
+     back                                      C045      21      33       1   .text       
+     main                                      C066      4C      76       1   .text       
+     PLL_Init                                  C0B2      15      21       1   .text       
+     SCI0_Init                                 C0C7      33      51       1   .text       
+     SCI0_OutChar                              C0FA       9       9       3   .text       
+     SCI0_OutUDec                              C103      21      33       2   .text       
+     ADC0_Init                                 C124       C      12       1   .text       
+     ADC0_In                                   C130       9       9       1   .text       
+     TOC0handler                               C139      21      33       1   .text       
+     OC0_Init                                  C15A      24      36       1   .text       
+     _lDivMod                                  C17E      BE     190       3   RUNTIME     
+     _LDIVU                                    C23C       E      14       1   RUNTIME     
+     _NEG_P                                    C24A       F      15       4   RUNTIME     
+     _LDIVS                                    C259      35      53       1   RUNTIME     
      _Vector_8                                 FFEE       2       2       0   .abs_section_ffee
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
 ---------------------------------------------------------------------------------------------
 NOT USED PROCEDURES
-PRINTF.C.o (ansisi.lib):
-  set_printf vsprintf 
 rtshc12.c.o (ansisi.lib):
   _BSHL _BSHRS _BSHRU _BDIVMODU _BDIVMODS _ISHL _ISHRU _ISHRS _LSHL _LSHRU 
-  _LSHRS _LADD _LSUB _LAND _LOR _LXOR _LCMP _LCMP_PP _LCOM _LINC _LDEC _LMUL 
-  _LMULU16x32 _LMULS16x32 _LDIVU _LMODU _LMODS _COPY _CASE_DIRECT _CASE_CHECKED 
-  _CASE_CHECKED_BYTE _CASE_SEARCH _CASE_SEARCH_BYTE _FCALL _FPCMP 
-FIFO.c.o:
-  Fifo_Status 
+  _LSHRS _LADD _LSUB _LAND _LOR _LXOR _LCMP _LCMP_P _LCMP_PP _LNEG _LCOM _LINC 
+  _LDEC _LMUL _LMULU16x32 _LMULS16x32 _LMODU _LMODS _ILSEXT _COPY _CASE_DIRECT 
+  _CASE_DIRECT_BYTE _CASE_CHECKED _CASE_CHECKED_BYTE _CASE_SEARCH 
+  _CASE_SEARCH_BYTE _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE _FCALL _FPCMP 
+SCI0.c.o:
+  SCI0_InChar SCI0_InStatus SCI0_OutStatus SCI0_OutString SCI0_InUDec 
+  SCI0_InUHex SCI0_OutUHex SCI0_InString 
 NOT USED VARIABLES
 rtshc12.c.o (ansisi.lib):
   _PowOfTwo_8 _PowOfTwo_16 _PowOfTwo_32 errno 
@@ -2894,7 +2813,7 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xCAA5 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC28E ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2903,36 +2822,19 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-getData                   USES ADC0_In Fifo_Put 
-main                      USES _DDRP PLL_Init Fifo_Init ADC0_Init getData 
-                                OC0_Init LCD_Open LCD_Clear STRING.......cC.2 sprintf 
-                                LCD_OutString Fifo_Get Temp_Data STRING..2d..02d.3 LCD_GoTo 
-vprintf                   USES vprintf _out _CASE_SEARCH_8_BYTE 
-                                _CASE_DIRECT_BYTE _CASE_SEARCH_8 pbuf _ILSEXT _LNEG pow8 _LCMP_P 
-                                pow16 pow10 
-_out                      USES pbuf 
-deposit_char              USES pbuf 
-sprintf                   USES pbuf deposit_char vprintf 
+back                      USES Count ADC0_In DataBuffer 
+main                      USES PLL_Init ADC0_Init SCI0_Init back OC0_Init 
+                                Count DataBuffer SCI0_OutUDec SCI0_OutChar 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
+SCI0_Init                 USES _SCI0BD _LDIVU _SCI0CR1 _SCI0CR2 
+SCI0_OutChar              USES _SCI0SR1 _SCI0DRL 
+SCI0_OutUDec              USES SCI0_OutUDec SCI0_OutChar 
 ADC0_Init                 USES _ATD0CTL23 _ATD0CTL45 
 ADC0_In                   USES _ATD0CTL45 _ATD0STAT1 _ATD0DR0 
 TOC0handler               USES _TFLG1 _PTP function frequency _LDIVS _TC0 
 OC0_Init                  USES frequency function _TIOS _TIE _TSCR1 _TSCR2 
                                 _PACTL _TCNT _TC0 
-Fifo_Init                 USES Fifo GetPt PutPt 
-Fifo_Put                  USES PutPt Fifo GetPt 
-Fifo_Get                  USES PutPt GetPt Fifo 
-Temp_Data                 USES ADCdata Tdata 
-wait                      USES _TCNT 
-wait1ms                   USES wait 
-outCsrNibble              USES _PTH 
-outCsr                    USES outCsrNibble wait 
-LCD_Clear                 USES OpenFlag outCsr wait 
-LCD_Open                  USES OpenFlag _DDRH _PTH wait1ms outCsrNibble wait 
-                                outCsr 
-LCD_OutChar               USES OpenFlag _PTH wait 
-LCD_OutString             USES OpenFlag LCD_OutChar 
-LCD_GoTo                  USES OpenFlag outCsr 
+_LDIVU                    USES _lDivMod 
 _LDIVS                    USES _NEG_P _lDivMod 
 _Vector_8                 USES TOC0handler 
 
@@ -2945,74 +2847,26 @@ DEPENDENCY TREE
  |  | 
  |  +- PLL_Init            
  |  |    
- |  +- Fifo_Init           
- |  |    
  |  +- ADC0_Init           
  |  |    
- |  +- getData             
+ |  +- SCI0_Init           
+ |  |  | 
+ |  |  +- _LDIVU              
+ |  |     | 
+ |  |     +- _lDivMod            
+ |  |          
+ |  +- back                
  |  |  | 
  |  |  +- ADC0_In             
- |  |  |    
- |  |  +- Fifo_Put            
  |  |       
  |  +- OC0_Init            
  |  |    
- |  +- LCD_Open            
+ |  +- SCI0_OutUDec        
  |  |  | 
- |  |  +- wait1ms             
- |  |  |  | 
- |  |  |  +- wait                
- |  |  |       
- |  |  +- outCsrNibble        
- |  |  |    
- |  |  +- wait                 (see above)
- |  |  |  
- |  |  +- outCsr              
- |  |     | 
- |  |     +- outCsrNibble         (see above)
- |  |     |  
- |  |     +- wait                 (see above)
- |  |        
- |  +- LCD_Clear           
- |  |  | 
- |  |  +- outCsr               (see above)
- |  |  |  
- |  |  +- wait                 (see above)
- |  |     
- |  +- sprintf             
- |  |  | 
- |  |  +- deposit_char        
- |  |  |    
- |  |  +- vprintf             
- |  |     | 
- |  |     +- _out                
- |  |     |    
- |  |     +- _CASE_SEARCH_8_BYTE 
- |  |     |    
- |  |     +- _CASE_DIRECT_BYTE   
- |  |     |    
- |  |     +- _CASE_SEARCH_8      
- |  |     |    
- |  |     +- _ILSEXT             
- |  |     |    
- |  |     +- _LNEG               
- |  |     |    
- |  |     +- _LCMP_P             
- |  |          
- |  +- LCD_OutString       
- |  |  | 
- |  |  +- LCD_OutChar         
- |  |     | 
- |  |     +- wait                 (see above)
- |  |        
- |  +- Fifo_Get            
- |  |    
- |  +- Temp_Data           
- |  |    
- |  +- LCD_GoTo            
- |     | 
- |     +- outCsr               (see above)
- |        
+ |  |  +- SCI0_OutChar        
+ |  |       
+ |  +- SCI0_OutChar         (see above)
+ |     
  +- _Startup            
     | 
     +- Init                
@@ -3027,14 +2881,14 @@ DEPENDENCY TREE
        | 
        +- _NEG_P              
        |    
-       +- _lDivMod            
-            
+       +- _lDivMod             (see above)
+          
 *********************************************************************************************
 STATISTIC SECTION
 ---------------------------------------------------------------------------------------------
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 8
-Total size of all blocks to be downloaded: 2731
+Number of blocks to be downloaded: 6
+Total size of all blocks to be downloaded: 660
 

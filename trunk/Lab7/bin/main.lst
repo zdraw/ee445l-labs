@@ -16,7 +16,7 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
    13:  #include <mc9s12dp512.h>     /* derivative information */
    14:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
    15:                
-   16:  #define PROCEDURE 2
+   16:  #define PROCEDURE 1
    17:  #include "PLL.h"
    18:  #include "ADC.h"
    19:  #include "OC.h"
@@ -30,145 +30,122 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
    27:  unsigned short DataBuffer[100];
    28:  unsigned short Count=0;
    29:  void back(void) {
-   30:    unsigned short data;
-   31:    if(Count<100) {
-   32:      data = ADC0_In(0x80); // your program that samples channel 5
-   33:      DataBuffer[Count++] = data;
-   34:    }
-   35:  }
-   36:  void main(void){unsigned short i;
-   37:    PLL_Init(); // 24 MHz
-   38:    ADC0_Init(); // your module
-   39:    SCI0_Init(115200); // SCI output to PC
-   40:    OC0_Init(1000,&back); // your module sampling at 1000 Hz
-   41:     
-   42:    asm cli;
-   43:    while(Count<100) {}; // copy ADC to buffer in background
-   44:    for(i=0; i<100; i++) {
-   45:      SCI0_OutUDec(DataBuffer[i]); SCI0_OutChar(10);SCI0_OutChar(13);
-   46:    }
-   47:    for(;;){};
-   48:  }
-   49:  
-   50:  #else
-   51:  #include "FIFO.h"
-   52:  
-   53:  void getData(void) {
 *** EVALUATION ***
 
-Function: getData
+Function: back
 Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\main.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
 
-  0000 3b           [2]     PSHD  
-   54:    unsigned short data;
-   55:    data = ADC0_In(0x82);
-  0001 c682         [1]     LDAB  #130
-  0003 160000       [4]     JSR   ADC0_In
-  0006 6c80         [2]     STD   0,SP
-   56:    while(!Fifo_Put(data)) {}    
-  0008 ec80         [3]     LDD   0,SP
-  000a 160000       [4]     JSR   Fifo_Put
-  000d 0454f8       [3]     TBEQ  D,*-5 ;abs = 0008
-   57:  }
-  0010 3a           [3]     PULD  
-  0011 3d           [5]     RTS   
-   58:  
-   59:  void main(void) {
+   30:    unsigned short data;
+   31:    if(Count<100) {
+  0000 fc0000       [3]     LDD   Count
+  0003 8c0064       [2]     CPD   #100
+  0006 2418         [3/1]   BCC   *+26 ;abs = 0020
+   32:      data = ADC0_In(0x80); // your program that samples channel 5
+  0008 c680         [1]     LDAB  #128
+  000a 160000       [4]     JSR   ADC0_In
+   33:      DataBuffer[Count++] = data;
+  000d fe0000       [3]     LDX   Count
+  0010 1901         [2]     LEAY  1,X
+  0012 7d0000       [3]     STY   Count
+  0015 b746         [1]     TFR   D,Y
+  0017 b754         [1]     TFR   X,D
+  0019 59           [1]     LSLD  
+  001a b745         [1]     TFR   D,X
+  001c 6de20000     [3]     STY   DataBuffer,X
+   34:    }
+   35:  }
+  0020 3d           [5]     RTS   
+   36:  void main(void){unsigned short i;
 *** EVALUATION ***
 
 Function: main
 Source  : C:\Users\Raz\Documents\EE 445L\Lab7\Sources\main.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab7;C:\Users\Raz\Documents\EE 445L\Lab7\bin;C:\Users\Raz\Documents\EE 445L\Lab7\prm;C:\Users\Raz\Documents\EE 445L\Lab7\cmd;C:\Users\Raz\Documents\EE 445L\Lab7\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab7\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab7\Lab7_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
 
-  0000 1b90         [2]     LEAS  -16,SP
+  0000 3b           [2]     PSHD  
+   37:    PLL_Init(); // 24 MHz
+  0001 160000       [4]     JSR   PLL_Init
+   38:    ADC0_Init(); // your module
+  0004 160000       [4]     JSR   ADC0_Init
+   39:    SCI0_Init(115200); // SCI output to PC
+  0007 86c2         [1]     LDAA  #194
+  0009 c7           [1]     CLRB  
+  000a ce0001       [2]     LDX   #1
+  000d 160000       [4]     JSR   SCI0_Init
+   40:    OC0_Init(1000,&back); // your module sampling at 1000 Hz
+  0010 cc03e8       [2]     LDD   #1000
+  0013 3b           [2]     PSHD  
+  0014 cc0000       [2]     LDD   #back
+  0017 160000       [4]     JSR   OC0_Init
+  001a 1b82         [2]     LEAS  2,SP
+   41:     
+   42:    asm cli;
+  001c 10ef         [1]     CLI   
+   43:    while(Count<100) {}; // copy ADC to buffer in background
+  001e fc0000       [3]     LDD   Count
+  0021 8c0064       [2]     CPD   #100
+  0024 25f8         [3/1]   BCS   *-6 ;abs = 001e
+   44:    for(i=0; i<100; i++) {
+  0026 c7           [1]     CLRB  
+  0027 87           [1]     CLRA  
+  0028 6c80         [2]     STD   0,SP
+   45:      SCI0_OutUDec(DataBuffer[i]); SCI0_OutChar(10);SCI0_OutChar(13);
+  002a ec80         [3]     LDD   0,SP
+  002c 59           [1]     LSLD  
+  002d b745         [1]     TFR   D,X
+  002f ece20000     [4]     LDD   DataBuffer,X
+  0033 160000       [4]     JSR   SCI0_OutUDec
+  0036 c60a         [1]     LDAB  #10
+  0038 160000       [4]     JSR   SCI0_OutChar
+  003b c60d         [1]     LDAB  #13
+  003d 160000       [4]     JSR   SCI0_OutChar
+  0040 ee80         [3]     LDX   0,SP
+  0042 08           [1]     INX   
+  0043 6e80         [2]     STX   0,SP
+  0045 8e0064       [2]     CPX   #100
+  0048 25e0         [3/1]   BCS   *-30 ;abs = 002a
+   46:    }
+   47:    for(;;){};
+  004a 20fe         [3]     BRA   *+0 ;abs = 004a
+   48:  }
+   49:  
+   50:  #else
+   51:  #include "FIFO.h"
+   52:  
+   53:  void getData(void) {
+   54:    unsigned short data;
+   55:    data = ADC0_In(0x82);
+   56:    while(!Fifo_Put(data)) {}    
+   57:  }
+   58:  
+   59:  void main(void) {
    60:    char buffer[10] = "";
-  0002 6982         [2]     CLR   2,SP
-  0004 6983         [2]     CLR   3,SP
-  0006 6984         [2]     CLR   4,SP
-  0008 6985         [2]     CLR   5,SP
-  000a 6986         [2]     CLR   6,SP
-  000c 6987         [2]     CLR   7,SP
-  000e 6988         [2]     CLR   8,SP
-  0010 6989         [2]     CLR   9,SP
-  0012 698a         [2]     CLR   10,SP
-  0014 698b         [2]     CLR   11,SP
    61:    // Initialize needed modules  
    62:    DDRP |= 0x80;
-  0016 1c000080     [4]     BSET  _DDRP,#128
    63:    PLL_Init();
-  001a 160000       [4]     JSR   PLL_Init
    64:    Fifo_Init();
-  001d 160000       [4]     JSR   Fifo_Init
    65:    ADC0_Init();
-  0020 160000       [4]     JSR   ADC0_Init
    66:    OC0_Init(100, &getData); 
-  0023 c664         [1]     LDAB  #100
-  0025 87           [1]     CLRA  
-  0026 3b           [2]     PSHD  
-  0027 cc0000       [2]     LDD   #getData
-  002a 160000       [4]     JSR   OC0_Init
-  002d 3a           [3]     PULD  
    67:    LCD_Open();
-  002e 160000       [4]     JSR   LCD_Open
    68:    
    69:    LCD_Clear();
-  0031 160000       [4]     JSR   LCD_Clear
    70:    sprintf(buffer, "     %cC", 223);
-  0034 c6df         [1]     LDAB  #223
-  0036 87           [1]     CLRA  
-  0037 3b           [2]     PSHD  
-  0038 ce0000       [2]     LDX   #"     %cC"
-  003b 34           [2]     PSHX  
-  003c 1986         [2]     LEAY  6,SP
-  003e 35           [2]     PSHY  
-  003f 6d86         [2]     STY   6,SP
-  0041 160000       [4]     JSR   sprintf
    71:    LCD_OutString(buffer);
-  0044 eca5         [3]     LDD   6,+SP
-  0046 160000       [4]     JSR   LCD_OutString
    72:    
    73:    asm cli
-  0049 10ef         [1]     CLI   
    74:    
    75:    for(;;) {
    76:      unsigned short data;
    77:      unsigned short temperature;
    78:      while(!Fifo_Get(&data)) {}
-  004b 1a8e         [2]     LEAX  14,SP
-  004d b754         [1]     TFR   X,D
-  004f 160000       [4]     JSR   Fifo_Get
-  0052 0454f6       [3]     TBEQ  D,*-7 ;abs = 004b
    79:      
    80:      temperature = Temp_Data(data);
-  0055 ec8e         [3]     LDD   14,SP
-  0057 160000       [4]     JSR   Temp_Data
-  005a 6c8c         [2]     STD   12,SP
    81:      sprintf(buffer, "%2d.%02d", temperature/100, temperature%100);
-  005c ce0064       [2]     LDX   #100
-  005f 1810         [12]    IDIV  
-  0061 3b           [2]     PSHD  
-  0062 ec8e         [3]     LDD   14,SP
-  0064 ce0064       [2]     LDX   #100
-  0067 1810         [12]    IDIV  
-  0069 34           [2]     PSHX  
-  006a cc0000       [2]     LDD   #"%2d.%02d"
-  006d 3b           [2]     PSHD  
-  006e 1a88         [2]     LEAX  8,SP
-  0070 34           [2]     PSHX  
-  0071 6e88         [2]     STX   8,SP
-  0073 160000       [4]     JSR   sprintf
    82:      //sprintf(buffer, "%4d", data);
    83:      LCD_GoTo(0,0);
-  0076 c7           [1]     CLRB  
-  0077 6ba6         [2]     STAB  7,+SP
-  0079 160000       [4]     JSR   LCD_GoTo
    84:      LCD_OutString(buffer);
-  007c eca0         [3]     LDD   1,+SP
-  007e 160000       [4]     JSR   LCD_OutString
-  0081 20c8         [3]     BRA   *-54 ;abs = 004b
    85:                                   
    86:    }
    87:  }
-  0083 1b82         [2]     LEAS  2,SP
    88:  #endif
