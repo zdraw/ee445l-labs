@@ -13,7 +13,7 @@
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
               
-#define PROCEDURE 2
+#define PROCEDURE 1
 #include "PLL.h"
 #include "ADC.h"
 #include "OC.h"
