@@ -1,0 +1,1151 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include "music.h"
+    2:  #include "DAC.h"
+    3:  #include "switch.h"
+    4:  
+    5:  // Note index for each part
+    6:  unsigned static short note1 = 0;
+    7:  unsigned static short note2 = 0;
+    8:  unsigned static short note3 = 0;
+    9:  
+   10:  // Output for each part
+   11:  unsigned static short output1 = 0;
+   12:  unsigned static short output2 = 0;
+   13:  unsigned static short output3 = 0;
+   14:  
+   15:  // Envelope multiplier for each part
+   16:  unsigned static short envelope1 = 1;
+   17:  unsigned static short envelope2 = 1;
+   18:  unsigned static short envelope3 = 1;
+   19:  
+   20:  // Number of envelope interrupts for each part
+   21:  unsigned static short interrupts1 = 1;
+   22:  unsigned static short interrupts2 = 1;
+   23:  unsigned static short interrupts3 = 1;
+   24:  
+   25:  // Stores sin wave
+   26:  const unsigned short SinWave[SIN] = {
+   27:    683,
+   28:    944,
+   29:    1165,
+   30:    1313,
+   31:    1365,
+   32:    1313,
+   33:    1165,
+   34:    944,
+   35:    683,
+   36:    422,
+   37:    201,
+   38:    53,
+   39:    1,
+   40:    53,
+   41:    201,
+   42:    422
+   43:  };
+   44:  
+   45:  const NoteType melody[MELODY] = {
+   46:    {FREQUENCY/466,600},
+   47:    {0,100},
+   48:    {0,100},
+   49:    {FREQUENCY/466,100},
+   50:    {FREQUENCY/466,100},
+   51:    {FREQUENCY/466,100},
+   52:    {FREQUENCY/466,100},
+   53:    {FREQUENCY/466,225},
+   54:    {FREQUENCY/415,75},
+   55:    {FREQUENCY/466,300},
+   56:    {0,100},
+   57:    {0,100},
+   58:    {FREQUENCY/466,100},
+   59:    {FREQUENCY/466,100},
+   60:    {FREQUENCY/466,100},
+   61:    {FREQUENCY/466,100},
+   62:    {FREQUENCY/466,225},
+   63:    {FREQUENCY/415,75},
+   64:    {FREQUENCY/466,300},
+   65:    {0,100},
+   66:    {0,100},
+   67:    {FREQUENCY/466,100},
+   68:    {FREQUENCY/466,100},
+   69:    {FREQUENCY/466,100},
+   70:    {FREQUENCY/466,100},
+   71:    {FREQUENCY/466,150},
+   72:    {FREQUENCY/349,75},
+   73:    {FREQUENCY/349,75},
+   74:    {FREQUENCY/349,150},
+   75:    {FREQUENCY/349,75},
+   76:    {FREQUENCY/349,75},
+   77:    {FREQUENCY/349,150},
+   78:    {FREQUENCY/349,75},
+   79:    {FREQUENCY/349,75},
+   80:    {FREQUENCY/349,150},
+   81:    {FREQUENCY/349,150},
+   82:    {FREQUENCY/466,300},
+   83:    {FREQUENCY/349,525},
+   84:    {FREQUENCY/466,75},
+   85:    {FREQUENCY/466,75},
+   86:    {FREQUENCY/523,75},
+   87:    {FREQUENCY/587,75},
+   88:    {FREQUENCY/622,75},
+   89:    {FREQUENCY/698,600},
+   90:    {0,150},
+   91:    {FREQUENCY/698,150},
+   92:    {FREQUENCY/698,100},
+   93:    {FREQUENCY/740,100},
+   94:    {FREQUENCY/831,100},
+   95:    {FREQUENCY/932,600},
+   96:    {0,100},
+   97:    {FREQUENCY/932,100},
+   98:    {FREQUENCY/932,100},
+   99:    {FREQUENCY/932,100},
+  100:    {FREQUENCY/831,100},
+  101:    {FREQUENCY/740,100},
+  102:    {FREQUENCY/831,225},
+  103:    {FREQUENCY/740,75},
+  104:    {FREQUENCY/698,600},
+  105:    {FREQUENCY/698,300},
+  106:    {FREQUENCY/622,150},
+  107:    {FREQUENCY/622,75},
+  108:    {FREQUENCY/698,75},
+  109:    {FREQUENCY/740,600},
+  110:    {FREQUENCY/698,150},
+  111:    {FREQUENCY/622,150},
+  112:    {FREQUENCY/554,150},
+  113:    {FREQUENCY/554,75},
+  114:    {FREQUENCY/622,75},
+  115:    {FREQUENCY/698,600},
+  116:    {FREQUENCY/622,150},
+  117:    {FREQUENCY/554,150},
+  118:    {FREQUENCY/523,150},
+  119:    {FREQUENCY/523,75},
+  120:    {FREQUENCY/587,75},
+  121:    {FREQUENCY/659,600},
+  122:    {FREQUENCY/784,300},
+  123:    {FREQUENCY/698,150},
+  124:    {FREQUENCY/349,75},
+  125:    {FREQUENCY/349,75},
+  126:    {FREQUENCY/349,150},
+  127:    {FREQUENCY/349,75},
+  128:    {FREQUENCY/349,75},
+  129:    {FREQUENCY/349,150},
+  130:    {FREQUENCY/349,75},
+  131:    {FREQUENCY/349,75},
+  132:    {FREQUENCY/349,150},
+  133:    {FREQUENCY/349,150},
+  134:    {FREQUENCY/466,300},
+  135:    {FREQUENCY/349,525},
+  136:    {FREQUENCY/466,75},
+  137:    {FREQUENCY/466,75},
+  138:    {FREQUENCY/523,75},
+  139:    {FREQUENCY/587,75},
+  140:    {FREQUENCY/622,75},
+  141:    {FREQUENCY/698,600},
+  142:    {0,150},
+  143:    {FREQUENCY/698,150},
+  144:    {FREQUENCY/698,100},
+  145:    {FREQUENCY/740,100},
+  146:    {FREQUENCY/831,100},
+  147:    {FREQUENCY/932,600},
+  148:    {0,300},
+  149:    {FREQUENCY/1109,300},
+  150:    {FREQUENCY/1047,300},
+  151:    {FREQUENCY/880,300},
+  152:    {0,300},
+  153:    {FREQUENCY/698,300},
+  154:    {FREQUENCY/740,600},
+  155:    {0,300},
+  156:    {FREQUENCY/932,300},
+  157:    {FREQUENCY/880,300},
+  158:    {FREQUENCY/698,300},
+  159:    {0,300},
+  160:    {FREQUENCY/698,300},
+  161:    {FREQUENCY/740,600},
+  162:    {0,300},
+  163:    {FREQUENCY/932,300},
+  164:    {FREQUENCY/880,300},
+  165:    {FREQUENCY/698,300},
+  166:    {0,300},
+  167:    {FREQUENCY/587,300},
+  168:    {FREQUENCY/622,600},
+  169:    {0,300},
+  170:    {FREQUENCY/740,300},
+  171:    {FREQUENCY/698,300},
+  172:    {FREQUENCY/554,300},
+  173:    {0,300},
+  174:    {FREQUENCY/466,300},
+  175:    {FREQUENCY/523,150},
+  176:    {FREQUENCY/523,75},
+  177:    {FREQUENCY/587,75},
+  178:    {FREQUENCY/659,300},
+  179:    {0,300},
+  180:    {FREQUENCY/784,300},
+  181:    {FREQUENCY/698,150},
+  182:    {FREQUENCY/349,75},
+  183:    {FREQUENCY/349,75},
+  184:    {FREQUENCY/349,150},
+  185:    {FREQUENCY/349,75},
+  186:    {FREQUENCY/349,75},
+  187:    {FREQUENCY/349,150},
+  188:    {FREQUENCY/349,75},
+  189:    {FREQUENCY/349,75},
+  190:    {FREQUENCY/349,150},
+  191:    {FREQUENCY/349,150}
+  192:  };
+  193:  
+  194:  const NoteType harmony[HARMONY] = {
+  195:    {FREQUENCY/294,600},
+  196:    {0,100},
+  197:    {0,100},
+  198:    {FREQUENCY/294,100},
+  199:    {FREQUENCY/294,100},
+  200:    {FREQUENCY/294,100},
+  201:    {FREQUENCY/294,100},
+  202:    {FREQUENCY/262,225},
+  203:    {FREQUENCY/262,75},
+  204:    {FREQUENCY/262,300},
+  205:    {0,300},
+  206:    {FREQUENCY/262,100},
+  207:    {FREQUENCY/262,100},
+  208:    {FREQUENCY/262,100},
+  209:    {FREQUENCY/277,225},
+  210:    {FREQUENCY/277,75},
+  211:    {FREQUENCY/277,300},
+  212:    {0,100},
+  213:    {0,100},
+  214:    {FREQUENCY/277,100},
+  215:    {FREQUENCY/277,100},
+  216:    {FREQUENCY/277,100},
+  217:    {FREQUENCY/277,100},
+  218:    {FREQUENCY/277,150},
+  219:    {FREQUENCY/220,75},
+  220:    {FREQUENCY/220,75},
+  221:    {FREQUENCY/220,150},
+  222:    {FREQUENCY/220,75},
+  223:    {FREQUENCY/220,75},
+  224:    {FREQUENCY/220,150},
+  225:    {FREQUENCY/220,75},
+  226:    {FREQUENCY/220,75},
+  227:    {FREQUENCY/220,150},
+  228:    {FREQUENCY/220,150},
+  229:    {FREQUENCY/294,300},
+  230:    {FREQUENCY/294,100},
+  231:    {FREQUENCY/294,100},
+  232:    {FREQUENCY/262,100},
+  233:    {FREQUENCY/294,225},
+  234:    {FREQUENCY/294,75},
+  235:    {FREQUENCY/294,75},
+  236:    {FREQUENCY/311,75},
+  237:    {FREQUENCY/349,75},
+  238:    {FREQUENCY/392,75},
+  239:    {FREQUENCY/415,225},
+  240:    {FREQUENCY/466,75},
+  241:    {FREQUENCY/466,75},
+  242:    {FREQUENCY/523,75},
+  243:    {FREQUENCY/587,75},
+  244:    {FREQUENCY/622,75},
+  245:    {FREQUENCY/698,300},
+  246:    {FREQUENCY/415,100},
+  247:    {FREQUENCY/466,100},
+  248:    {FREQUENCY/523,100},
+  249:    {FREQUENCY/554,225},
+  250:    {FREQUENCY/370,75},
+  251:    {FREQUENCY/370,75},
+  252:    {FREQUENCY/415,75},
+  253:    {FREQUENCY/466,75},
+  254:    {FREQUENCY/523,75},
+  255:    {FREQUENCY/554,200},
+  256:    {FREQUENCY/554,100},
+  257:    {FREQUENCY/554,100},
+  258:    {FREQUENCY/523,100},
+  259:    {FREQUENCY/466,100},
+  260:    {FREQUENCY/554,225},
+  261:    {FREQUENCY/415,75},
+  262:    {FREQUENCY/415,100},
+  263:    {FREQUENCY/415,100},
+  264:    {FREQUENCY/370,100},
+  265:    {FREQUENCY/415,225},
+  266:    {FREQUENCY/415,75},
+  267:    {FREQUENCY/415,100},
+  268:    {FREQUENCY/370,100},
+  269:    {FREQUENCY/415,100},
+  270:    {FREQUENCY/370,150},
+  271:    {FREQUENCY/370,75},
+  272:    {FREQUENCY/349,75},
+  273:    {FREQUENCY/370,150},
+  274:    {FREQUENCY/370,75},
+  275:    {FREQUENCY/415,75},
+  276:    {FREQUENCY/466,300},
+  277:    {FREQUENCY/415,150},
+  278:    {FREQUENCY/370,150},
+  279:    {FREQUENCY/349,150},
+  280:    {FREQUENCY/349,75},
+  281:    {FREQUENCY/311,75},
+  282:    {FREQUENCY/349,150},
+  283:    {FREQUENCY/349,75},
+  284:    {FREQUENCY/370,75},
+  285:    {FREQUENCY/415,300},
+  286:    {FREQUENCY/370,150},
+  287:    {FREQUENCY/349,150},
+  288:    {FREQUENCY/330,300},
+  289:    {FREQUENCY/330,150},
+  290:    {FREQUENCY/330,75},
+  291:    {FREQUENCY/349,75},
+  292:    {FREQUENCY/392,150},
+  293:    {FREQUENCY/392,75},
+  294:    {FREQUENCY/440,75},
+  295:    {FREQUENCY/466,150},
+  296:    {FREQUENCY/523,150},
+  297:    {FREQUENCY/440,150},
+  298:    {FREQUENCY/220,75},
+  299:    {FREQUENCY/220,75},
+  300:    {FREQUENCY/220,150},
+  301:    {FREQUENCY/220,75},
+  302:    {FREQUENCY/220,75},
+  303:    {FREQUENCY/220,150},
+  304:    {FREQUENCY/220,75},
+  305:    {FREQUENCY/220,75},
+  306:    {FREQUENCY/220,150},
+  307:    {FREQUENCY/220,150},
+  308:    {FREQUENCY/294,300},
+  309:    {FREQUENCY/294,100},
+  310:    {FREQUENCY/294,100},
+  311:    {FREQUENCY/262,100},
+  312:    {FREQUENCY/294,225},
+  313:    {FREQUENCY/294,75},
+  314:    {FREQUENCY/294,75},
+  315:    {FREQUENCY/311,75},
+  316:    {FREQUENCY/349,75},
+  317:    {FREQUENCY/392,75},
+  318:    {FREQUENCY/415,225},
+  319:    {FREQUENCY/466,75},
+  320:    {FREQUENCY/466,75},
+  321:    {FREQUENCY/523,75},
+  322:    {FREQUENCY/587,75},
+  323:    {FREQUENCY/622,75},
+  324:    {FREQUENCY/698,300},
+  325:    {FREQUENCY/415,100},
+  326:    {FREQUENCY/466,100},
+  327:    {FREQUENCY/523,100},
+  328:    {FREQUENCY/554,600},
+  329:    {0,300},
+  330:    {FREQUENCY/659,300},
+  331:    {FREQUENCY/622,300},
+  332:    {FREQUENCY/523,300},
+  333:    {0,300},
+  334:    {FREQUENCY/440,300},
+  335:    {FREQUENCY/494,600},
+  336:    {0,300},
+  337:    {FREQUENCY/554,300},
+  338:    {FREQUENCY/523,300},
+  339:    {FREQUENCY/440,300},
+  340:    {0,300},
+  341:    {FREQUENCY/440,300},
+  342:    {FREQUENCY/494,600},
+  343:    {0,300},
+  344:    {FREQUENCY/554,300},
+  345:    {FREQUENCY/523,300},
+  346:    {FREQUENCY/440,300},
+  347:    {0,300},
+  348:    {FREQUENCY/440,300},
+  349:    {FREQUENCY/370,600},
+  350:    {0,300},
+  351:    {FREQUENCY/494,300},
+  352:    {FREQUENCY/466,300},
+  353:    {FREQUENCY/349,300},
+  354:    {0,300},
+  355:    {FREQUENCY/277,300},
+  356:    {FREQUENCY/330,300},
+  357:    {FREQUENCY/330,150},
+  358:    {FREQUENCY/330,75},
+  359:    {FREQUENCY/349,75},
+  360:    {FREQUENCY/392,150},
+  361:    {FREQUENCY/392,75},
+  362:    {FREQUENCY/440,75},
+  363:    {FREQUENCY/466,150},
+  364:    {FREQUENCY/523,150},
+  365:    {FREQUENCY/440,150},
+  366:    {FREQUENCY/220,75},
+  367:    {FREQUENCY/220,75},
+  368:    {FREQUENCY/220,150},
+  369:    {FREQUENCY/220,75},
+  370:    {FREQUENCY/220,75},
+  371:    {FREQUENCY/220,150},
+  372:    {FREQUENCY/220,75},
+  373:    {FREQUENCY/220,75},
+  374:    {FREQUENCY/220,150},
+  375:    {FREQUENCY/220,150}
+  376:  };
+  377:  
+  378:  const NoteType bass[BASS] = {
+  379:    {FREQUENCY/117,300},
+  380:    {FREQUENCY/117,100},
+  381:    {FREQUENCY/117,100},
+  382:    {FREQUENCY/117,100},
+  383:    {FREQUENCY/117,300},
+  384:    {FREQUENCY/117,100},
+  385:    {FREQUENCY/117,100},
+  386:    {FREQUENCY/117,100},
+  387:    {FREQUENCY/104,300},
+  388:    {FREQUENCY/104,100},
+  389:    {FREQUENCY/104,100},
+  390:    {FREQUENCY/104,100},
+  391:    {FREQUENCY/104,300},
+  392:    {FREQUENCY/104,100},
+  393:    {FREQUENCY/104,100},
+  394:    {FREQUENCY/104,100},
+  395:    {FREQUENCY/92,300},
+  396:    {FREQUENCY/92,100},
+  397:    {FREQUENCY/92,100},
+  398:    {FREQUENCY/92,100},
+  399:    {FREQUENCY/92,300},
+  400:    {FREQUENCY/92,100},
+  401:    {FREQUENCY/92,100},
+  402:    {FREQUENCY/92,100},
+  403:    {FREQUENCY/87,300},
+  404:    {FREQUENCY/87,300},
+  405:    {FREQUENCY/87,300},
+  406:    {FREQUENCY/98,150},
+  407:    {FREQUENCY/110,150},
+  408:    {FREQUENCY/117,300},
+  409:    {FREQUENCY/117,100},
+  410:    {FREQUENCY/117,100},
+  411:    {FREQUENCY/104,100},
+  412:    {FREQUENCY/117,300},
+  413:    {FREQUENCY/117,300},
+  414:    {FREQUENCY/104,300},
+  415:    {FREQUENCY/104,100},
+  416:    {FREQUENCY/104,100},
+  417:    {FREQUENCY/92,100},
+  418:    {FREQUENCY/104,300},
+  419:    {FREQUENCY/104,300},
+  420:    {FREQUENCY/92,300},
+  421:    {FREQUENCY/92,100},
+  422:    {FREQUENCY/92,100},
+  423:    {FREQUENCY/82,100},
+  424:    {FREQUENCY/92,300},
+  425:    {FREQUENCY/92,300},
+  426:    {FREQUENCY/139,300},
+  427:    {FREQUENCY/139,100},
+  428:    {FREQUENCY/139,100},
+  429:    {FREQUENCY/131,100},
+  430:    {FREQUENCY/139,300},
+  431:    {FREQUENCY/139,300},
+  432:    {FREQUENCY/123,300},
+  433:    {FREQUENCY/123,100},
+  434:    {FREQUENCY/123,100},
+  435:    {FREQUENCY/117,100},
+  436:    {FREQUENCY/123,300},
+  437:    {FREQUENCY/123,100},
+  438:    {FREQUENCY/123,100},
+  439:    {FREQUENCY/123,100},
+  440:    {FREQUENCY/117,300},
+  441:    {FREQUENCY/117,100},
+  442:    {FREQUENCY/117,100},
+  443:    {FREQUENCY/104,100},
+  444:    {FREQUENCY/117,300},
+  445:    {FREQUENCY/117,100},
+  446:    {FREQUENCY/117,100},
+  447:    {FREQUENCY/117,100},
+  448:    {FREQUENCY/131,300},
+  449:    {FREQUENCY/131,100},
+  450:    {FREQUENCY/131,100},
+  451:    {FREQUENCY/123,100},
+  452:    {FREQUENCY/131,300},
+  453:    {FREQUENCY/131,100},
+  454:    {FREQUENCY/131,100},
+  455:    {FREQUENCY/131,100},
+  456:    {FREQUENCY/87,300},
+  457:    {FREQUENCY/87,300},
+  458:    {FREQUENCY/87,300},
+  459:    {FREQUENCY/98,150},
+  460:    {FREQUENCY/110,150},
+  461:    {FREQUENCY/117,300},
+  462:    {FREQUENCY/117,100},
+  463:    {FREQUENCY/117,100},
+  464:    {FREQUENCY/104,100},
+  465:    {FREQUENCY/117,300},
+  466:    {FREQUENCY/117,300},
+  467:    {FREQUENCY/104,300},
+  468:    {FREQUENCY/104,100},
+  469:    {FREQUENCY/104,100},
+  470:    {FREQUENCY/92,100},
+  471:    {FREQUENCY/104,300},
+  472:    {FREQUENCY/104,300},
+  473:    {FREQUENCY/92,300},
+  474:    {FREQUENCY/92,100},
+  475:    {FREQUENCY/92,100},
+  476:    {FREQUENCY/82,100},
+  477:    {FREQUENCY/92,300},
+  478:    {FREQUENCY/92,300},
+  479:    {FREQUENCY/87,300},
+  480:    {FREQUENCY/87,100},
+  481:    {FREQUENCY/87,100},
+  482:    {FREQUENCY/82,100},
+  483:    {FREQUENCY/87,300},
+  484:    {FREQUENCY/87,300},
+  485:    {FREQUENCY/82,100},
+  486:    {FREQUENCY/117,100},
+  487:    {FREQUENCY/139,100},
+  488:    {FREQUENCY/165,100},
+  489:    {FREQUENCY/233,100},
+  490:    {FREQUENCY/277,100},
+  491:    {FREQUENCY/330,300},
+  492:    {0,300},
+  493:    {FREQUENCY/349,300},
+  494:    {FREQUENCY/87,100},
+  495:    {FREQUENCY/87,100},
+  496:    {FREQUENCY/87,100},
+  497:    {FREQUENCY/87,300},
+  498:    {0,300},
+  499:    {FREQUENCY/82,100},
+  500:    {FREQUENCY/117,100},
+  501:    {FREQUENCY/139,100},
+  502:    {FREQUENCY/165,100},
+  503:    {FREQUENCY/233,100},
+  504:    {FREQUENCY/277,100},
+  505:    {FREQUENCY/330,300},
+  506:    {0,300},
+  507:    {FREQUENCY/349,300},
+  508:    {FREQUENCY/87,100},
+  509:    {FREQUENCY/87,100},
+  510:    {FREQUENCY/87,100},
+  511:    {FREQUENCY/87,300},
+  512:    {0,300},
+  513:    {FREQUENCY/123,300},
+  514:    {FREQUENCY/123,100},
+  515:    {FREQUENCY/123,100},
+  516:    {FREQUENCY/117,100},
+  517:    {FREQUENCY/123,300},
+  518:    {FREQUENCY/123,100},
+  519:    {FREQUENCY/123,100},
+  520:    {FREQUENCY/123,100},
+  521:    {FREQUENCY/117,300},
+  522:    {FREQUENCY/117,100},
+  523:    {FREQUENCY/117,100},
+  524:    {FREQUENCY/104,100},
+  525:    {FREQUENCY/117,300},
+  526:    {FREQUENCY/117,100},
+  527:    {FREQUENCY/117,100},
+  528:    {FREQUENCY/117,100},
+  529:    {FREQUENCY/131,300},
+  530:    {FREQUENCY/131,100},
+  531:    {FREQUENCY/131,100},
+  532:    {FREQUENCY/123,100},
+  533:    {FREQUENCY/65,300},
+  534:    {FREQUENCY/65,100},
+  535:    {FREQUENCY/65,100},
+  536:    {FREQUENCY/65,100},
+  537:    {FREQUENCY/87,300},
+  538:    {FREQUENCY/87,300},
+  539:    {FREQUENCY/87,300},
+  540:    {FREQUENCY/98,150},
+  541:    {FREQUENCY/110,150}
+  542:  };
+  543:  
+  544:  //---------------------Music_InitOC0---------------------
+  545:  // arm output compare 0 for melody
+  546:  // also enables timer to 43 ns period
+  547:  // Input: none
+  548:  // Output: none               
+  549:  void Music_InitOC0(void){
+*** EVALUATION ***
+
+Function: Music_InitOC0
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  550:    TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
+  0000 c680         [1]     LDAB  #128
+  0002 5b00         [2]     STAB  _TSCR1
+  551:    TSCR2 = 0x00;   // divide by 1 TCNT prescale, TOI disarm, sets period to 42.67 ns
+  0004 790000       [3]     CLR   _TSCR2
+  552:    PACTL = 0;      // timer prescale used for TCNT
+  0007 790000       [3]     CLR   _PACTL
+  553:    
+  554:    DDRP |= 0x80;
+  000a 1c000080     [4]     BSET  _DDRP,#128
+  555:    TIOS |= 0x01;   // activate TC0 as output compare
+  000e 4c0001       [4]     BSET  _TIOS,#1
+  556:    TIE  |= 0x01;   // arm OC0
+  0011 4c0001       [4]     BSET  _TIE,#1
+  557:    TC0   = TCNT+50;// first interrupt right away
+  0014 dc00         [3]     LDD   _TCNT
+  0016 c30032       [2]     ADDD  #50
+  0019 5c00         [2]     STD   _TC0
+  558:  }
+  001b 3d           [5]     RTS   
+  559:  
+  560:  //---------------------Music_InitOC1---------------------
+  561:  // arm output compare 1 for harmony
+  562:  // Input: none
+  563:  // Output: none               
+  564:  void Music_InitOC1(void){
+*** EVALUATION ***
+
+Function: Music_InitOC1
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  565:    TIOS |= 0x02;   // activate TC1 as output compare
+  0000 4c0002       [4]     BSET  _TIOS,#2
+  566:    TIE  |= 0x02;   // arm OC1
+  0003 4c0002       [4]     BSET  _TIE,#2
+  567:    TC1   = TCNT+50;// first interrupt right away
+  0006 dc00         [3]     LDD   _TCNT
+  0008 c30032       [2]     ADDD  #50
+  000b 5c00         [2]     STD   _TC1
+  568:  }
+  000d 3d           [5]     RTS   
+  569:  
+  570:  //---------------------Music_InitOC2---------------------
+  571:  // arm output compare 2 for bass
+  572:  // Input: none
+  573:  // Output: none             
+  574:  void Music_InitOC2(void){
+*** EVALUATION ***
+
+Function: Music_InitOC2
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  575:    TIOS |= 0x04;   // activate TC1 as output compare
+  0000 4c0004       [4]     BSET  _TIOS,#4
+  576:    TIE  |= 0x04;   // arm OC1
+  0003 4c0004       [4]     BSET  _TIE,#4
+  577:    TC2   = TCNT+50;// first interrupt right away
+  0006 dc00         [3]     LDD   _TCNT
+  0008 c30032       [2]     ADDD  #50
+  000b 5c00         [2]     STD   _TC2
+  578:  }
+  000d 3d           [5]     RTS   
+  579:  
+  580:  //---------------------Music_InitOC3---------------------
+  581:  // arm output compare 3 for envelopes at 750 Hz
+  582:  // Input: none
+  583:  // Output: none               
+  584:  void Music_InitOC3(void){  
+*** EVALUATION ***
+
+Function: Music_InitOC3
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  585:    TIOS |= 0x08;   // activate TC1 as output compare
+  0000 4c0008       [4]     BSET  _TIOS,#8
+  586:    TIE  |= 0x08;   // arm OC1
+  0003 4c0008       [4]     BSET  _TIE,#8
+  587:    TC3   = TCNT+50;// first interrupt right away
+  0006 dc00         [3]     LDD   _TCNT
+  0008 c30032       [2]     ADDD  #50
+  000b 5c00         [2]     STD   _TC3
+  588:  }          
+  000d 3d           [5]     RTS   
+  589:                           
+  590:    unsigned short startTime = 0;
+  591:    unsigned short totalTime = 0;
+  592:  // OC handler for melody
+  593:  interrupt 8 void TC0Handler() {
+*** EVALUATION ***
+
+Function: TC0Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  594:    unsigned static char i = 0; 
+  595:    startTime = TCNT;  
+  0000 dc00         [3]     LDD   _TCNT
+  0002 7c0000       [3]     STD   startTime
+  596:    
+  597:    TFLG1 = 0x01;  
+  0005 c601         [1]     LDAB  #1
+  0007 5b00         [2]     STAB  _TFLG1
+  598:    
+  599:    PTP ^= 0x80;
+  0009 b60000       [3]     LDAA  _PTP
+  000c 8880         [1]     EORA  #128
+  000e 7a0000       [3]     STAA  _PTP
+  600:    
+  601:    // Checks if the note is a rest
+  602:    if(melody[note1].frequency) {
+  0011 fc0000       [3]     LDD   note1
+  0014 cd0006       [2]     LDY   #6
+  0017 13           [3]     EMUL  
+  0018 b745         [1]     TFR   D,X
+  001a eee20000     [4]     LDX   melody,X
+  001e 2724         [3/1]   BEQ   *+38 ;abs = 0044
+  603:      // Outputs the proper sin value plus the other two lines' outputs to the DAC
+  604:      DAC_Out((SinWave[i%SIN] * envelope1) + output2 + output3);
+  0020 0741         [4]     BSR   *+67 ;abs = 0063
+  0022 f30000       [3]     ADDD  output2
+  0025 f30000       [3]     ADDD  output3
+  0028 160000       [4]     JSR   DAC_Out
+  605:      // Sets output1 to the proper sin value
+  606:      output1 = SinWave[i%SIN] * envelope1; 
+  002b 0736         [4]     BSR   *+56 ;abs = 0063
+  002d 7c0000       [3]     STD   output1
+  607:      i++;
+  0030 720000       [4]     INC   i
+  608:      // Sets the next interrupt according to the frequency    
+  609:      TC0 = TC0 + melody[note1].frequency;
+  0033 fc0000       [3]     LDD   note1
+  0036 cd0006       [2]     LDY   #6
+  0039 13           [3]     EMUL  
+  003a b745         [1]     TFR   D,X
+  003c dc00         [3]     LDD   _TC0
+  003e e3e20000     [4]     ADDD  melody,X
+  610:    }
+  0042 200a         [3]     BRA   *+12 ;abs = 004e
+  611:    else {
+  612:      // Sets output to zero
+  613:      output1 = 0;
+  0044 c7           [1]     CLRB  
+  0045 87           [1]     CLRA  
+  0046 7c0000       [3]     STD   output1
+  614:      // Arbitrary next interrupt to check if note changed
+  615:      TC0 = TC0 + 480;  
+  0049 dc00         [3]     LDD   _TC0
+  004b c301e0       [2]     ADDD  #480
+  004e 5c00         [2]     STD   _TC0
+  616:    }
+  617:    if(TCNT - startTime > totalTime) {
+  0050 dc00         [3]     LDD   _TCNT
+  0052 b30000       [3]     SUBD  startTime
+  0055 bc0000       [3]     CPD   totalTime
+  0058 2308         [3/1]   BLS   *+10 ;abs = 0062
+  618:      totalTime = TCNT - startTime; 
+  005a dc00         [3]     LDD   _TCNT
+  005c b30000       [3]     SUBD  startTime
+  005f 7c0000       [3]     STD   totalTime
+  619:    }      
+  620:  }  
+  0062 0b           [8]     RTI   
+  0063 f60000       [3]     LDAB  i
+  0066 c40f         [1]     ANDB  #15
+  0068 87           [1]     CLRA  
+  0069 59           [1]     LSLD  
+  006a b745         [1]     TFR   D,X
+  006c ece20000     [4]     LDD   SinWave,X
+  0070 fd0000       [3]     LDY   envelope1
+  0073 13           [3]     EMUL  
+  0074 3d           [5]     RTS   
+  621:      
+  622:  // OC handler for harmony
+  623:  interrupt 9 void TC1Handler() { 
+*** EVALUATION ***
+
+Function: TC1Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  624:    unsigned static char i = 0;
+  625:    
+  626:    TFLG1 = 0x02;
+  0000 c602         [1]     LDAB  #2
+  0002 5b00         [2]     STAB  _TFLG1
+  627:    
+  628:    if(harmony[note2].frequency) {   
+  0004 fc0000       [3]     LDD   note2
+  0007 cd0006       [2]     LDY   #6
+  000a 13           [3]     EMUL  
+  000b b745         [1]     TFR   D,X
+  000d eee20000     [4]     LDX   harmony,X
+  0011 2724         [3/1]   BEQ   *+38 ;abs = 0037
+  629:      // Outputs the proper sin value plus the other two lines' outputs to the DAC
+  630:      DAC_Out((SinWave[i%SIN] * envelope2) + output1 + output3);   
+  0013 072f         [4]     BSR   *+49 ;abs = 0044
+  0015 f30000       [3]     ADDD  output1
+  0018 f30000       [3]     ADDD  output3
+  001b 160000       [4]     JSR   DAC_Out
+  631:      // Sets output1 to the proper sin value
+  632:      output2 = SinWave[i%SIN] * envelope2;   
+  001e 0724         [4]     BSR   *+38 ;abs = 0044
+  0020 7c0000       [3]     STD   output2
+  633:      i++;                             
+  0023 720000       [4]     INC   i
+  634:      // Sets the next interrupt according to the frequency 
+  635:      TC1 = TC1 + harmony[note2].frequency;
+  0026 fc0000       [3]     LDD   note2
+  0029 cd0006       [2]     LDY   #6
+  002c 13           [3]     EMUL  
+  002d b745         [1]     TFR   D,X
+  002f dc00         [3]     LDD   _TC1
+  0031 e3e20000     [4]     ADDD  harmony,X
+  636:    }
+  0035 200a         [3]     BRA   *+12 ;abs = 0041
+  637:    else {  
+  638:      // Sets output to zero
+  639:      output2 = 0;       
+  0037 c7           [1]     CLRB  
+  0038 87           [1]     CLRA  
+  0039 7c0000       [3]     STD   output2
+  640:      // Arbitrary next interrupt to check if note changed
+  641:      TC1 = TC1 + 480;  
+  003c dc00         [3]     LDD   _TC1
+  003e c301e0       [2]     ADDD  #480
+  0041 5c00         [2]     STD   _TC1
+  642:    }  
+  643:    
+  644:  }
+  0043 0b           [8]     RTI   
+  0044 f60000       [3]     LDAB  i
+  0047 c40f         [1]     ANDB  #15
+  0049 87           [1]     CLRA  
+  004a 59           [1]     LSLD  
+  004b b745         [1]     TFR   D,X
+  004d ece20000     [4]     LDD   SinWave,X
+  0051 fd0000       [3]     LDY   envelope2
+  0054 13           [3]     EMUL  
+  0055 3d           [5]     RTS   
+  645:  
+  646:  interrupt 10 void TC2Handler() {
+*** EVALUATION ***
+
+Function: TC2Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  647:    unsigned static char i = 0;
+  648:    
+  649:    TFLG1 = 0x04;     
+  0000 c604         [1]     LDAB  #4
+  0002 5b00         [2]     STAB  _TFLG1
+  650:                                    
+  651:    if(note3 < BASS && bass[note3].frequency) {     
+  0004 fc0000       [3]     LDD   note3
+  0007 8c00a3       [2]     CPD   #163
+  000a 2430         [3/1]   BCC   *+50 ;abs = 003c
+  000c cd0006       [2]     LDY   #6
+  000f 13           [3]     EMUL  
+  0010 b745         [1]     TFR   D,X
+  0012 eee20000     [4]     LDX   bass,X
+  0016 2724         [3/1]   BEQ   *+38 ;abs = 003c
+  652:      // Outputs the proper sin value plus the other two lines' outputs to the DAC
+  653:      DAC_Out((SinWave[i%SIN] * envelope3) + output1 + output2);        
+  0018 072f         [4]     BSR   *+49 ;abs = 0049
+  001a f30000       [3]     ADDD  output1
+  001d f30000       [3]     ADDD  output2
+  0020 160000       [4]     JSR   DAC_Out
+  654:      // Sets output1 to the proper sin value
+  655:      output3 = SinWave[i%SIN] * envelope3;   
+  0023 0724         [4]     BSR   *+38 ;abs = 0049
+  0025 7c0000       [3]     STD   output3
+  656:      i++;                                    
+  0028 720000       [4]     INC   i
+  657:      // Sets the next interrupt according to the frequency 
+  658:      TC2 = TC2 + bass[note3].frequency;
+  002b fc0000       [3]     LDD   note3
+  002e cd0006       [2]     LDY   #6
+  0031 13           [3]     EMUL  
+  0032 b745         [1]     TFR   D,X
+  0034 dc00         [3]     LDD   _TC2
+  0036 e3e20000     [4]     ADDD  bass,X
+  659:    }
+  003a 200a         [3]     BRA   *+12 ;abs = 0046
+  660:    else {                  
+  661:      // Sets output to zero
+  662:      output3 = 0;     
+  003c c7           [1]     CLRB  
+  003d 87           [1]     CLRA  
+  003e 7c0000       [3]     STD   output3
+  663:      // Arbitrary next interrupt to check if note changed
+  664:      TC2 = TC2 + 480;  
+  0041 dc00         [3]     LDD   _TC2
+  0043 c301e0       [2]     ADDD  #480
+  0046 5c00         [2]     STD   _TC2
+  665:    }
+  666:  } 
+  0048 0b           [8]     RTI   
+  0049 f60000       [3]     LDAB  i
+  004c c40f         [1]     ANDB  #15
+  004e 87           [1]     CLRA  
+  004f 59           [1]     LSLD  
+  0050 b745         [1]     TFR   D,X
+  0052 ece20000     [4]     LDD   SinWave,X
+  0056 fd0000       [3]     LDY   envelope3
+  0059 13           [3]     EMUL  
+  005a 3d           [5]     RTS   
+  667:  
+  668:  interrupt 11 void TC3Handler() {   
+*** EVALUATION ***
+
+Function: TC3Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  0000 1b9c         [2]     LEAS  -4,SP
+  669:    TFLG1 = 0x08; 
+  0002 c608         [1]     LDAB  #8
+  0004 5b00         [2]     STAB  _TFLG1
+  670:    
+  671:    // Counts number of interrupts triggered for each note
+  672:    interrupts1++;
+  0006 fe0000       [3]     LDX   interrupts1
+  0009 08           [1]     INX   
+  000a 7e0000       [3]     STX   interrupts1
+  673:    interrupts2++;
+  000d fe0000       [3]     LDX   interrupts2
+  0010 08           [1]     INX   
+  0011 7e0000       [3]     STX   interrupts2
+  674:    interrupts3++;
+  0014 fe0000       [3]     LDX   interrupts3
+  0017 08           [1]     INX   
+  0018 7e0000       [3]     STX   interrupts3
+  675:    
+  676:    // Checks if note is finished                              
+  677:    if(interrupts1 >= melody[note1].length) {
+  001b fc0000       [3]     LDD   note1
+  001e 160000       [4]     JSR   TC3Handler:0x0168
+  0021 eee20000     [4]     LDX   melody:2,X
+  0025 2638         [3/1]   BNE   *+58 ;abs = 005f
+  0027 fe0000       [3]     LDX   interrupts1
+  002a b746         [1]     TFR   D,Y
+  002c aeea0000     [4]     CPX   melody:4,Y
+  0030 252d         [3/1]   BCS   *+47 ;abs = 005f
+  678:        // If reverse button is pushed, decrement note
+  679:        if(Switch_Data()&0x01) {
+  0032 160000       [4]     JSR   Switch_Data
+  0035 c401         [1]     ANDB  #1
+  0037 2709         [3/1]   BEQ   *+11 ;abs = 0042
+  680:          note1--;
+  0039 fe0000       [3]     LDX   note1
+  003c 09           [1]     DEX   
+  003d 7e0000       [3]     STX   note1
+  681:        }
+  0040 2012         [3]     BRA   *+20 ;abs = 0054
+  682:        // Otherwise, increment note
+  683:        else {
+  684:          note1++;
+  0042 fe0000       [3]     LDX   note1
+  0045 08           [1]     INX   
+  0046 7e0000       [3]     STX   note1
+  685:          // If note is past the end of the song, repeat
+  686:          if(note1 >= MELODY) {
+  0049 8e0092       [2]     CPX   #146
+  004c 2506         [3/1]   BCS   *+8 ;abs = 0054
+  687:            note1 = MREPEAT;  
+  004e c624         [1]     LDAB  #36
+  0050 87           [1]     CLRA  
+  0051 7c0000       [3]     STD   note1
+  688:          }
+  689:        }
+  690:        // Reset counter and envelope for next note
+  691:        interrupts1 = 0;
+  0054 c7           [1]     CLRB  
+  0055 87           [1]     CLRA  
+  0056 7c0000       [3]     STD   interrupts1
+  692:        envelope1 = 1;
+  0059 52           [1]     INCB  
+  005a 7c0000       [3]     STD   envelope1
+  693:    }
+  005d 2021         [3]     BRA   *+35 ;abs = 0080
+  694:    // Set envelope for only 2/3 of note length
+  695:    else if(interrupts1 >= (melody[note1].length*2)/3) {
+  005f fc0000       [3]     LDD   note1
+  0062 160000       [4]     JSR   TC3Handler:0x0168
+  0065 ece20000     [4]     LDD   melody:4,X
+  0069 eee20000     [4]     LDX   melody:2,X
+  006d 160000       [4]     JSR   TC3Handler:0x0150
+  0070 3b           [2]     PSHD  
+  0071 34           [2]     PSHX  
+  0072 fc0000       [3]     LDD   interrupts1
+  0075 ce0000       [2]     LDX   #0
+  0078 160000       [4]     JSR   _LCMP
+  007b 2503         [3/1]   BCS   *+5 ;abs = 0080
+  696:      envelope1 = 0;  
+  007d 7e0000       [3]     STX   envelope1
+  697:    }
+  698:    
+  699:    // Checks if note is finished     
+  700:    if(interrupts2 >= harmony[note2].length) {         
+  0080 fc0000       [3]     LDD   note2
+  0083 160000       [4]     JSR   TC3Handler:0x0168
+  0086 eee20000     [4]     LDX   harmony:2,X
+  008a 2638         [3/1]   BNE   *+58 ;abs = 00c4
+  008c fe0000       [3]     LDX   interrupts2
+  008f b746         [1]     TFR   D,Y
+  0091 aeea0000     [4]     CPX   harmony:4,Y
+  0095 252d         [3/1]   BCS   *+47 ;abs = 00c4
+  701:        // If reverse button is pushed, decrement note
+  702:        if(Switch_Data()&0x01) {
+  0097 160000       [4]     JSR   Switch_Data
+  009a c401         [1]     ANDB  #1
+  009c 2709         [3/1]   BEQ   *+11 ;abs = 00a7
+  703:          note2--;
+  009e fe0000       [3]     LDX   note2
+  00a1 09           [1]     DEX   
+  00a2 7e0000       [3]     STX   note2
+  704:        }                    
+  00a5 2012         [3]     BRA   *+20 ;abs = 00b9
+  705:        // Otherwise, increment note
+  706:        else {
+  707:          note2++;     
+  00a7 fe0000       [3]     LDX   note2
+  00aa 08           [1]     INX   
+  00ab 7e0000       [3]     STX   note2
+  708:          // If note is past the end of the song, repeat
+  709:          if(note2 >= HARMONY) {
+  00ae 8e00b5       [2]     CPX   #181
+  00b1 2506         [3/1]   BCS   *+8 ;abs = 00b9
+  710:            note2 = HREPEAT;  
+  00b3 c622         [1]     LDAB  #34
+  00b5 87           [1]     CLRA  
+  00b6 7c0000       [3]     STD   note2
+  711:          }      
+  712:        }        
+  713:        // Reset counter and envelope for next note
+  714:        interrupts2 = 0;
+  00b9 c7           [1]     CLRB  
+  00ba 87           [1]     CLRA  
+  00bb 7c0000       [3]     STD   interrupts2
+  715:        envelope2 = 1;
+  00be 52           [1]     INCB  
+  00bf 7c0000       [3]     STD   envelope2
+  716:    }  
+  00c2 2020         [3]     BRA   *+34 ;abs = 00e4
+  717:    // Set envelope for only 2/3 of note length
+  718:    else if(interrupts2 >= (harmony[note2].length*2)/3) {
+  00c4 fc0000       [3]     LDD   note2
+  00c7 160000       [4]     JSR   TC3Handler:0x0168
+  00ca ece20000     [4]     LDD   harmony:4,X
+  00ce eee20000     [4]     LDX   harmony:2,X
+  00d2 077c         [4]     BSR   *+126 ;abs = 0150
+  00d4 3b           [2]     PSHD  
+  00d5 34           [2]     PSHX  
+  00d6 fc0000       [3]     LDD   interrupts2
+  00d9 ce0000       [2]     LDX   #0
+  00dc 160000       [4]     JSR   _LCMP
+  00df 2503         [3/1]   BCS   *+5 ;abs = 00e4
+  719:      envelope2 = 0;  
+  00e1 7e0000       [3]     STX   envelope2
+  720:    }
+  721:    
+  722:    // Checks if note is finished     
+  723:    if(interrupts3 >= bass[note3].length) {
+  00e4 fc0000       [3]     LDD   note3
+  00e7 077f         [4]     BSR   *+129 ;abs = 0168
+  00e9 eee20000     [4]     LDX   bass:2,X
+  00ed 2638         [3/1]   BNE   *+58 ;abs = 0127
+  00ef fe0000       [3]     LDX   interrupts3
+  00f2 b746         [1]     TFR   D,Y
+  00f4 aeea0000     [4]     CPX   bass:4,Y
+  00f8 252d         [3/1]   BCS   *+47 ;abs = 0127
+  724:        if(Switch_Data()&0x01) {       
+  00fa 160000       [4]     JSR   Switch_Data
+  00fd c401         [1]     ANDB  #1
+  00ff 2709         [3/1]   BEQ   *+11 ;abs = 010a
+  725:        // If reverse button is pushed, decrement note
+  726:          note3--;
+  0101 fe0000       [3]     LDX   note3
+  0104 09           [1]     DEX   
+  0105 7e0000       [3]     STX   note3
+  727:        }                       
+  0108 2012         [3]     BRA   *+20 ;abs = 011c
+  728:        // Otherwise, increment note
+  729:        else {
+  730:          note3++;   
+  010a fe0000       [3]     LDX   note3
+  010d 08           [1]     INX   
+  010e 7e0000       [3]     STX   note3
+  731:          // If note is past the end of the song, repeat
+  732:          if(note3 >= BASS) {
+  0111 8e00a3       [2]     CPX   #163
+  0114 2506         [3/1]   BCS   *+8 ;abs = 011c
+  733:            note3 = BREPEAT;  
+  0116 c61d         [1]     LDAB  #29
+  0118 87           [1]     CLRA  
+  0119 7c0000       [3]     STD   note3
+  734:          }      
+  735:        }    
+  736:        // Reset counter and envelope for next note
+  737:        interrupts3 = 0;
+  011c c7           [1]     CLRB  
+  011d 87           [1]     CLRA  
+  011e 7c0000       [3]     STD   interrupts3
+  738:        envelope3 = 1;
+  0121 52           [1]     INCB  
+  0122 7c0000       [3]     STD   envelope3
+  739:    }        
+  0125 201f         [3]     BRA   *+33 ;abs = 0146
+  740:    // Set envelope for only 2/3 of note length
+  741:    else if(interrupts3 >= (bass[note3].length*2)/3) {
+  0127 fc0000       [3]     LDD   note3
+  012a 073c         [4]     BSR   *+62 ;abs = 0168
+  012c ece20000     [4]     LDD   bass:4,X
+  0130 eee20000     [4]     LDX   bass:2,X
+  0134 071a         [4]     BSR   *+28 ;abs = 0150
+  0136 3b           [2]     PSHD  
+  0137 34           [2]     PSHX  
+  0138 fc0000       [3]     LDD   interrupts3
+  013b ce0000       [2]     LDX   #0
+  013e 160000       [4]     JSR   _LCMP
+  0141 2503         [3/1]   BCS   *+5 ;abs = 0146
+  742:      envelope3 = 0;  
+  0143 7e0000       [3]     STX   envelope3
+  743:    }
+  744:    
+  745:    TC3 = TC3 + 32000;
+  0146 dc00         [3]     LDD   _TC3
+  0148 c37d00       [2]     ADDD  #32000
+  014b 5c00         [2]     STD   _TC3
+  746:  }
+  014d 1b84         [2]     LEAS  4,SP
+  014f 0b           [8]     RTI   
+  0150 59           [1]     LSLD  
+  0151 b7c5         [1]     EXG   D,X
+  0153 55           [1]     ROLB  
+  0154 45           [1]     ROLA  
+  0155 cd0003       [2]     LDY   #3
+  0158 35           [2]     PSHY  
+  0159 6c84         [2]     STD   4,SP
+  015b 6e86         [2]     STX   6,SP
+  015d 1a5d         [2]     LEAX  -3,Y
+  015f 34           [2]     PSHX  
+  0160 ec88         [3]     LDD   8,SP
+  0162 ee86         [3]     LDX   6,SP
+  0164 160000       [4]     JSR   _LDIVU
+  0167 3d           [5]     RTS   
+  0168 cd0006       [2]     LDY   #6
+  016b 13           [3]     EMUL  
+  016c b745         [1]     TFR   D,X
+  016e 3d           [5]     RTS   
+  747:  
+  748:  //---------------------Music_Restart---------------------
+  749:  // Restarts music
+  750:  // Input: none
+  751:  // Output: none               
+  752:  void Music_Restart(void) {
+*** EVALUATION ***
+
+Function: Music_Restart
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  753:    note1 = 0;
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 7c0000       [3]     STD   note1
+  754:    note2 = 0;
+  0005 7c0000       [3]     STD   note2
+  755:    note3 = 0;
+  0008 7c0000       [3]     STD   note3
+  756:    
+  757:    interrupts1 = 0;
+  000b 7c0000       [3]     STD   interrupts1
+  758:    interrupts2 = 0;
+  000e 7c0000       [3]     STD   interrupts2
+  759:    interrupts3 = 0;
+  0011 7c0000       [3]     STD   interrupts3
+  760:    
+  761:    envelope1 = 1;
+  0014 52           [1]     INCB  
+  0015 7c0000       [3]     STD   envelope1
+  762:    envelope2 = 1;
+  0018 7c0000       [3]     STD   envelope2
+  763:    envelope3 = 1;
+  001b 7c0000       [3]     STD   envelope3
+  764:  }
+  001e 3d           [5]     RTS   
+  765:  
+  766:  
