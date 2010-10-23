@@ -1,0 +1,43 @@
+Design Rule Check Report
+------------------------
+
+Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\Lab8_Hall_Ahmed (PCB - Design Rule Check Report).txt
+Report Written : Friday, October 22, 2010
+Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\Lab8_Hall_Ahmed.pcb
+Design Title   : 
+Created        : 9/11/2009 4:58:24 PM
+Last Saved     : 10/22/2010 11:21:15 PM
+Editing Time   : 2505 min
+Units          : mil (precision 0)
+
+Results
+-------
+
+
+No errors found
+
+Settings
+--------
+
+Spacings
+    Tracks                             Yes
+    Pads and Vias                      Yes
+    Shapes                             Yes
+    Text                               Yes
+    Board                              Yes
+    Drills                             Yes
+    Components                         No
+
+Manufacturing
+    Min Drill Hole Size                Yes
+    Min Track Width                    Yes
+    Min Annular Ring                   Yes
+    Drill Breakout                     Yes
+
+Nets
+    Net Completion                     Yes
+    Dangling Tracks                    Yes
+    Net Track Length Differences       No
+
+
+End Of Report.
