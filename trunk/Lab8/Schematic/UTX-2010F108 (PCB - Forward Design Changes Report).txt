@@ -1,0 +1,19 @@
+Forward Design Changes Report
+-----------------------------
+
+Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108 (PCB - Forward Design Changes Report).txt
+Report Written : Friday, October 22, 2010
+Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.pcb
+Design Title   : 
+Created        : 9/11/2009 4:58:24 PM
+Last Saved     : 10/23/2010 1:52:32 AM
+Editing Time   : 2521 min
+Units          : mil (precision 0)
+
+Added net "PA7".
+
+Connected pin "U1.48" to net "PA7".
+Connected pin "J6.9" to net "PA7".
+
+
+End Of Report.
