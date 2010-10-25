@@ -2,17 +2,17 @@ Forward Design Changes Report
 -----------------------------
 
 Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108 (PCB - Forward Design Changes Report).txt
-Report Written : Friday, October 22, 2010
+Report Written : Saturday, October 23, 2010
 Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 10/23/2010 2:04:30 AM
-Editing Time   : 2532 min
+Last Saved     : 10/23/2010 2:09:27 AM
+Editing Time   : 2534 min
 Units          : mil (precision 0)
 
-Net N0059 renamed to PA3
-Net N0060 renamed to PA4
-Net N0061 renamed to PA5
+Net "PA3" changed from net class "Ground" to net class "Signal".
+Net "PA5" changed from net class "Ground" to net class "Signal".
+Net "PA4" changed from net class "Ground" to net class "Signal".
 
 
 End Of Report.
