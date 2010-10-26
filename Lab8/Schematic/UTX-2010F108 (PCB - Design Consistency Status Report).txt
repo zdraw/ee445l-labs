@@ -6,8 +6,8 @@ Report Written : Monday, October 25, 2010
 Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 10/23/2010 8:59:53 PM
-Editing Time   : 2537 min
+Last Saved     : 10/25/2010 4:19:24 PM
+Editing Time   : 2578 min
 Units          : mil (precision 0)
 
 Checking integrity of Schematic "C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.sch" with PCB "C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.pcb".
