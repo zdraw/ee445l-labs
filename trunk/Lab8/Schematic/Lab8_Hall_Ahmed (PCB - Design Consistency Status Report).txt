@@ -2,12 +2,12 @@ Design Consistency Status Report
 --------------------------------
 
 Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\Lab8_Hall_Ahmed (PCB - Design Consistency Status Report).txt
-Report Written : Friday, October 22, 2010
+Report Written : Wednesday, October 27, 2010
 Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\Lab8_Hall_Ahmed.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 10/22/2010 11:23:13 PM
-Editing Time   : 2506 min
+Last Saved     : 10/26/2010 2:11:43 AM
+Editing Time   : 2582 min
 Units          : mil (precision 0)
 
 Checking integrity of Schematic "C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\Lab8_Hall_Ahmed.sch" with PCB "C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\Lab8_Hall_Ahmed.pcb".
