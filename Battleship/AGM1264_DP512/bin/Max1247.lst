@@ -1,0 +1,275 @@
+ANSI-C/cC++ Compiler for HC12 V-5.0.35 Build 8093, Apr  3 2008
+
+    1:  /* ************************ Max1247.c *****************************
+    2:   * Interrupting I/O routines External Max1247, XIRQ interrupts 
+    3:   * Please do not distribute
+    4:   * ************************************************************ */
+    5:   
+    6:  // 9S12DP512
+    7:  // Jonathan W. Valvano 3/3/09
+    8:  
+    9:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   10:  //    Please do not post or distribute this file 
+   11:  
+   12:  // PP4 output (squarewave at sampling period) connected to PE0/XIRQ input
+   13:  // 9S12DP512 PS6 Sclk output to    Max1247 pin 16 Sclk input
+   14:  // 9S12DP512 PS5 MOSI output to    Max1247 pin 14 Din input
+   15:  // 9S12DP512 PS7 digital output to Max1247 pin 15 /CS input
+   16:  // 9S12DP512 PS4 MISO input from   Max1247 pin 12 Dout output
+   17:  // other Max1237 pins
+   18:  // Max1247 pin  1 Vdd to +5 power (with 0.1uF cap)
+   19:  // Max1247 pin  2 CH0 analog input 
+   20:  // Max1247 pin  3 CH1 analog input 
+   21:  // Max1247 pin  4 CH2 analog input 
+   22:  // Max1247 pin  5 CH3 analog input 
+   23:  // Max1247 pin  6 COM (ground)
+   24:  // Max1247 pin  7 /SHDN (floating, external compensation
+   25:  // Max1247 pin  8 Ref (2.5V from REF03, with 4.7uF cap)
+   26:  // Max1247 pin  9 RefAdj (+5V)  to disable reference adjust
+   27:  // Max1247 pin 10 Agnd (ground)
+   28:  // Max1247 pin 11 Dgnd (ground)
+   29:  // Max1247 pin 13 SSTRB (nc), output to signify ADC complete
+   30:  
+   31:  #include <mc9s12dp512.h>     /* derivative information */
+   32:  #include "ADC.h"
+   33:  #define CS PTS_PTS7
+   34:  unsigned short BadCount;
+   35:  // squarewave PWM on PP4
+   36:  // input: scale, period used to establish sampling period
+   37:  // period = 0.3333us*scale*period
+   38:  void static PWMInit(unsigned char scale, unsigned char period){
+
+Function: PWMInit
+Source  : D:\EE385J class\Demo3_DP512\Sources\Max1247.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE385J class\Demo3_DP512;D:\EE385J class\Demo3_DP512\bin;D:\EE385J class\Demo3_DP512\prm;D:\EE385J class\Demo3_DP512\cmd;D:\EE385J class\Demo3_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"OBJPATH=D:\EE385J class\Demo3_DP512\bin" -Env"TEXTPATH=D:\EE385J class\Demo3_DP512\bin" -Lasm=%n.lst -Ms -ObjN="D:\EE385J class\Demo3_DP512\Demo3_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Max1247.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+   39:    PWME   |= 0x10;  // enable channel 4
+  0001 4c0010       [4]     BSET  _PWME,#16
+   40:    PWMPOL |= 0x10;  // PP4 high then low
+  0004 4c0010       [4]     BSET  _PWMPOL,#16
+   41:    PWMCLK |= 0x10;  // Clock SA
+  0007 4c0010       [4]     BSET  _PWMCLK,#16
+   42:    PWMPRCLK = (PWMPRCLK&0xF8)|0x02;  // 2^n = 2^0x02 = 4
+  000a d600         [3]     LDAB  _PWMPRCLK
+  000c c4f8         [1]     ANDB  #248
+  000e ca02         [1]     ORAB  #2
+  0010 5b00         [2]     STAB  _PWMPRCLK
+   43:    // PeriodA = PeriodE*4 = 0.04167*4 = 0.1667us
+   44:    PWMSCLA = scale; // e.g., 15;    
+  0012 e683         [3]     LDAB  3,SP
+  0014 5b00         [2]     STAB  _PWMSCLA
+   45:    // PeriodSA =2*PeriodA*PWMSCLA = 2*0.04167*4*15 = 5us
+   46:    PWMPER4 = period;  // e.g., 200 is 1 ms period
+  0016 33           [3]     PULB  
+  0017 5b00         [2]     STAB  _PWMPER45
+   47:    // PeriodPP4 =PeriodSA*PWMPER4 = 1 ms
+   48:    PWMDTY4 = 0;     // initially off
+  0019 790000       [3]     CLR   _PWMDTY45
+   49:  }
+  001c 3d           [5]     RTS   
+   50:  // Set the duty cycle on PP4 output
+   51:  void static PWMDuty4(unsigned char duty){
+
+Function: PWMDuty4
+Source  : D:\EE385J class\Demo3_DP512\Sources\Max1247.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE385J class\Demo3_DP512;D:\EE385J class\Demo3_DP512\bin;D:\EE385J class\Demo3_DP512\prm;D:\EE385J class\Demo3_DP512\cmd;D:\EE385J class\Demo3_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"OBJPATH=D:\EE385J class\Demo3_DP512\bin" -Env"TEXTPATH=D:\EE385J class\Demo3_DP512\bin" -Lasm=%n.lst -Ms -ObjN="D:\EE385J class\Demo3_DP512\Demo3_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Max1247.c.o" -WmsgSd1106
+
+   52:    PWMDTY4 = duty;  // 0 to 200
+  0000 5b00         [2]     STAB  _PWMDTY45
+   53:  }
+  0002 3d           [5]     RTS   
+   54:    
+   55:  void static (*CallBack)(unsigned short);  // call back function
+   56:  unsigned char static TheChannel;
+   57:  // CH0 0x9F
+   58:  // CH1 0xDF
+   59:  // CH2 0xAF
+   60:  // CH3 0xEF
+   61:  
+   62:  //******** Max1247_Init *************** 
+   63:  // Initialize 12-bit ADC, sequence length=1, 10-bit mode
+   64:  // external trigger, interrupt synchronization
+   65:  // sampling period is 0.3333us*scale*period
+   66:  // input: function to process 10-bit data,
+   67:  //        scale, period used to establish sampling period
+   68:  //        channel determines which channel, e.g., 0x84 is channel 4
+   69:  // output: none
+   70:  // errors: none
+   71:  void Max1247_Init(void(*fp)(unsigned short),
+   72:  unsigned char scale, unsigned char period, unsigned char channel){
+
+Function: Max1247_Init
+Source  : D:\EE385J class\Demo3_DP512\Sources\Max1247.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE385J class\Demo3_DP512;D:\EE385J class\Demo3_DP512\bin;D:\EE385J class\Demo3_DP512\prm;D:\EE385J class\Demo3_DP512\cmd;D:\EE385J class\Demo3_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"OBJPATH=D:\EE385J class\Demo3_DP512\bin" -Env"TEXTPATH=D:\EE385J class\Demo3_DP512\bin" -Lasm=%n.lst -Ms -ObjN="D:\EE385J class\Demo3_DP512\Demo3_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Max1247.c.o" -WmsgSd1106
+
+  0000 6bae         [2]     STAB  2,-SP
+   73:  unsigned char dummy;
+   74:    CallBack = fp;     // user-specified process
+  0002 ec86         [3]     LDD   6,SP
+  0004 7c0000       [3]     STD   CallBack
+   75:    TheChannel =  channel;
+  0007 e680         [3]     LDAB  0,SP
+  0009 7b0000       [3]     STAB  TheChannel
+   76:    BadCount = 0;
+  000c c7           [1]     CLRB  
+  000d 87           [1]     CLRA  
+  000e 7c0000       [3]     STD   BadCount
+   77:    DDRS |= 0xE0;   // PS7 is output to CS
+  0011 1c0000e0     [4]     BSET  _DDRS,#224
+   78:    DDRS &= ~0x10;  // PS4 is MISO 
+  0015 1d000010     [4]     BCLR  _DDRS,#16
+   79:    CS = 1;         // PTS |= 0x80;    
+  0019 1c000080     [4]     BSET  _PTS,#128
+   80:  /* bit SPI0CR1
+   81:   7 SPIE = 0   no interrupts
+   82:   6 SPE  = 1   enable SPI
+   83:   5 SWOM = 0   regular outputs
+   84:   4 MSTR = 1   master
+   85:   3 CPOL = 0   output changes on fall, 
+   86:   2 CPHA = 0   clock normally low
+   87:   1 SSOE = 0   regular output on SS
+   88:   0 LSBF = 0   most sign bit first */
+   89:    SPI0CR1 = 0x50;
+  001d c650         [1]     LDAB  #80
+  001f 5b00         [2]     STAB  _SPI0CR1
+   90:  /* bit SPICR2
+   91:   4 MODFEN = 0  Mode Fault Enable Bit  
+   92:   3 BIDIROE= 0  Output enable in the Bidirectional mode of operation
+   93:   1 SPISWAI= 0  SPI Stop in Wait Mode Bit
+   94:   0 SPC0   = 0  normal mode */
+   95:    SPI0CR2 = 0x00;
+  0021 5a00         [2]     STAA  _SPI0CR2
+   96:    SPI0BR = 0x50;		// baud rate 
+  0023 5b00         [2]     STAB  _SPI0BR
+   97:    // bits 6,5,4 are SPPR, bits 2,1,0 are SPR
+   98:    // divisor is (1+SPPR)*2**(SPR+1) = 6*2**1 = 12
+   99:    // frequency = 24MHz/divisor = 2 MHz or	500 nsec period
+  100:    dummy = SPI0SR;
+  0025 d600         [3]     LDAB  _SPI0SR
+  0027 6b81         [2]     STAB  1,SP
+  101:    dummy = SPI0DR;         // clear SPIF
+  0029 d600         [3]     LDAB  _SPI0DR
+  002b 6b81         [2]     STAB  1,SP
+  102:    PWMInit(scale,period);  // ADC sampling period = 0.3333us*scale*period
+  002d e685         [3]     LDAB  5,SP
+  002f 37           [2]     PSHB  
+  0030 e685         [3]     LDAB  5,SP
+  0032 0700         [4]     BSR   PWMInit
+  0034 32           [3]     PULA  
+  103:    PWMDuty4(period-2);     // low for 0.3333us*scale*2
+  0035 e684         [3]     LDAB  4,SP
+  0037 c002         [1]     SUBB  #2
+  0039 0700         [4]     BSR   PWMDuty4
+  104:    DDRP |= 0x10;           // PP4 sets external trigger
+  003b 1c000010     [4]     BSET  _DDRP,#16
+  105:    asm ldaa #$10
+  003f 8610         [1]     LDAA  #16
+  106:    asm tap                 // X=0, enable XIRQ nonmaskable interrupts
+  0041 b702         [1]     TAP   
+  107:  }
+  0043 3a           [3]     PULD  
+  0044 3d           [5]     RTS   
+  108:  
+  109:  //******** Max1247_In *************** 
+  110:  // perform 12-bit analog to digital conversion
+  111:  // input: specifying analog channel to sample
+  112:  // output: 12-bit ADC sample (straight binary) 
+  113:  // analog input    digital output
+  114:  //  0.0000                  0
+  115:  //  0.00061                 1
+  116:  //  0.00122                 2
+  117:  //  0.0024                  4
+  118:  //  0.0049                  8
+  119:  //  0.0098                 16
+  120:  //  0.0195                 32
+  121:  //  0.039                  64
+  122:  //  0.078                 128
+  123:  //  0.156                 256
+  124:  //  0.312                 512
+  125:  //  0.625                1024
+  126:  //  1.250                2048
+  127:  //  2.500             	 4095
+  128:  // uses busy-wait synchronization
+  129:  // example  data = ADC_In(CH2); // samples channel 2
+  130:  unsigned short Max1247_In(unsigned char chan){ 
+
+Function: Max1247_In
+Source  : D:\EE385J class\Demo3_DP512\Sources\Max1247.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE385J class\Demo3_DP512;D:\EE385J class\Demo3_DP512\bin;D:\EE385J class\Demo3_DP512\prm;D:\EE385J class\Demo3_DP512\cmd;D:\EE385J class\Demo3_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"OBJPATH=D:\EE385J class\Demo3_DP512\bin" -Env"TEXTPATH=D:\EE385J class\Demo3_DP512\bin" -Lasm=%n.lst -Ms -ObjN="D:\EE385J class\Demo3_DP512\Demo3_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Max1247.c.o" -WmsgSd1106
+
+  0000 6bad         [2]     STAB  3,-SP
+  131:  unsigned char data;
+  132:  unsigned short result;
+  133:   // PM3 low for one output, two inputs (command, data, data)
+  134:    CS = 0;                     // clear PS7=Max1247 /CS
+  0002 1d000080     [4]     BCLR  _PTS,#128
+  135:  
+  136:    while(((SPI0SR&0x20)==0)){};// 1) wait for SPTEF=1,
+  0006 4f0020fc     [4]     BRCLR _SPI0SR,#32,*+0 ;abs = 0006
+  137:    SPI0DR = chan;              // 2) output command frame to ADC
+  000a e680         [3]     LDAB  0,SP
+  000c 5b00         [2]     STAB  _SPI0DR
+  138:    while(((SPI0SR&0x80)==0)){};// 3) wait for SPIF=1,
+  000e 4f0080fc     [4]     BRCLR _SPI0SR,#128,*+0 ;abs = 000e
+  139:    data = SPI0DR;              // 4) clear SPIF
+  0012 d600         [3]     LDAB  _SPI0DR
+  140:    
+  141:    while(((SPI0SR&0x20)==0)){};// 1) wait for SPTEF=1,
+  0014 4f0020fc     [4]     BRCLR _SPI0SR,#32,*+0 ;abs = 0014
+  142:    SPI0DR = 0   ;              // 2) output frame to DAC
+  0018 790000       [3]     CLR   _SPI0DR
+  143:    while(((SPI0SR&0x80)==0)){};// 3) wait for SPIF=1, read result
+  001b 4f0080fc     [4]     BRCLR _SPI0SR,#128,*+0 ;abs = 001b
+  144:    data = SPI0DR;              // 4) clear SPIF
+  001f d600         [3]     LDAB  _SPI0DR
+  145:    result = data<<5;           // bits 11-5  
+  0021 37           [2]     PSHB  
+  0022 c620         [1]     LDAB  #32
+  0024 32           [3]     PULA  
+  0025 12           [1]     MUL   
+  0026 6c81         [2]     STD   1,SP
+  146:  
+  147:    while(((SPI0SR&0x20)==0)){};// 1) wait for SPTEF=1,
+  0028 4f0020fc     [4]     BRCLR _SPI0SR,#32,*+0 ;abs = 0028
+  148:    SPI0DR = 0   ;              // 2) output frame to DAC
+  002c 790000       [3]     CLR   _SPI0DR
+  149:    while(((SPI0SR&0x80)==0)){};// 3) wait for SPIF=1, read result
+  002f 4f0080fc     [4]     BRCLR _SPI0SR,#128,*+0 ;abs = 002f
+  150:    data = SPI0DR;              // 4) clear SPIF
+  0033 d600         [3]     LDAB  _SPI0DR
+  151:    result += data>>3;          // bits 4-0  
+  0035 54           [1]     LSRB  
+  0036 54           [1]     LSRB  
+  0037 54           [1]     LSRB  
+  0038 87           [1]     CLRA  
+  0039 e381         [3]     ADDD  1,SP
+  152:    CS = 1;                     // PS7 = /CS=1 
+  003b 1c000080     [4]     BSET  _PTS,#128
+  153:    return result; 
+  154:  }
+  003f 1b83         [2]     LEAS  3,SP
+  0041 3d           [5]     RTS   
+  155:  interrupt 5 void XIRQISR(void){ unsigned short data;
+
+Function: XIRQISR
+Source  : D:\EE385J class\Demo3_DP512\Sources\Max1247.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE385J class\Demo3_DP512;D:\EE385J class\Demo3_DP512\bin;D:\EE385J class\Demo3_DP512\prm;D:\EE385J class\Demo3_DP512\cmd;D:\EE385J class\Demo3_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for HCS12 V4.7\lib\HC12c\include" -Env"OBJPATH=D:\EE385J class\Demo3_DP512\bin" -Env"TEXTPATH=D:\EE385J class\Demo3_DP512\bin" -Lasm=%n.lst -Ms -ObjN="D:\EE385J class\Demo3_DP512\Demo3_DP512_Data\HCS12_Serial_Monitor\ObjectCode\Max1247.c.o" -WmsgSd1106
+
+  156:    data = Max1247_In(TheChannel); // 12-bit sample
+  0000 f60000       [3]     LDAB  TheChannel
+  0003 0700         [4]     BSR   Max1247_In
+  157:    (*CallBack)(data);             // pass data to user program
+  0005 15fb0000     [7]     JSR   [CallBack,PCR]
+  158:    while(PORTE_BIT0==0){
+  0009 fe0000       [3]     LDX   BadCount
+  000c 21           [1]     SKIP1 
+  159:      BadCount++;
+  000d 08           [1]     INX   
+  000e 4f0001fb     [4]     BRCLR _PORTE,#1,*-1 ;abs = 000d
+  160:      // this should be high by now
+  161:    }
+  162:  }
+  0012 7e0000       [3]     STX   BadCount
+  0015 0b           [8]     RTI   
+  163:  
