@@ -1,0 +1,3238 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  //*****************LCDG.c***************************************
+    2:  // implementation of the driver for the AGM1264F MODULE
+    3:  // Jonathan W. Valvano 11/20/09 
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //         Engineering, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Microcomputer Systems: 
+    9:  //    Motorola 6811 and 6812 Simulation", Thomson, copyright (c) 2002
+   10:  
+   11:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  
+   15:  // Hardware:
+   16:  // gnd    =  1- AGM1264F ground
+   17:  // +5V    =  2- AGM1264F Vcc (with 0.1uF cap to ground)
+   18:  // pot    =  3- AGM1264F Vo  (center pin of 10k pot)
+   19:  // PP2    =  4- AGM1264F D/I (0 for command, 1 for data)
+   20:  // gnd    =  5- AGM1264F R/W (blind cycle synchronization)
+   21:  // PP3    =  6- AGM1264F E   (1 to latch in data/command)
+   22:  // PH0    =  7- AGM1264F DB0
+   23:  // PH1    =  8- AGM1264F DB1
+   24:  // PH2    =  9- AGM1264F DB2
+   25:  // PH3    = 10- AGM1264F DB3
+   26:  // PH4    = 11- AGM1264F DB4
+   27:  // PH5    = 12- AGM1264F DB5
+   28:  // PH6    = 13- AGM1264F DB6
+   29:  // PH7    = 14- AGM1264F DB7
+   30:  // PP0    = 15- AGM1264F CS1 (controls left half of LCD)
+   31:  // PP1    = 16- AGM1264F CS2 (controls right half of LCD)
+   32:  // +5V    = 17- AGM1264F RES (reset)
+   33:  // pot    = 18- ADM1264F Vee (-10V)
+   34:  // 10k pot from pin 18 to ground, with center to pin 3
+   35:  // references   http://www.azdisplays.com/prod/g1264f.php
+   36:  // sample code  http://www.azdisplays.com/PDF/agm1264f_code.pdf
+   37:  // data sheet   http://www.azdisplays.com/PDF/agm1264f.pdf
+   38:  
+   39:  // BUG NOTICE 11/11/09 -Valvano
+   40:  // When changing from right to left or from left to right
+   41:  //   the first write with data=0 goes to two places
+   42:  // One can reduce the effect of this bug by
+   43:  // 1) Changing sides less often
+   44:  // 2) Ignore autoincrement, and set column and page address each time
+   45:  // 3) Blanking the screen then write 1's to the screen
+   46:  // GoTo bug fixed on 11/20/09
+   47:  
+   48:  //******************************************************************
+   49:  #include <mc9s12dp512.h>     /* derivative information */
+   50:  #include "Timer.h"
+   51:  #define E PTP_PTP3
+   52:  #define DI PTP_PTP2
+   53:  #define CS2 PTP_PTP1
+   54:  #define CS1 PTP_PTP0
+   55:  
+   56:  // assuming TCNT is 1.5 MHz
+   57:  #define T1usec 2
+   58:  #define T4usec 6
+   59:  
+   60:  // if 1, includes LCD test examples
+   61:  // use 0 for more space efficient code
+   62:  #define TEST 0
+   63:  
+   64:  // digits are drawn at the top of the byte
+   65:  const unsigned char TinyFont[10*3]={  // 3 wide by 5 tall
+   66:    14,17,14,   // 0
+   67:    18,31,16,   // 1
+   68:    25,21,23,   // 2
+   69:    17,21,31,   // 3
+   70:    7,4,31,     // 4
+   71:    23,21,9,    // 5
+   72:    31,21,28,   // 6
+   73:    1,1,31,     // 7
+   74:    31,21,31,   // 8
+   75:    7,21,31     // 9
+   76:  };
+   77:  
+   78:  // digits are drawn one pixel from the top 
+   79:  const unsigned char TinyFont1[10*3]={  // 3 wide by 5 tall
+   80:    2*14,2*17,2*14,   // 0
+   81:    2*18,2*31,2*16,   // 1
+   82:    2*25,2*21,2*23,   // 2
+   83:    2*17,2*21,2*31,   // 3
+   84:    2*7,2*4,2*31,     // 4
+   85:    2*23,2*21,2*9,    // 5
+   86:    2*31,2*21,2*28,   // 6
+   87:    2*1,2*1,2*31,     // 7
+   88:    2*31,2*21,2*31,   // 8
+   89:    2*7,2*21,2*31     // 9
+   90:  };
+   91:  // two pixels from the top or one pixel from bottom 
+   92:  const unsigned char TinyFont2[10*3]={  // 3 wide by 5 tall
+   93:    4*14,4*17,4*14,   // 0
+   94:    4*18,4*31,4*16,   // 1
+   95:    4*25,4*21,4*23,   // 2
+   96:    4*17,4*21,4*31,   // 3
+   97:    4*7,4*4,4*31,     // 4
+   98:    4*23,4*21,4*9,    // 5
+   99:    4*31,4*21,4*28,   // 6
+  100:    4*1,4*1,4*31,     // 7
+  101:    4*31,4*21,4*31,   // 8
+  102:    4*7,4*21,4*31     // 9
+  103:  };
+  104:  // three pixels from the top or at the bottom 
+  105:  const unsigned char TinyFont3[10*3]={  // 3 wide by 5 tall
+  106:    8*14,8*17,8*14,   // 0
+  107:    8*18,8*31,8*16,   // 1
+  108:    8*25,8*21,8*23,   // 2
+  109:    8*17,8*21,8*31,   // 3
+  110:    8*7,8*4,8*31,     // 4
+  111:    8*23,8*21,8*9,    // 5
+  112:    8*31,8*21,8*28,   // 6
+  113:    8*1,8*1,8*31,     // 7
+  114:    8*31,8*21,8*31,   // 8
+  115:    8*7,8*21,8*31     // 9
+  116:  };
+  117:  // 5 wide by 7 tall font
+  118:  const unsigned char Font[96*5]={   // no numbers with bit7=1
+  119:    0,0,0,0,0,           // 32  space
+  120:    0,0,95,0,0,          // 33  !
+  121:    0,7,0,7,0,           // 34  "
+  122:    20,127,20,127,20,    // 35  #
+  123:    36,42,127,42,18,     // 36  $
+  124:    35,19,8,100,98,      // 37  %
+  125:    54,73,85,34,80,      // 38  &
+  126:    0,5,3,0,0,           // 39  quote
+  127:    0,28,34,65,0,        // 40  (
+  128:    0,65,34,28,0,        // 41  )
+  129:    20,8,62,8,20,        // 42  *
+  130:    8,8,62,8,8,          // 43  plus
+  131:    0,80,48,0,0,         // 44  ,
+  132:    8,8,8,8,8,           // 45  minus
+  133:    0,112,112,112,0,     // 46  .
+  134:    32,16,8,4,2,         // 47  /
+  135:    62,81,73,69,62,      // 48  0
+  136:    0,66,127,64,0,       // 49  1
+  137:    66,97,81,73,70,      // 50  2
+  138:    33,65,69,75,49,      // 51  3
+  139:    24,20,18,127,16,     // 52  4
+  140:    39,69,69,69,57,      // 53  5
+  141:    60,74,73,73,48,      // 54  6
+  142:    3,1,113,9,7,         // 55  7
+  143:    54,73,73,73,54,      // 56  8
+  144:    6,73,73,41,30,       // 57  9
+  145:    0,54,54,0,0,         // 58  :
+  146:    0,86,54,0,0,         // 59  ;
+  147:    8,20,34,65,0,        // 60  <
+  148:    20,20,20,20,20,      // 61  equals
+  149:    65,34,20,8,0,        // 62  >
+  150:    2,1,81,9,6,          // 63  ?
+  151:    50,73,121,65,62,     // 64  @
+  152:    126,17,17,17,126,    // 65  A
+  153:    127,73,73,73,54,     // 66  B
+  154:    62,65,65,65,34,      // 67  C
+  155:    127,65,65,65,62,     // 68  D
+  156:    127,73,73,73,65,     // 69  E
+  157:    127,9,9,9,1,         // 70  F
+  158:    62,65,73,73,122,     // 71  G
+  159:    127,8,8,8,127,       // 72  H
+  160:    65,65,127,65,65,     // 73  I
+  161:    32,64,65,63,1,       // 74  J
+  162:    127,8,20,34,65,      // 75  K
+  163:    127,64,64,64,64,     // 76  L
+  164:    127,2,12,2,127,      // 77  M
+  165:    127,6,24,96,127,     // 78  N
+  166:    62,65,65,65,62,      // 79  O
+  167:    127,9,9,9,6,         // 80  P
+  168:    62,65,81,33,94,      // 81  Q
+  169:    127,9,25,41,70,      // 82  R
+  170:    70,73,73,73,49,      // 83  S
+  171:    1,1,127,1,1,         // 84  T
+  172:    63,64,64,64,63,      // 85  U
+  173:    31,32,64,32,31,      // 86  V
+  174:    63,64,56,64,63,      // 87  W
+  175:    99,20,8,20,99,       // 88  X
+  176:    7,8,112,8,7,         // 89  Y
+  177:    97,81,73,69,67,      // 90  Z
+  178:    0,127,65,65,0,       // 91  [
+  179:    2,4,8,16,32,         // 92  back slash
+  180:    0,65,65,127,0,       // 93  ]
+  181:    4,2,1,2,4,           // 94  ^
+  182:    64,64,64,64,64,      // 95  _
+  183:    0,1,2,4,0,           // 96  quote
+  184:    32,84,84,84,120,     // 97  a
+  185:    127,72,68,68,56,     // 98  b
+  186:    56,68,68,68,32,      // 99  c
+  187:    56,68,68,72,127,     // 100  d
+  188:    56,84,84,84,24,      // 101  e
+  189:    8,126,9,1,2,         // 102  f
+  190:    8,84,84,84,60,       // 103  g   
+  191:    127,8,4,4,120,       // 104  h
+  192:    0,72,125,64,0,       // 105  i
+  193:    32,64,68,61,0,       // 106  j  
+  194:    127,16,40,68,0,      // 107  k
+  195:    0,65,127,64,0,       // 108  l
+  196:    124,4,24,4,120,      // 109  m
+  197:    124,8,4,4,120,       // 110  n
+  198:    56,68,68,68,56,      // 111  o
+  199:    124,20,20,20,8,      // 112  p      
+  200:    12,18,18,20,126,     // 113  q   
+  201:    124,8,4,4,8,         // 114  r
+  202:    72,84,84,84,36,      // 115  s
+  203:    4,63,68,64,32,       // 116  t
+  204:    60,64,64,32,124,     // 117  u
+  205:    28,32,64,32,28,      // 118  v
+  206:    60,64,48,64,60,      // 119  w
+  207:    68,40,16,40,68,      // 120  x
+  208:    12,80,80,80,60,      // 121  y    
+  209:    68,100,84,76,68,     // 122  z
+  210:    0,65,54,8,0,         // 123  }
+  211:    0,0,127,0,0,         // 124  |
+  212:    0,8,54,65,0,         // 125  {
+  213:    8,4,8,16,8,          // 126  ~
+  214:    31,36,124,36,31      // 127  UT sign
+  215:  };
+  216:  
+  217:  
+  218:  
+  219:  static unsigned short OpenFlag=0;
+  220:  unsigned char Column1; // column position
+  221:  unsigned char bLeft1;  // to be placed into CS1, in LCD_OutChar
+  222:  unsigned char bRight1; // to be placed into CS2, in LCD_OutChar
+  223:  unsigned char Page;
+  224:  unsigned char bDown;    // true if want font shifted down
+  225:  unsigned char TinyDown; // 0 no shift, 1,2,3 shift down 
+  226:  unsigned char Xcolumn;  // byte number 56-7F on left, 40-79 on right
+  227:  unsigned char bRightx;  // to be placed into CS2
+  228:  unsigned char bLeftx;   // to be placed into CS1
+  229:  unsigned char PlotPixel; 
+  230:  // number of data points drawn into the same X-axis pixel
+  231:  // 4 means it takes 400 calls to LCD_Plot to draw one sweep
+  232:  unsigned short SubCount; // goes PlotPixel down to 1
+  233:   
+  234:  unsigned short XaxisResolution;
+  235:  // X axis numbers are  0 to 999
+  236:  // resolution>3 means no numbers are displayed
+  237:  // number->       0    9    99   999
+  238:  // 0  shown as   0.    9.   99.  999.
+  239:  // 1  shown as  0.0   0.9   9.9  99.9
+  240:  // 2  shown as 0.00  0.09  0.99  9.99
+  241:  // 3  shown as .000  .009  .099  .999
+  242:  
+  243:  unsigned short YaxisResolution;
+  244:  // Y axis numbers are  -99 to 99
+  245:  // any other value means no numbers are displayed
+  246:  // 0  shown as -99     -1    0   1   99
+  247:  // 1  shown as -9.9  -0.1  0.0 0.1  9.9
+  248:  // 2  shown as -.99  -.01  .00 .01  .99
+  249:  short MinY,RangeY;        // used to scale input data
+  250:  
+  251:  // ********* lcdCmd***********
+  252:  // Output command to AGM1264F 128-bit by 64-bit graphics display
+  253:  // Inputs: 8-bit instruction
+  254:  // Outputs: none
+  255:  void lcdCmd(unsigned char instruction){
+*** EVALUATION ***
+
+Function: lcdCmd
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  256:    // R/W=0, write mode  default, R/W=0 always
+  257:    // normally D/I will be left at D/I=1 for data
+  258:    DI = 0;        // D/I=0, COMMAND WRITE
+  0001 1d000004     [4]     BCLR  _PTP,#4
+  259:    Timer_Wait(T1usec);
+  0005 c602         [1]     LDAB  #2
+  0007 87           [1]     CLRA  
+  0008 160000       [4]     JSR   Timer_Wait
+  260:    E = 1;         // E pulse width > 450ns
+  000b 1c000008     [4]     BSET  _PTP,#8
+  261:    PTH = instruction;
+  000f e680         [3]     LDAB  0,SP
+  0011 7b0000       [3]     STAB  _PTH
+  262:    Timer_Wait(T1usec);
+  0014 c602         [1]     LDAB  #2
+  0016 87           [1]     CLRA  
+  0017 160000       [4]     JSR   Timer_Wait
+  263:    E = 0;         // falling edge latch, setup time 200ns
+  001a 1d000008     [4]     BCLR  _PTP,#8
+  264:    DI = 1;        // D/I=1 default state is data
+  001e 1c000004     [4]     BSET  _PTP,#4
+  265:    Timer_Wait(T4usec);
+  0022 c606         [1]     LDAB  #6
+  0024 87           [1]     CLRA  
+  0025 160000       [4]     JSR   Timer_Wait
+  266:  } 
+  0028 32           [3]     PULA  
+  0029 3d           [5]     RTS   
+  267:  
+  268:  // ********* lcdData***********
+  269:  // Output data to AGM1264F 128-bit by 64-bit graphics display
+  270:  // Inputs: 8-bit data
+  271:  // Outputs: none
+  272:  void lcdData(unsigned char data){
+*** EVALUATION ***
+
+Function: lcdData
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  273:    // R/W=0, write mode  default, R/W=0 always
+  274:    // normally D/I will be left at D/I=1 for data
+  275:    E = 1;         // E pulse width > 450ns
+  0000 1c000008     [4]     BSET  _PTP,#8
+  276:    PTH = data;
+  0004 7b0000       [3]     STAB  _PTH
+  277:    Timer_Wait(T1usec);
+  0007 c602         [1]     LDAB  #2
+  0009 87           [1]     CLRA  
+  000a 160000       [4]     JSR   Timer_Wait
+  278:    E = 0;         // falling edge latch, setup time 200ns
+  000d 1d000008     [4]     BCLR  _PTP,#8
+  279:    Timer_Wait(T4usec);
+  0011 c606         [1]     LDAB  #6
+  0013 87           [1]     CLRA  
+  0014 060000       [3]     JMP   Timer_Wait
+  280:  }    
+  281:  
+  282:  // ********* LCD_Init***********
+  283:  // Initialize AGM1264F 128-bit by 64-bit graphics display
+  284:  // activates TCNT at 1.5 MHz, assumes PLL active
+  285:  // Input: none                                      
+  286:  // Output: none
+  287:  // does not clear the display
+  288:  void LCD_Init(void){
+*** EVALUATION ***
+
+Function: LCD_Init
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  289:    Timer_Init();   // TCNT at 1.5 MHz
+  0000 160000       [4]     JSR   Timer_Init
+  290:    DDRH = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
+  0003 c6ff         [1]     LDAB  #255
+  0005 7b0000       [3]     STAB  _DDRH
+  291:    DDRP |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
+  0008 1c00000f     [4]     BSET  _DDRP,#15
+  292:    CS2 = 1;         // talk to both LCD controllers
+  000c 1c000002     [4]     BSET  _PTP,#2
+  293:    CS1 = 1;
+  0010 1c000001     [4]     BSET  _PTP,#1
+  294:    DI = 1;          // default mode is data 
+  0014 1c000004     [4]     BSET  _PTP,#4
+  295:    E = 0;           // inactive
+  0018 1d000008     [4]     BCLR  _PTP,#8
+  296:    Timer_Wait1ms(100); // let it warm up
+  001c c664         [1]     LDAB  #100
+  001e 87           [1]     CLRA  
+  001f 160000       [4]     JSR   Timer_Wait1ms
+  297:    lcdCmd(0x3F);    // display=ON
+  0022 c63f         [1]     LDAB  #63
+  0024 0700         [4]     BSR   lcdCmd
+  298:    lcdCmd(0xB8);    // Page address (0 to 7) is 0
+  0026 c6b8         [1]     LDAB  #184
+  0028 0700         [4]     BSR   lcdCmd
+  299:    lcdCmd(0x40);    // Column address (0 to 63) is 0
+  002a c640         [1]     LDAB  #64
+  002c 0700         [4]     BSR   lcdCmd
+  300:    lcdCmd(0xC0);    // Y=0 is at top
+  002e c6c0         [1]     LDAB  #192
+  0030 0700         [4]     BSR   lcdCmd
+  301:    OpenFlag = 1;    // device open
+  0032 c601         [1]     LDAB  #1
+  0034 87           [1]     CLRA  
+  0035 7c0000       [3]     STD   OpenFlag
+  302:    Column1 = 0x41;  // column position
+  0038 c641         [1]     LDAB  #65
+  003a 7b0000       [3]     STAB  Column1
+  303:    bLeft1 = 1;
+  003d 42           [1]     INCA  
+  003e 7a0000       [3]     STAA  bLeft1
+  304:    bRight1 = 0;
+  0041 790000       [3]     CLR   bRight1
+  305:    Page = 0xB8;
+  0044 c6b8         [1]     LDAB  #184
+  0046 7b0000       [3]     STAB  Page
+  306:    bDown = 0;    // true if want font shifted down
+  0049 790000       [3]     CLR   bDown
+  307:    TinyDown = 0; // 0 no shift, 1,2,3 shift down 
+  004c 790000       [3]     CLR   TinyDown
+  308:  }
+  004f 3d           [5]     RTS   
+  309:  
+  310:  
+  311:  // ********* LCD_Clear***********
+  312:  // Clear the entire 1024 byte (8192 bit) image on the
+  313:  //    AGM1264F 128-bit by 64-bit graphics display
+  314:  // Input: value to write into all bytes of display RAM
+  315:  // Output: none
+  316:  // e.g., LCD_Clear(0);  // makes all pixels off
+  317:  void LCD_Clear(unsigned char data){
+*** EVALUATION ***
+
+Function: LCD_Clear
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6bae         [2]     STAB  2,-SP
+  318:  unsigned char page;
+  319:    int i;
+  320:    if(OpenFlag == 0) return;
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 2728         [3/1]   BEQ   *+42 ;abs = 002f
+  321:    for(page = 0xB8; page< 0xB8+8; page++){ // pages 0 to 7
+  0007 c6b8         [1]     LDAB  #184
+  0009 6b81         [2]     STAB  1,SP
+  322:      CS2 = 1;          // right enable
+  000b 1c000002     [4]     BSET  _PTP,#2
+  323:      CS1 = 0;         
+  000f 1d000001     [4]     BCLR  _PTP,#1
+  324:      lcdCmd(page);    // Page address (0 to 7) 
+  0013 071c         [4]     BSR   *+30 ;abs = 0031
+  325:      lcdCmd(0x40);    // Column = 0
+  326:      for(i=64; i>0; i--){
+  327:        lcdData(data);   // copy one byte to right side
+  0015 0728         [4]     BSR   *+42 ;abs = 003f
+  0017 2efc         [3/1]   BGT   *-2 ;abs = 0015
+  328:      }
+  329:      CS2 = 0;          
+  0019 1d000002     [4]     BCLR  _PTP,#2
+  330:      CS1 = 1;         // left enable
+  001d 1c000001     [4]     BSET  _PTP,#1
+  331:      lcdCmd(page);    // Page address (0 to 7) 
+  0021 070e         [4]     BSR   *+16 ;abs = 0031
+  332:      lcdCmd(0x40);    // Column = 0
+  333:      for(i=64; i>0; i--){
+  334:        lcdData(data);   // copy one byte to left side
+  0023 071a         [4]     BSR   *+28 ;abs = 003f
+  0025 2efc         [3/1]   BGT   *-2 ;abs = 0023
+  0027 6281         [3]     INC   1,SP
+  0029 e681         [3]     LDAB  1,SP
+  002b c1c0         [1]     CMPB  #192
+  002d 25dc         [3/1]   BCS   *-34 ;abs = 000b
+  335:      }
+  336:    }
+  337:  }
+  002f 3a           [3]     PULD  
+  0030 3d           [5]     RTS   
+  0031 e683         [3]     LDAB  3,SP
+  0033 160000       [4]     JSR   lcdCmd
+  0036 c640         [1]     LDAB  #64
+  0038 160000       [4]     JSR   lcdCmd
+  003b ce0040       [2]     LDX   #64
+  003e 3d           [5]     RTS   
+  003f e682         [3]     LDAB  2,SP
+  0041 34           [2]     PSHX  
+  0042 160000       [4]     JSR   lcdData
+  0045 30           [3]     PULX  
+  0046 09           [1]     DEX   
+  0047 8e0000       [2]     CPX   #0
+  004a 3d           [5]     RTS   
+  338:  
+  339:  // page   is 0xB8 to 0xBF for pages 0 to 7
+  340:  // column is 0x40 to 0x7F for columns 0 to 63
+  341:  void OutByte(unsigned char page, unsigned char column,unsigned char data){
+*** EVALUATION ***
+
+Function: OutByte
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  342:    lcdCmd(page);    // Page address (0 to 7) 
+  0001 e684         [3]     LDAB  4,SP
+  0003 160000       [4]     JSR   lcdCmd
+  343:    lcdCmd(column);  // Column = 0 to 63
+  0006 e683         [3]     LDAB  3,SP
+  0008 160000       [4]     JSR   lcdCmd
+  344:    lcdData(data);   // data
+  000b e680         [3]     LDAB  0,SP
+  000d 160000       [4]     JSR   lcdData
+  345:  }
+  0010 32           [3]     PULA  
+  0011 3d           [5]     RTS   
+  346:  
+  347:  // ********* LCD_VTest***********
+  348:  // Clear the vertical lines image on the
+  349:  //    AGM1264F 128-bit by 64-bit graphics display
+  350:  // Input: none
+  351:  // Output: none
+  352:  void LCD_VTest(unsigned char num1, unsigned char num2){
+*** EVALUATION ***
+
+Function: LCD_VTest
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6bac         [2]     STAB  4,-SP
+  353:  unsigned char page;
+  354:    int i;
+  355:    CS2 = 0;          
+  0002 1d000002     [4]     BCLR  _PTP,#2
+  356:    CS1 = 1;         // left enable
+  0006 1c000001     [4]     BSET  _PTP,#1
+  357:    for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
+  000a c6b8         [1]     LDAB  #184
+  000c 6b83         [2]     STAB  3,SP
+  358:      for(i=0x40; i<=0x7F; i=i+2){
+  000e c640         [1]     LDAB  #64
+  0010 87           [1]     CLRA  
+  0011 6c81         [2]     STD   1,SP
+  359:        OutByte(page,i,num1);
+  0013 072a         [4]     BSR   *+44 ;abs = 003f
+  0015 2ffc         [3/1]   BLE   *-2 ;abs = 0013
+  0017 6283         [3]     INC   3,SP
+  0019 e683         [3]     LDAB  3,SP
+  001b c1bf         [1]     CMPB  #191
+  001d 23ef         [3/1]   BLS   *-15 ;abs = 000e
+  360:        OutByte(page,i+1,num2);       
+  361:      }
+  362:    }
+  363:    CS1 = 0;         
+  001f 1d000001     [4]     BCLR  _PTP,#1
+  364:    CS2 = 1;         // right enable
+  0023 1c000002     [4]     BSET  _PTP,#2
+  365:    for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
+  0027 c6b8         [1]     LDAB  #184
+  0029 6b83         [2]     STAB  3,SP
+  366:      for(i=0x40; i<=0x7F; i=i+2){
+  002b c640         [1]     LDAB  #64
+  002d 87           [1]     CLRA  
+  002e 6c81         [2]     STD   1,SP
+  367:        OutByte(page,i,num1);
+  0030 070d         [4]     BSR   *+15 ;abs = 003f
+  0032 2ffc         [3/1]   BLE   *-2 ;abs = 0030
+  0034 6283         [3]     INC   3,SP
+  0036 e683         [3]     LDAB  3,SP
+  0038 c1bf         [1]     CMPB  #191
+  003a 23ef         [3/1]   BLS   *-15 ;abs = 002b
+  368:        OutByte(page,i+1,num2);       
+  369:      }
+  370:    }
+  371:  }
+  003c 1b84         [2]     LEAS  4,SP
+  003e 3d           [5]     RTS   
+  003f e685         [3]     LDAB  5,SP
+  0041 37           [2]     PSHB  
+  0042 e685         [3]     LDAB  5,SP
+  0044 37           [2]     PSHB  
+  0045 e68a         [3]     LDAB  10,SP
+  0047 0700         [4]     BSR   OutByte
+  0049 3a           [3]     PULD  
+  004a e685         [3]     LDAB  5,SP
+  004c 37           [2]     PSHB  
+  004d e685         [3]     LDAB  5,SP
+  004f 52           [1]     INCB  
+  0050 37           [2]     PSHB  
+  0051 e684         [3]     LDAB  4,SP
+  0053 0700         [4]     BSR   OutByte
+  0055 30           [3]     PULX  
+  0056 ee83         [3]     LDX   3,SP
+  0058 1a02         [2]     LEAX  2,X
+  005a 6e83         [2]     STX   3,SP
+  005c 8e007f       [2]     CPX   #127
+  005f 3d           [5]     RTS   
+  372:  
+  373:  
+  374:  // ********* LCD_DrawImage***********
+  375:  // Draw an entire 1024 byte (8192 bit) image on the
+  376:  //    AGM1264F 128-bit by 64-bit graphics display
+  377:  // Input: pointer to 1024 bytes of data
+  378:  // Output: none
+  379:  void LCD_DrawImage(const unsigned char *pt){
+*** EVALUATION ***
+
+Function: LCD_DrawImage
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6cab         [2]     STD   5,-SP
+  380:  unsigned char page;
+  381:    int i;
+  382:    if(OpenFlag == 0) return;
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 274e         [3/1]   BEQ   *+80 ;abs = 0055
+  383:    LCD_Clear(0);
+  0007 c7           [1]     CLRB  
+  0008 160000       [4]     JSR   LCD_Clear
+  384:    CS2 = 0;
+  000b 1d000002     [4]     BCLR  _PTP,#2
+  385:    CS1 = 1;         // left enable
+  000f 1c000001     [4]     BSET  _PTP,#1
+  386:    for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
+  0013 c6b8         [1]     LDAB  #184
+  0015 6b84         [2]     STAB  4,SP
+  387:      for(i=0x40; i<=0x7F; i=i+1){
+  0017 c640         [1]     LDAB  #64
+  0019 87           [1]     CLRA  
+  001a 6c82         [2]     STD   2,SP
+  388:        if(*pt){
+  001c ee80         [3]     LDX   0,SP
+  001e e600         [3]     LDAB  0,X
+  0020 2702         [3/1]   BEQ   *+4 ;abs = 0024
+  389:          OutByte(page,i,*pt);  // copy one byte to left
+  0022 0742         [4]     BSR   *+68 ;abs = 0066
+  390:        }
+  391:        pt++;
+  0024 0732         [4]     BSR   *+52 ;abs = 0058
+  0026 2ff4         [3/1]   BLE   *-10 ;abs = 001c
+  0028 6284         [3]     INC   4,SP
+  002a e684         [3]     LDAB  4,SP
+  002c c1bf         [1]     CMPB  #191
+  002e 23e7         [3/1]   BLS   *-23 ;abs = 0017
+  392:      }
+  393:    }
+  394:      
+  395:    CS1 = 0;
+  0030 1d000001     [4]     BCLR  _PTP,#1
+  396:    CS2 = 1;          // right enable
+  0034 1c000002     [4]     BSET  _PTP,#2
+  397:    for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
+  0038 c6b8         [1]     LDAB  #184
+  003a 6b84         [2]     STAB  4,SP
+  398:      for(i=0x40; i<=0x7F; i=i+1){
+  003c c640         [1]     LDAB  #64
+  003e 87           [1]     CLRA  
+  003f 6c82         [2]     STD   2,SP
+  399:        if(*pt){
+  0041 ee80         [3]     LDX   0,SP
+  0043 e600         [3]     LDAB  0,X
+  0045 2702         [3/1]   BEQ   *+4 ;abs = 0049
+  400:          OutByte(page,i,*pt);  // copy one byte to right
+  0047 071d         [4]     BSR   *+31 ;abs = 0066
+  401:        }
+  402:        pt++;
+  0049 070d         [4]     BSR   *+15 ;abs = 0058
+  004b 2ff4         [3/1]   BLE   *-10 ;abs = 0041
+  004d 6284         [3]     INC   4,SP
+  004f e684         [3]     LDAB  4,SP
+  0051 c1bf         [1]     CMPB  #191
+  0053 23e7         [3/1]   BLS   *-23 ;abs = 003c
+  403:      }
+  404:    }
+  405:  }
+  0055 1b85         [2]     LEAS  5,SP
+  0057 3d           [5]     RTS   
+  0058 ee82         [3]     LDX   2,SP
+  005a 08           [1]     INX   
+  005b 6e82         [2]     STX   2,SP
+  005d ee84         [3]     LDX   4,SP
+  005f 08           [1]     INX   
+  0060 6e84         [2]     STX   4,SP
+  0062 8e007f       [2]     CPX   #127
+  0065 3d           [5]     RTS   
+  0066 a686         [3]     LDAA  6,SP
+  0068 36           [2]     PSHA  
+  0069 a686         [3]     LDAA  6,SP
+  006b 36           [2]     PSHA  
+  006c 160000       [4]     JSR   OutByte
+  006f 1b82         [2]     LEAS  2,SP
+  0071 3d           [5]     RTS   
+  406:  #if TEST
+  407:  unsigned char const TestImage2[1024]={
+  408:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  409:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  410:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  411:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  412:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  413:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  414:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  415:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  416:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  417:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  418:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  419:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  420:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  421:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  422:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  423:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  424:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  425:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  426:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  427:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  428:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  429:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  430:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  431:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  432:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  433:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  434:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  435:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  436:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  437:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  438:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
+  439:    0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00
+  440:  };
+  441:  unsigned char const TestImage[1024] ={
+  442:  // left half
+  443:  0,0,0,0,0,0,0,0,32,112,112,112,112,112,112,240,240,240,240,224,224,224,224,192,192,192,128,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  444:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,3,3,7,7,15,15,31,63,126,252,248,248,240,240,224,192,128,128,0,0,0,0,0,0,0,0,0,0,0,0,0,128,0,0,128,0,0,128,0,0,128,0,
+  445:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,3,7,15,31,31,63,63,127,255,254,254,252,252,252,252,252,252,254,255,255,255,255,255,255,255,255,255,255,255,255,
+  446:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,28,60,62,63,127,127,127,127,63,63,63,31,31,127,255,255,255,255,255,255,255,255,255,255,255,255,
+  447:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,31,255,255,255,255,255,255,255,255,255,255,
+  448:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,15,255,255,255,255,255,255,255,
+  449:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,248,254,255,255,255,255,255,255,
+  450:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,7,15,31,31,31,31,
+  451:  // right half
+  452:  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,128,192,192,192,224,224,224,224,240,240,240,240,112,112,112,112,112,112,32,0,0,0,0,0,0,0,0,
+  453:  0,128,0,0,128,0,0,128,0,0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,128,128,192,224,240,240,248,248,252,126,63,31,15,15,7,7,3,3,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  454:  255,255,255,255,255,255,255,255,255,255,255,255,254,252,252,252,252,252,252,254,254,255,127,63,63,31,31,15,7,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  455:  255,255,255,255,255,255,255,255,255,255,255,255,127,31,31,63,63,63,127,127,127,127,63,62,60,28,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  456:  255,255,255,255,255,255,255,255,255,255,31,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  457:  255,255,255,255,255,255,255,15,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  458:  255,255,255,255,255,255,254,248,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  459:  31,31,31,31,15,7,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  460:  };
+  461:  // ********* LCD_DrawImageTest***********
+  462:  // Draw an entire 1024 byte (8192 bit) image on the
+  463:  //    AGM1264F 128-bit by 64-bit graphics display
+  464:  // Input: none, used above test image
+  465:  // Output: none
+  466:  void LCD_DrawImageTest(void){
+  467:    LCD_DrawImage(TestImage);
+  468:  }
+  469:  #endif
+  470:  
+  471:  
+  472:  // ********* LCD_OutChar***********
+  473:  // Output ASCII character on the
+  474:  //    AGM1264F 128-bit by 64-bit graphics display
+  475:  // Input: 7-bit ASCII to display
+  476:  // Output: none
+  477:  // letter must be between 32 and 127 inclusive
+  478:  // execute LCD_GoTo to specify cursor location
+  479:  void LCD_OutChar(unsigned char letter){
+*** EVALUATION ***
+
+Function: LCD_OutChar
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6bab         [2]     STAB  5,-SP
+  480:  unsigned short i,cnt;
+  481:    if(OpenFlag == 0) return;
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 182700ac     [4/3]   LBEQ  *+176 ;abs = 00b5
+  482:  // page 0 is 0xB8, varies from 0xB7 to 0xBF
+  483:    if(letter<32) return;
+  0009 e680         [3]     LDAB  0,SP
+  000b c120         [1]     CMPB  #32
+  000d 182500a4     [4/3]   LBCS  *+168 ;abs = 00b5
+  484:    if(letter>127) return;
+  0011 c17f         [1]     CMPB  #127
+  0013 1822009e     [4/3]   LBHI  *+162 ;abs = 00b5
+  485:    i = 5*(letter-32); // index into font table
+  0017 87           [1]     CLRA  
+  0018 830020       [2]     SUBD  #32
+  001b b746         [1]     TFR   D,Y
+  001d c605         [1]     LDAB  #5
+  001f 87           [1]     CLRA  
+  0020 13           [3]     EMUL  
+  0021 6c81         [2]     STD   1,SP
+  486:    CS2 = bRight1;   // right enable
+  0023 1e00000106   [5]     BRSET bRight1,#1,*+11 ;abs = 002e
+  0028 1d000002     [4]     BCLR  _PTP,#2
+  002c 2004         [3]     BRA   *+6 ;abs = 0032
+  002e 1c000002     [4]     BSET  _PTP,#2
+  487:    CS1 = bLeft1;    // left enable
+  0032 1e00000106   [5]     BRSET bLeft1,#1,*+11 ;abs = 003d
+  0037 1d000001     [4]     BCLR  _PTP,#1
+  003b 2004         [3]     BRA   *+6 ;abs = 0041
+  003d 1c000001     [4]     BSET  _PTP,#1
+  488:    lcdCmd(Page);    // Page address 0 to 7 
+  0041 0775         [4]     BSR   *+119 ;abs = 00b8
+  489:    lcdCmd(Column1); // Column = 0
+  490:    for(cnt=5; cnt>0; cnt--){
+  0043 c605         [1]     LDAB  #5
+  0045 87           [1]     CLRA  
+  0046 6c83         [2]     STD   3,SP
+  491:      if(bDown){
+  0048 f60000       [3]     LDAB  bDown
+  004b 2709         [3/1]   BEQ   *+11 ;abs = 0056
+  492:        lcdData(Font[i]<<1);  // copy one byte, shifted down 
+  004d ee81         [3]     LDX   1,SP
+  004f e6e20000     [4]     LDAB  Font,X
+  0053 58           [1]     LSLB  
+  493:      } else{
+  0054 2006         [3]     BRA   *+8 ;abs = 005c
+  494:        lcdData(Font[i]);  // copy one byte 
+  0056 ee81         [3]     LDX   1,SP
+  0058 e6e20000     [4]     LDAB  Font,X
+  005c 160000       [4]     JSR   lcdData
+  495:      }
+  496:      i++;
+  005f ee81         [3]     LDX   1,SP
+  0061 08           [1]     INX   
+  0062 6e81         [2]     STX   1,SP
+  497:      Column1++;
+  0064 720000       [4]     INC   Column1
+  498:      if(bLeft1&&(Column1==0x80)){
+  0067 f60000       [3]     LDAB  bLeft1
+  006a 270b         [3/1]   BEQ   *+13 ;abs = 0077
+  006c f60000       [3]     LDAB  Column1
+  006f c180         [1]     CMPB  #128
+  0071 2604         [3/1]   BNE   *+6 ;abs = 0077
+  499:        Column1 = 0x40;
+  0073 074f         [4]     BSR   *+81 ;abs = 00c4
+  500:        bLeft1 = 0;  
+  501:        bRight1 = 1;     // switch to right side
+  502:        CS2 = bRight1;   // right enable
+  503:        CS1 = bLeft1;    // left enable
+  504:        lcdCmd(Page);    // Page address 0 to 7) 
+  0075 0741         [4]     BSR   *+67 ;abs = 00b8
+  505:        lcdCmd(Column1); // Column = 0
+  506:      }
+  507:      if(bRight1&&(Column1==0x7F)){
+  0077 f60000       [3]     LDAB  bRight1
+  007a 270b         [3/1]   BEQ   *+13 ;abs = 0087
+  007c f60000       [3]     LDAB  Column1
+  007f c17f         [1]     CMPB  #127
+  0081 2604         [3/1]   BNE   *+6 ;abs = 0087
+  508:        Column1 = 0x41;
+  0083 0754         [4]     BSR   *+86 ;abs = 00d9
+  509:        bLeft1 = 1;  
+  510:        bRight1 = 0;     // switch to left side
+  511:        CS2 = bRight1;   // right enable
+  512:        CS1 = bLeft1;    // left enable
+  513:        lcdCmd(Page);    // Page address 0 to 7) 
+  0085 0731         [4]     BSR   *+51 ;abs = 00b8
+  0087 ee83         [3]     LDX   3,SP
+  0089 09           [1]     DEX   
+  008a 6e83         [2]     STX   3,SP
+  008c 26ba         [3/1]   BNE   *-68 ;abs = 0048
+  514:        lcdCmd(Column1); // Column = 0
+  515:      }
+  516:    }
+  517:    lcdData(0);  // inter-character space copy one byte 
+  008e c7           [1]     CLRB  
+  008f 160000       [4]     JSR   lcdData
+  518:    Column1++;
+  0092 720000       [4]     INC   Column1
+  519:    if(bLeft1&&(Column1==0x80)){
+  0095 f60000       [3]     LDAB  bLeft1
+  0098 270b         [3/1]   BEQ   *+13 ;abs = 00a5
+  009a f60000       [3]     LDAB  Column1
+  009d c180         [1]     CMPB  #128
+  009f 2604         [3/1]   BNE   *+6 ;abs = 00a5
+  520:      Column1 = 0x40;
+  00a1 0721         [4]     BSR   *+35 ;abs = 00c4
+  521:      bLeft1 = 0;  
+  522:      bRight1 = 1;     // switch to right side
+  523:      CS2 = bRight1;   // right enable
+  524:      CS1 = bLeft1;    // left enable
+  525:      lcdCmd(Page);    // Page address 0 to 7) 
+  00a3 0713         [4]     BSR   *+21 ;abs = 00b8
+  526:      lcdCmd(Column1); // Column = 0
+  527:    }
+  528:    if(bRight1&&(Column1==0x7F)){
+  00a5 f60000       [3]     LDAB  bRight1
+  00a8 270b         [3/1]   BEQ   *+13 ;abs = 00b5
+  00aa f60000       [3]     LDAB  Column1
+  00ad c17f         [1]     CMPB  #127
+  00af 2604         [3/1]   BNE   *+6 ;abs = 00b5
+  529:      Column1 = 0x41;
+  00b1 0726         [4]     BSR   *+40 ;abs = 00d9
+  530:      bLeft1 = 1;  
+  531:      bRight1 = 0;     // switch to left side
+  532:      CS2 = bRight1;   // right enable
+  533:      CS1 = bLeft1;    // left enable
+  534:      lcdCmd(Page);    // Page address 0 to 7) 
+  00b3 0703         [4]     BSR   *+5 ;abs = 00b8
+  535:      lcdCmd(Column1); // Column = 0
+  536:    }
+  537:  }  
+  00b5 1b85         [2]     LEAS  5,SP
+  00b7 3d           [5]     RTS   
+  00b8 f60000       [3]     LDAB  Page
+  00bb 160000       [4]     JSR   lcdCmd
+  00be f60000       [3]     LDAB  Column1
+  00c1 060000       [3]     JMP   lcdCmd
+  00c4 cc0140       [2]     LDD   #320
+  00c7 7b0000       [3]     STAB  Column1
+  00ca 790000       [3]     CLR   bLeft1
+  00cd 7a0000       [3]     STAA  bRight1
+  00d0 1c000002     [4]     BSET  _PTP,#2
+  00d4 1d000001     [4]     BCLR  _PTP,#1
+  00d8 3d           [5]     RTS   
+  00d9 cc0141       [2]     LDD   #321
+  00dc 7b0000       [3]     STAB  Column1
+  00df 7a0000       [3]     STAA  bLeft1
+  00e2 790000       [3]     CLR   bRight1
+  00e5 1d000002     [4]     BCLR  _PTP,#2
+  00e9 1c000001     [4]     BSET  _PTP,#1
+  00ed 3d           [5]     RTS   
+  538:  
+  539:  
+  540:    
+  541:  //---------------------LCD_OutString--------------
+  542:  // Display String
+  543:  // Input: pointer to NULL-terminationed ASCII string 
+  544:  // Output: none
+  545:  void LCD_OutString(char *pt){ 
+*** EVALUATION ***
+
+Function: LCD_OutString
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  546:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 260a         [3/1]   BNE   *+12 ;abs = 0010
+  547:      return;  // not open
+  0006 200e         [3]     BRA   *+16 ;abs = 0016
+  548:    }
+  549:    while(*pt){
+  550:      LCD_OutChar((unsigned char)*pt);
+  0008 160000       [4]     JSR   LCD_OutChar
+  551:      pt++;
+  000b ee80         [3]     LDX   0,SP
+  000d 08           [1]     INX   
+  000e 6e80         [2]     STX   0,SP
+  0010 ee80         [3]     LDX   0,SP
+  0012 e600         [3]     LDAB  0,X
+  0014 26f2         [3/1]   BNE   *-12 ;abs = 0008
+  552:    }
+  553:  }
+  0016 3a           [3]     PULD  
+  0017 3d           [5]     RTS   
+  554:    
+  555:  
+  556:  
+  557:  //-----------------------LCD_OutDec-----------------------
+  558:  // Output a 16-bit number in unsigned decimal format
+  559:  // Input: 16-bit unsigned number 
+  560:  // Output: none
+  561:  // fixed size 5 digits of output, right justified 
+  562:  void LCD_OutDec(unsigned short n){
+*** EVALUATION ***
+
+Function: LCD_OutDec
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  563:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 1827008d     [4/3]   LBEQ  *+145 ;abs = 0095
+  564:      return;  // not open
+  565:    }
+  566:    if(n < 10){
+  0008 ec80         [3]     LDD   0,SP
+  000a 8c000a       [2]     CPD   #10
+  000d 2409         [3/1]   BCC   *+11 ;abs = 0018
+  567:      LCD_OutString("    ");
+  000f cc0000       [2]     LDD   #"    "
+  0012 0700         [4]     BSR   LCD_OutString
+  568:      LCD_OutChar(n+'0'); /* n is between 0 and 9 */
+  0014 e681         [3]     LDAB  1,SP
+  569:    } else if(n<100){
+  0016 2078         [3]     BRA   *+122 ;abs = 0090
+  0018 8c0064       [2]     CPD   #100
+  001b 2412         [3/1]   BCC   *+20 ;abs = 002f
+  570:      LCD_OutString("   ");
+  001d cc0000       [2]     LDD   #"   "
+  0020 0700         [4]     BSR   LCD_OutString
+  571:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0022 ce000a       [2]     LDX   #10
+  0025 ec80         [3]     LDD   0,SP
+  0027 076e         [4]     BSR   *+112 ;abs = 0097
+  572:      LCD_OutChar(n%10+'0'); /* ones digit */
+  0029 ec80         [3]     LDD   0,SP
+  002b 077c         [4]     BSR   *+126 ;abs = 00a9
+  573:    } else if(n<1000){
+  002d 2061         [3]     BRA   *+99 ;abs = 0090
+  002f 8c03e8       [2]     CPD   #1000
+  0032 2418         [3/1]   BCC   *+26 ;abs = 004c
+  574:        LCD_OutString("  ");
+  0034 cc0000       [2]     LDD   #"  "
+  0037 0700         [4]     BSR   LCD_OutString
+  575:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0039 ce0064       [2]     LDX   #100
+  003c ec80         [3]     LDD   0,SP
+  003e 0757         [4]     BSR   *+89 ;abs = 0097
+  576:        n = n%100;
+  0040 ec80         [3]     LDD   0,SP
+  0042 075c         [4]     BSR   *+94 ;abs = 00a0
+  577:        LCD_OutChar(n/10+'0'); /* tens digit */
+  0044 3b           [2]     PSHD  
+  0045 0750         [4]     BSR   *+82 ;abs = 0097
+  578:        LCD_OutChar(n%10+'0'); /* ones digit */
+  0047 3a           [3]     PULD  
+  0048 075f         [4]     BSR   *+97 ;abs = 00a9
+  579:      }
+  004a 2044         [3]     BRA   *+70 ;abs = 0090
+  580:      else if(n<10000){
+  004c 8c2710       [2]     CPD   #10000
+  004f 241e         [3/1]   BCC   *+32 ;abs = 006f
+  581:        LCD_OutChar(' ');  
+  0051 c620         [1]     LDAB  #32
+  0053 160000       [4]     JSR   LCD_OutChar
+  582:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  0056 ce03e8       [2]     LDX   #1000
+  0059 ec80         [3]     LDD   0,SP
+  005b 073a         [4]     BSR   *+60 ;abs = 0097
+  583:        n = n%1000;
+  005d ec80         [3]     LDD   0,SP
+  005f 074e         [4]     BSR   *+80 ;abs = 00af
+  584:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0061 3b           [2]     PSHD  
+  0062 0733         [4]     BSR   *+53 ;abs = 0097
+  585:        n = n%100;
+  0064 3a           [3]     PULD  
+  0065 0739         [4]     BSR   *+59 ;abs = 00a0
+  586:        LCD_OutChar(n/10+'0'); /* tens digit */
+  0067 3b           [2]     PSHD  
+  0068 072d         [4]     BSR   *+47 ;abs = 0097
+  587:        LCD_OutChar(n%10+'0'); /* ones digit */
+  006a 3a           [3]     PULD  
+  006b 073c         [4]     BSR   *+62 ;abs = 00a9
+  588:      }
+  006d 2021         [3]     BRA   *+35 ;abs = 0090
+  589:      else {
+  590:        LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
+  006f ce2710       [2]     LDX   #10000
+  0072 0723         [4]     BSR   *+37 ;abs = 0097
+  591:        n = n%10000;
+  0074 ec80         [3]     LDD   0,SP
+  0076 ce2710       [2]     LDX   #10000
+  0079 1810         [12]    IDIV  
+  592:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  007b ce03e8       [2]     LDX   #1000
+  007e 3b           [2]     PSHD  
+  007f 0716         [4]     BSR   *+24 ;abs = 0097
+  593:        n = n%1000;
+  0081 3a           [3]     PULD  
+  0082 072b         [4]     BSR   *+45 ;abs = 00af
+  594:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0084 3b           [2]     PSHD  
+  0085 0710         [4]     BSR   *+18 ;abs = 0097
+  595:        n = n%100;
+  0087 3a           [3]     PULD  
+  0088 0716         [4]     BSR   *+24 ;abs = 00a0
+  596:        LCD_OutChar(n/10+'0'); /* tens digit */
+  008a 3b           [2]     PSHD  
+  008b 070a         [4]     BSR   *+12 ;abs = 0097
+  597:        LCD_OutChar(n%10+'0'); /* ones digit */
+  008d 3a           [3]     PULD  
+  008e 0719         [4]     BSR   *+27 ;abs = 00a9
+  0090 cb30         [1]     ADDB  #48
+  0092 160000       [4]     JSR   LCD_OutChar
+  598:      }
+  599:  }
+  0095 3a           [3]     PULD  
+  0096 3d           [5]     RTS   
+  0097 1810         [12]    IDIV  
+  0099 b751         [1]     TFR   X,B
+  009b cb30         [1]     ADDB  #48
+  009d 060000       [3]     JMP   LCD_OutChar
+  00a0 ce0064       [2]     LDX   #100
+  00a3 1810         [12]    IDIV  
+  00a5 ce000a       [2]     LDX   #10
+  00a8 3d           [5]     RTS   
+  00a9 ce000a       [2]     LDX   #10
+  00ac 1810         [12]    IDIV  
+  00ae 3d           [5]     RTS   
+  00af ce03e8       [2]     LDX   #1000
+  00b2 1810         [12]    IDIV  
+  00b4 ce0064       [2]     LDX   #100
+  00b7 3d           [5]     RTS   
+  600:  //-----------------------LCD_OutSDec-----------------------
+  601:  // Output a 16-bit number in signed decimal format
+  602:  // Input: 16-bit signed number 
+  603:  // Output: none
+  604:  // fixed size 6 digits of output, right justified 
+  605:  void LCD_OutSDec(short n){  
+*** EVALUATION ***
+
+Function: LCD_OutSDec
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6cad         [2]     STD   3,-SP
+  606:  unsigned char sign=' ';
+  0002 c620         [1]     LDAB  #32
+  0004 6b82         [2]     STAB  2,SP
+  607:    if(OpenFlag==0){
+  0006 fc0000       [3]     LDD   OpenFlag
+  0009 182700aa     [4/3]   LBEQ  *+174 ;abs = 00b7
+  608:      return;  // not open
+  609:    }
+  610:    if(n < 0){
+  000d ec80         [3]     LDD   0,SP
+  000f 2c0a         [3/1]   BGE   *+12 ;abs = 001b
+  611:      n = -n;       // negative
+  0011 40           [1]     NEGA  
+  0012 50           [1]     NEGB  
+  0013 8200         [1]     SBCA  #0
+  0015 6c80         [2]     STD   0,SP
+  612:      sign = '-';
+  0017 c62d         [1]     LDAB  #45
+  0019 6b82         [2]     STAB  2,SP
+  613:    }
+  614:    if(n < 10){
+  001b ec80         [3]     LDD   0,SP
+  001d 8c000a       [2]     CPD   #10
+  0020 2c0a         [3/1]   BGE   *+12 ;abs = 002c
+  615:      LCD_OutString("    ");
+  0022 cc0000       [2]     LDD   #"    "
+  0025 160000       [4]     JSR   LCD_OutSDec:0x00c3
+  616:      LCD_OutChar(sign);
+  617:      LCD_OutChar(n+'0'); /* n is between 0 and 9 */
+  0028 e681         [3]     LDAB  1,SP
+  618:    } else if(n<100){
+  002a 2034         [3]     BRA   *+54 ;abs = 0060
+  002c 8c0064       [2]     CPD   #100
+  002f 2c14         [3/1]   BGE   *+22 ;abs = 0045
+  619:      LCD_OutString("   ");
+  0031 cc0000       [2]     LDD   #"   "
+  0034 160000       [4]     JSR   LCD_OutSDec:0x00c3
+  620:      LCD_OutChar(sign);
+  621:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0037 ce000a       [2]     LDX   #10
+  003a ec80         [3]     LDD   0,SP
+  003c 077c         [4]     BSR   *+126 ;abs = 00ba
+  622:      LCD_OutChar(n%10+'0'); /* ones digit */
+  003e ec80         [3]     LDD   0,SP
+  0040 160000       [4]     JSR   LCD_OutSDec:0x00d4
+  623:    } else if(n<1000){
+  0043 206d         [3]     BRA   *+111 ;abs = 00b2
+  0045 8c03e8       [2]     CPD   #1000
+  0048 2c18         [3/1]   BGE   *+26 ;abs = 0062
+  624:        LCD_OutString("  ");
+  004a cc0000       [2]     LDD   #"  "
+  004d 0774         [4]     BSR   *+118 ;abs = 00c3
+  625:        LCD_OutChar(sign);
+  626:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  004f ce0064       [2]     LDX   #100
+  0052 ec80         [3]     LDD   0,SP
+  0054 0764         [4]     BSR   *+102 ;abs = 00ba
+  627:        n = n%100;
+  0056 ec80         [3]     LDD   0,SP
+  0058 0771         [4]     BSR   *+115 ;abs = 00cb
+  628:        LCD_OutChar(n/10+'0'); /* tens digit */
+  005a 3b           [2]     PSHD  
+  005b 075d         [4]     BSR   *+95 ;abs = 00ba
+  629:        LCD_OutChar(n%10+'0'); /* ones digit */
+  005d 3a           [3]     PULD  
+  005e 0774         [4]     BSR   *+118 ;abs = 00d4
+  630:      }
+  0060 2050         [3]     BRA   *+82 ;abs = 00b2
+  631:      else if(n<10000){
+  0062 8c2710       [2]     CPD   #10000
+  0065 2c23         [3/1]   BGE   *+37 ;abs = 008a
+  632:        LCD_OutChar(' ');  
+  0067 c620         [1]     LDAB  #32
+  0069 160000       [4]     JSR   LCD_OutChar
+  633:        LCD_OutChar(sign);
+  006c e682         [3]     LDAB  2,SP
+  006e 160000       [4]     JSR   LCD_OutChar
+  634:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  0071 ce03e8       [2]     LDX   #1000
+  0074 ec80         [3]     LDD   0,SP
+  0076 0742         [4]     BSR   *+68 ;abs = 00ba
+  635:        n = n%1000;
+  0078 ec80         [3]     LDD   0,SP
+  007a 075e         [4]     BSR   *+96 ;abs = 00da
+  636:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  007c 3b           [2]     PSHD  
+  007d 073b         [4]     BSR   *+61 ;abs = 00ba
+  637:        n = n%100;
+  007f 3a           [3]     PULD  
+  0080 0749         [4]     BSR   *+75 ;abs = 00cb
+  638:        LCD_OutChar(n/10+'0'); /* tens digit */
+  0082 3b           [2]     PSHD  
+  0083 0735         [4]     BSR   *+55 ;abs = 00ba
+  639:        LCD_OutChar(n%10+'0'); /* ones digit */
+  0085 3a           [3]     PULD  
+  0086 074c         [4]     BSR   *+78 ;abs = 00d4
+  640:      }
+  0088 2028         [3]     BRA   *+42 ;abs = 00b2
+  641:      else {
+  642:        LCD_OutChar(sign);
+  008a e682         [3]     LDAB  2,SP
+  008c 160000       [4]     JSR   LCD_OutChar
+  643:        LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
+  008f ce2710       [2]     LDX   #10000
+  0092 ec80         [3]     LDD   0,SP
+  0094 0724         [4]     BSR   *+38 ;abs = 00ba
+  644:        n = n%10000;
+  0096 ec80         [3]     LDD   0,SP
+  0098 ce2710       [2]     LDX   #10000
+  009b 1815         [12]    IDIVS 
+  645:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  009d ce03e8       [2]     LDX   #1000
+  00a0 3b           [2]     PSHD  
+  00a1 0717         [4]     BSR   *+25 ;abs = 00ba
+  646:        n = n%1000;
+  00a3 3a           [3]     PULD  
+  00a4 0734         [4]     BSR   *+54 ;abs = 00da
+  647:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  00a6 3b           [2]     PSHD  
+  00a7 0711         [4]     BSR   *+19 ;abs = 00ba
+  648:        n = n%100;
+  00a9 3a           [3]     PULD  
+  00aa 071f         [4]     BSR   *+33 ;abs = 00cb
+  649:        LCD_OutChar(n/10+'0'); /* tens digit */
+  00ac 3b           [2]     PSHD  
+  00ad 070b         [4]     BSR   *+13 ;abs = 00ba
+  650:        LCD_OutChar(n%10+'0'); /* ones digit */
+  00af 3a           [3]     PULD  
+  00b0 0722         [4]     BSR   *+36 ;abs = 00d4
+  00b2 cb30         [1]     ADDB  #48
+  00b4 160000       [4]     JSR   LCD_OutChar
+  651:      }
+  652:  }
+  00b7 1b83         [2]     LEAS  3,SP
+  00b9 3d           [5]     RTS   
+  00ba 1815         [12]    IDIVS 
+  00bc b751         [1]     TFR   X,B
+  00be cb30         [1]     ADDB  #48
+  00c0 060000       [3]     JMP   LCD_OutChar
+  00c3 160000       [4]     JSR   LCD_OutString
+  00c6 e684         [3]     LDAB  4,SP
+  00c8 060000       [3]     JMP   LCD_OutChar
+  00cb ce0064       [2]     LDX   #100
+  00ce 1815         [12]    IDIVS 
+  00d0 ce000a       [2]     LDX   #10
+  00d3 3d           [5]     RTS   
+  00d4 ce000a       [2]     LDX   #10
+  00d7 1815         [12]    IDIVS 
+  00d9 3d           [5]     RTS   
+  00da ce03e8       [2]     LDX   #1000
+  00dd 1815         [12]    IDIVS 
+  00df ce0064       [2]     LDX   #100
+  00e2 3d           [5]     RTS   
+  653:  //-----------------------LCD_OutFix1-----------------------
+  654:  // Output a 16-bit number in unsigned decimal fixed-point
+  655:  // with resolution = 0.1 
+  656:  // Input: 16-bit unsigned number 
+  657:  // Output: none
+  658:  // fixed size is 6 characters of output, right justified
+  659:  // if input is 12345, then display is 1234.5 
+  660:  void LCD_OutFix1(unsigned short n){
+*** EVALUATION ***
+
+Function: LCD_OutFix1
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  661:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 18270086     [4/3]   LBEQ  *+138 ;abs = 008e
+  662:      return;  // not open
+  663:    }
+  664:    if(n < 10){
+  0008 ec80         [3]     LDD   0,SP
+  000a 8c000a       [2]     CPD   #10
+  000d 240a         [3/1]   BCC   *+12 ;abs = 0019
+  665:      LCD_OutString("   0.");
+  000f cc0000       [2]     LDD   #"   0."
+  0012 160000       [4]     JSR   LCD_OutString
+  666:      LCD_OutChar(n+'0'); /* n is between 0 and 9 */
+  0015 e681         [3]     LDAB  1,SP
+  667:    } else if(n<100){
+  0017 2070         [3]     BRA   *+114 ;abs = 0089
+  0019 8c0064       [2]     CPD   #100
+  001c 241b         [3/1]   BCC   *+29 ;abs = 0039
+  668:      LCD_OutString("   ");
+  001e cc0000       [2]     LDD   #"   "
+  0021 160000       [4]     JSR   LCD_OutString
+  669:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0024 ce000a       [2]     LDX   #10
+  0027 ec80         [3]     LDD   0,SP
+  0029 077c         [4]     BSR   *+126 ;abs = 00a7
+  670:      LCD_OutChar('.');      /* decimal point */
+  002b c62e         [1]     LDAB  #46
+  002d 160000       [4]     JSR   LCD_OutChar
+  671:      LCD_OutChar(n%10+'0'); /* ones digit */
+  0030 ec80         [3]     LDD   0,SP
+  0032 ce000a       [2]     LDX   #10
+  0035 1810         [12]    IDIV  
+  672:    } else if(n<1000){
+  0037 2050         [3]     BRA   *+82 ;abs = 0089
+  0039 8c03e8       [2]     CPD   #1000
+  003c 2413         [3/1]   BCC   *+21 ;abs = 0051
+  673:        LCD_OutString("  ");
+  003e cc0000       [2]     LDD   #"  "
+  0041 160000       [4]     JSR   LCD_OutString
+  674:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0044 ce0064       [2]     LDX   #100
+  0047 ec80         [3]     LDD   0,SP
+  0049 075c         [4]     BSR   *+94 ;abs = 00a7
+  675:        n = n%100;
+  004b ec80         [3]     LDD   0,SP
+  004d 0741         [4]     BSR   *+67 ;abs = 0090
+  676:        LCD_OutChar(n/10+'0'); /* tens digit */
+  677:        LCD_OutChar('.');      /* decimal point */
+  678:        LCD_OutChar(n%10+'0'); /* ones digit */
+  679:      }
+  004f 2038         [3]     BRA   *+58 ;abs = 0089
+  680:      else if(n<10000){
+  0051 8c2710       [2]     CPD   #10000
+  0054 2418         [3/1]   BCC   *+26 ;abs = 006e
+  681:        LCD_OutChar(' ');  
+  0056 c620         [1]     LDAB  #32
+  0058 160000       [4]     JSR   LCD_OutChar
+  682:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  005b ce03e8       [2]     LDX   #1000
+  005e ec80         [3]     LDD   0,SP
+  0060 0745         [4]     BSR   *+71 ;abs = 00a7
+  683:        n = n%1000;
+  0062 ec80         [3]     LDD   0,SP
+  0064 074a         [4]     BSR   *+76 ;abs = 00b0
+  684:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0066 3b           [2]     PSHD  
+  0067 073e         [4]     BSR   *+64 ;abs = 00a7
+  685:        n = n%100;
+  0069 3a           [3]     PULD  
+  006a 0724         [4]     BSR   *+38 ;abs = 0090
+  686:        LCD_OutChar(n/10+'0'); /* tens digit */
+  687:        LCD_OutChar('.');      /* decimal point */
+  688:        LCD_OutChar(n%10+'0'); /* ones digit */
+  689:      }
+  006c 201b         [3]     BRA   *+29 ;abs = 0089
+  690:      else {
+  691:        LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
+  006e ce2710       [2]     LDX   #10000
+  0071 0734         [4]     BSR   *+54 ;abs = 00a7
+  692:        n = n%10000;
+  0073 ec80         [3]     LDD   0,SP
+  0075 ce2710       [2]     LDX   #10000
+  0078 1810         [12]    IDIV  
+  693:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  007a ce03e8       [2]     LDX   #1000
+  007d 3b           [2]     PSHD  
+  007e 0727         [4]     BSR   *+41 ;abs = 00a7
+  694:        n = n%1000;
+  0080 3a           [3]     PULD  
+  0081 072d         [4]     BSR   *+47 ;abs = 00b0
+  695:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0083 3b           [2]     PSHD  
+  0084 0721         [4]     BSR   *+35 ;abs = 00a7
+  696:        n = n%100;
+  0086 3a           [3]     PULD  
+  0087 0707         [4]     BSR   *+9 ;abs = 0090
+  697:        LCD_OutChar(n/10+'0'); /* tens digit */
+  698:        LCD_OutChar('.');      /* decimal point */
+  699:        LCD_OutChar(n%10+'0'); /* ones digit */
+  0089 cb30         [1]     ADDB  #48
+  008b 160000       [4]     JSR   LCD_OutChar
+  700:      }
+  701:  }
+  008e 3a           [3]     PULD  
+  008f 3d           [5]     RTS   
+  0090 ce0064       [2]     LDX   #100
+  0093 1810         [12]    IDIV  
+  0095 ce000a       [2]     LDX   #10
+  0098 3b           [2]     PSHD  
+  0099 070c         [4]     BSR   *+14 ;abs = 00a7
+  009b c62e         [1]     LDAB  #46
+  009d 160000       [4]     JSR   LCD_OutChar
+  00a0 3a           [3]     PULD  
+  00a1 ce000a       [2]     LDX   #10
+  00a4 1810         [12]    IDIV  
+  00a6 3d           [5]     RTS   
+  00a7 1810         [12]    IDIV  
+  00a9 b751         [1]     TFR   X,B
+  00ab cb30         [1]     ADDB  #48
+  00ad 060000       [3]     JMP   LCD_OutChar
+  00b0 ce03e8       [2]     LDX   #1000
+  00b3 1810         [12]    IDIV  
+  00b5 ce0064       [2]     LDX   #100
+  00b8 3d           [5]     RTS   
+  702:  //-----------------------LCD_OutFix2-----------------------
+  703:  // Output a 16-bit number in unsigned decimal fixed-point
+  704:  // with resolution = 0.01 
+  705:  // Input: 16-bit unsigned number 
+  706:  // Output: none
+  707:  // fixed size is 6 characters of output, right justified
+  708:  // if input is 12345, then display is 123.45 
+  709:  void LCD_OutFix2(unsigned short n){
+*** EVALUATION ***
+
+Function: LCD_OutFix2
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  710:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 18270081     [4/3]   LBEQ  *+133 ;abs = 0089
+  711:      return;  // not open
+  712:    }
+  713:    if(n < 10){
+  0008 ec80         [3]     LDD   0,SP
+  000a 8c000a       [2]     CPD   #10
+  000d 240a         [3/1]   BCC   *+12 ;abs = 0019
+  714:      LCD_OutString("  0.0");
+  000f cc0000       [2]     LDD   #"  0.0"
+  0012 160000       [4]     JSR   LCD_OutString
+  715:      LCD_OutChar(n+'0'); /* n is between 0 and 9 */
+  0015 e681         [3]     LDAB  1,SP
+  716:    } else if(n<100){
+  0017 206b         [3]     BRA   *+109 ;abs = 0084
+  0019 8c0064       [2]     CPD   #100
+  001c 2416         [3/1]   BCC   *+24 ;abs = 0034
+  717:      LCD_OutString("  0.");
+  001e cc0000       [2]     LDD   #"  0."
+  0021 160000       [4]     JSR   LCD_OutString
+  718:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0024 ce000a       [2]     LDX   #10
+  0027 ec80         [3]     LDD   0,SP
+  0029 0779         [4]     BSR   *+123 ;abs = 00a4
+  719:      LCD_OutChar(n%10+'0'); /* ones digit */
+  002b ec80         [3]     LDD   0,SP
+  002d ce000a       [2]     LDX   #10
+  0030 1810         [12]    IDIV  
+  720:    } else if(n<1000){
+  0032 2050         [3]     BRA   *+82 ;abs = 0084
+  0034 8c03e8       [2]     CPD   #1000
+  0037 2413         [3/1]   BCC   *+21 ;abs = 004c
+  721:      LCD_OutString("  ");
+  0039 cc0000       [2]     LDD   #"  "
+  003c 160000       [4]     JSR   LCD_OutString
+  722:      LCD_OutChar(n/100+'0'); /* hundreds digit */
+  003f ce0064       [2]     LDX   #100
+  0042 ec80         [3]     LDD   0,SP
+  0044 075e         [4]     BSR   *+96 ;abs = 00a4
+  723:      n = n%100;
+  0046 ec80         [3]     LDD   0,SP
+  0048 0741         [4]     BSR   *+67 ;abs = 008b
+  724:      LCD_OutChar('.');      /* decimal point */
+  725:      LCD_OutChar(n/10+'0'); /* tens digit */
+  726:      LCD_OutChar(n%10+'0'); /* ones digit */
+  727:    }
+  004a 2038         [3]     BRA   *+58 ;abs = 0084
+  728:    else if(n<10000){
+  004c 8c2710       [2]     CPD   #10000
+  004f 2418         [3/1]   BCC   *+26 ;abs = 0069
+  729:      LCD_OutChar(' ');  
+  0051 c620         [1]     LDAB  #32
+  0053 160000       [4]     JSR   LCD_OutChar
+  730:      LCD_OutChar(n/1000+'0'); /* thousands digit */
+  0056 ce03e8       [2]     LDX   #1000
+  0059 ec80         [3]     LDD   0,SP
+  005b 0747         [4]     BSR   *+73 ;abs = 00a4
+  731:      n = n%1000;
+  005d ec80         [3]     LDD   0,SP
+  005f 074c         [4]     BSR   *+78 ;abs = 00ad
+  732:      LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0061 3b           [2]     PSHD  
+  0062 0740         [4]     BSR   *+66 ;abs = 00a4
+  733:      n = n%100;
+  0064 3a           [3]     PULD  
+  0065 0724         [4]     BSR   *+38 ;abs = 008b
+  734:      LCD_OutChar('.');      /* decimal point */
+  735:      LCD_OutChar(n/10+'0'); /* tens digit */
+  736:      LCD_OutChar(n%10+'0'); /* ones digit */
+  737:    }
+  0067 201b         [3]     BRA   *+29 ;abs = 0084
+  738:    else {
+  739:      LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
+  0069 ce2710       [2]     LDX   #10000
+  006c 0736         [4]     BSR   *+56 ;abs = 00a4
+  740:      n = n%10000;
+  006e ec80         [3]     LDD   0,SP
+  0070 ce2710       [2]     LDX   #10000
+  0073 1810         [12]    IDIV  
+  741:      LCD_OutChar(n/1000+'0'); /* thousands digit */
+  0075 ce03e8       [2]     LDX   #1000
+  0078 3b           [2]     PSHD  
+  0079 0729         [4]     BSR   *+43 ;abs = 00a4
+  742:      n = n%1000;
+  007b 3a           [3]     PULD  
+  007c 072f         [4]     BSR   *+49 ;abs = 00ad
+  743:      LCD_OutChar(n/100+'0'); /* hundreds digit */
+  007e 3b           [2]     PSHD  
+  007f 0723         [4]     BSR   *+37 ;abs = 00a4
+  744:      n = n%100;
+  0081 3a           [3]     PULD  
+  0082 0707         [4]     BSR   *+9 ;abs = 008b
+  745:      LCD_OutChar('.');      /* decimal point */
+  746:      LCD_OutChar(n/10+'0'); /* tens digit */
+  747:      LCD_OutChar(n%10+'0'); /* ones digit */
+  0084 cb30         [1]     ADDB  #48
+  0086 160000       [4]     JSR   LCD_OutChar
+  748:    }
+  749:  }
+  0089 3a           [3]     PULD  
+  008a 3d           [5]     RTS   
+  008b ce0064       [2]     LDX   #100
+  008e 1810         [12]    IDIV  
+  0090 3b           [2]     PSHD  
+  0091 c62e         [1]     LDAB  #46
+  0093 160000       [4]     JSR   LCD_OutChar
+  0096 ce000a       [2]     LDX   #10
+  0099 ec80         [3]     LDD   0,SP
+  009b 0707         [4]     BSR   *+9 ;abs = 00a4
+  009d 3a           [3]     PULD  
+  009e ce000a       [2]     LDX   #10
+  00a1 1810         [12]    IDIV  
+  00a3 3d           [5]     RTS   
+  00a4 1810         [12]    IDIV  
+  00a6 b751         [1]     TFR   X,B
+  00a8 cb30         [1]     ADDB  #48
+  00aa 060000       [3]     JMP   LCD_OutChar
+  00ad ce03e8       [2]     LDX   #1000
+  00b0 1810         [12]    IDIV  
+  00b2 ce0064       [2]     LDX   #100
+  00b5 3d           [5]     RTS   
+  750:  //-----------------------LCD_OutFix2b-----------------------
+  751:  // Output a 16-bit number in unsigned decimal fixed-point
+  752:  // with resolution = 0.01 
+  753:  // Input: 16-bit unsigned number, 0 to 9999 
+  754:  // Output: none
+  755:  // fixed size is 5 characters of output, right justified
+  756:  // if input is 1234, then display is 12.34 
+  757:  void LCD_OutFix2b(unsigned short n){
+*** EVALUATION ***
+
+Function: LCD_OutFix2b
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  758:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 277b         [3/1]   BEQ   *+125 ;abs = 0081
+  759:      return;  // not open
+  760:    }
+  761:      
+  762:    if(n < 10){
+  0006 ec80         [3]     LDD   0,SP
+  0008 8c000a       [2]     CPD   #10
+  000b 240a         [3/1]   BCC   *+12 ;abs = 0017
+  763:      LCD_OutString(" 0.0");
+  000d cc0000       [2]     LDD   #" 0.0"
+  0010 160000       [4]     JSR   LCD_OutString
+  764:      LCD_OutChar(n+'0'); /* n is between 0 and 9 */
+  0013 e681         [3]     LDAB  1,SP
+  765:    } else if(n<100){
+  0015 205d         [3]     BRA   *+95 ;abs = 0074
+  0017 8c0064       [2]     CPD   #100
+  001a 2411         [3/1]   BCC   *+19 ;abs = 002d
+  766:      LCD_OutString(" 0.");
+  001c cc0000       [2]     LDD   #" 0."
+  001f 160000       [4]     JSR   LCD_OutString
+  767:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0022 ce000a       [2]     LDX   #10
+  0025 ec80         [3]     LDD   0,SP
+  0027 075a         [4]     BSR   *+92 ;abs = 0083
+  768:      LCD_OutChar(n%10+'0'); /* ones digit */
+  0029 ec80         [3]     LDD   0,SP
+  769:    } else if(n<1000){
+  002b 2042         [3]     BRA   *+68 ;abs = 006f
+  002d 8c03e8       [2]     CPD   #1000
+  0030 241a         [3/1]   BCC   *+28 ;abs = 004c
+  770:      LCD_OutChar(' ');
+  0032 c620         [1]     LDAB  #32
+  0034 160000       [4]     JSR   LCD_OutChar
+  771:      LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0037 ce0064       [2]     LDX   #100
+  003a ec80         [3]     LDD   0,SP
+  003c 0745         [4]     BSR   *+71 ;abs = 0083
+  772:      n = n%100;
+  003e ec80         [3]     LDD   0,SP
+  0040 ce0064       [2]     LDX   #100
+  0043 1810         [12]    IDIV  
+  773:      LCD_OutChar('.');      /* decimal point */
+  0045 3b           [2]     PSHD  
+  0046 0744         [4]     BSR   *+70 ;abs = 008c
+  774:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0048 0739         [4]     BSR   *+59 ;abs = 0083
+  775:      LCD_OutChar(n%10+'0'); /* ones digit */
+  776:    }
+  004a 2022         [3]     BRA   *+36 ;abs = 006e
+  777:    else if(n<10000){
+  004c 8c2710       [2]     CPD   #10000
+  004f 242a         [3/1]   BCC   *+44 ;abs = 007b
+  778:      LCD_OutChar(n/1000+'0'); /* thousands digit */
+  0051 ce03e8       [2]     LDX   #1000
+  0054 072d         [4]     BSR   *+47 ;abs = 0083
+  779:      n = n%1000;
+  0056 ec80         [3]     LDD   0,SP
+  0058 ce03e8       [2]     LDX   #1000
+  005b 1810         [12]    IDIV  
+  780:      LCD_OutChar(n/100+'0'); /* hundreds digit */
+  005d ce0064       [2]     LDX   #100
+  0060 3b           [2]     PSHD  
+  0061 0720         [4]     BSR   *+34 ;abs = 0083
+  781:      n = n%100;
+  0063 3a           [3]     PULD  
+  0064 ce0064       [2]     LDX   #100
+  0067 1810         [12]    IDIV  
+  782:      LCD_OutChar('.');       /* decimal point */
+  0069 3b           [2]     PSHD  
+  006a 0720         [4]     BSR   *+34 ;abs = 008c
+  783:      LCD_OutChar(n/10+'0');  /* tens digit */
+  006c 0715         [4]     BSR   *+23 ;abs = 0083
+  784:      LCD_OutChar(n%10+'0');  /* ones digit */
+  006e 3a           [3]     PULD  
+  006f ce000a       [2]     LDX   #10
+  0072 1810         [12]    IDIV  
+  0074 cb30         [1]     ADDB  #48
+  0076 160000       [4]     JSR   LCD_OutChar
+  785:    }
+  0079 2006         [3]     BRA   *+8 ;abs = 0081
+  786:    else {
+  787:      LCD_OutString("**.**");
+  007b cc0000       [2]     LDD   #"**.**"
+  007e 160000       [4]     JSR   LCD_OutString
+  788:    }
+  789:  }
+  0081 3a           [3]     PULD  
+  0082 3d           [5]     RTS   
+  0083 1810         [12]    IDIV  
+  0085 b751         [1]     TFR   X,B
+  0087 cb30         [1]     ADDB  #48
+  0089 060000       [3]     JMP   LCD_OutChar
+  008c c62e         [1]     LDAB  #46
+  008e 160000       [4]     JSR   LCD_OutChar
+  0091 ce000a       [2]     LDX   #10
+  0094 ec82         [3]     LDD   2,SP
+  0096 3d           [5]     RTS   
+  790:  //-----------------------LCD_OutFix3-----------------------
+  791:  // Output a 16-bit number in unsigned decimal fixed-point
+  792:  // with resolution = 0.001 
+  793:  // Input: 16-bit unsigned number 
+  794:  // Output: none
+  795:  // fixed size is 6 characters of output, right justified
+  796:  // if input is 12345, then display is 12.345 
+  797:  void LCD_OutFix3(unsigned short n){
+*** EVALUATION ***
+
+Function: LCD_OutFix3
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  798:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 1827009b     [4/3]   LBEQ  *+159 ;abs = 00a3
+  799:      return;  // not open
+  800:    }
+  801:    if(n < 10){
+  0008 ec80         [3]     LDD   0,SP
+  000a 8c000a       [2]     CPD   #10
+  000d 240a         [3/1]   BCC   *+12 ;abs = 0019
+  802:      LCD_OutString(" 0.00");
+  000f cc0000       [2]     LDD   #" 0.00"
+  0012 160000       [4]     JSR   LCD_OutString
+  803:      LCD_OutChar(n+'0');  /* n is between 0 and 9 */
+  0015 e681         [3]     LDAB  1,SP
+  804:    } else if(n<100){
+  0017 2035         [3]     BRA   *+55 ;abs = 004e
+  0019 8c0064       [2]     CPD   #100
+  001c 2414         [3/1]   BCC   *+22 ;abs = 0032
+  805:      LCD_OutString(" 0.0");
+  001e cc0000       [2]     LDD   #" 0.0"
+  0021 160000       [4]     JSR   LCD_OutString
+  806:      LCD_OutChar(n/10+'0'); /* tens digit */
+  0024 ce000a       [2]     LDX   #10
+  0027 ec80         [3]     LDD   0,SP
+  0029 077a         [4]     BSR   *+124 ;abs = 00a5
+  807:      LCD_OutChar(n%10+'0'); /* ones digit */
+  002b ec80         [3]     LDD   0,SP
+  002d 160000       [4]     JSR   LCD_OutFix3:0x00b7
+  808:    } else if(n<1000){
+  0030 206c         [3]     BRA   *+110 ;abs = 009e
+  0032 8c03e8       [2]     CPD   #1000
+  0035 2419         [3/1]   BCC   *+27 ;abs = 0050
+  809:        LCD_OutString(" 0.");
+  0037 cc0000       [2]     LDD   #" 0."
+  003a 160000       [4]     JSR   LCD_OutString
+  810:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  003d ce0064       [2]     LDX   #100
+  0040 ec80         [3]     LDD   0,SP
+  0042 0761         [4]     BSR   *+99 ;abs = 00a5
+  811:        n = n%100;
+  0044 ec80         [3]     LDD   0,SP
+  0046 0766         [4]     BSR   *+104 ;abs = 00ae
+  812:        LCD_OutChar(n/10+'0'); /* tens digit */
+  0048 3b           [2]     PSHD  
+  0049 075a         [4]     BSR   *+92 ;abs = 00a5
+  813:        LCD_OutChar(n%10+'0'); /* ones digit */
+  004b 3a           [3]     PULD  
+  004c 0769         [4]     BSR   *+107 ;abs = 00b7
+  814:      }
+  004e 204e         [3]     BRA   *+80 ;abs = 009e
+  815:      else if(n<10000){
+  0050 8c2710       [2]     CPD   #10000
+  0053 2423         [3/1]   BCC   *+37 ;abs = 0078
+  816:        LCD_OutChar(' ');  
+  0055 c620         [1]     LDAB  #32
+  0057 160000       [4]     JSR   LCD_OutChar
+  817:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  005a ce03e8       [2]     LDX   #1000
+  005d ec80         [3]     LDD   0,SP
+  005f 0744         [4]     BSR   *+70 ;abs = 00a5
+  818:        LCD_OutChar('.');      /* decimal point */
+  0061 c62e         [1]     LDAB  #46
+  0063 160000       [4]     JSR   LCD_OutChar
+  819:        n = n%1000;
+  0066 ec80         [3]     LDD   0,SP
+  0068 0753         [4]     BSR   *+85 ;abs = 00bd
+  820:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  006a 3b           [2]     PSHD  
+  006b 0738         [4]     BSR   *+58 ;abs = 00a5
+  821:        n = n%100;
+  006d 3a           [3]     PULD  
+  006e 073e         [4]     BSR   *+64 ;abs = 00ae
+  822:        LCD_OutChar(n/10+'0'); /* tens digit */
+  0070 3b           [2]     PSHD  
+  0071 0732         [4]     BSR   *+52 ;abs = 00a5
+  823:        LCD_OutChar(n%10+'0'); /* ones digit */
+  0073 3a           [3]     PULD  
+  0074 0741         [4]     BSR   *+67 ;abs = 00b7
+  824:      }
+  0076 2026         [3]     BRA   *+40 ;abs = 009e
+  825:      else {
+  826:        LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
+  0078 ce2710       [2]     LDX   #10000
+  007b 0728         [4]     BSR   *+42 ;abs = 00a5
+  827:        n = n%10000;
+  007d ec80         [3]     LDD   0,SP
+  007f ce2710       [2]     LDX   #10000
+  0082 1810         [12]    IDIV  
+  828:        LCD_OutChar(n/1000+'0'); /* thousands digit */
+  0084 ce03e8       [2]     LDX   #1000
+  0087 3b           [2]     PSHD  
+  0088 071b         [4]     BSR   *+29 ;abs = 00a5
+  829:        LCD_OutChar('.');      /* decimal point */
+  008a c62e         [1]     LDAB  #46
+  008c 160000       [4]     JSR   LCD_OutChar
+  830:        n = n%1000;
+  008f 3a           [3]     PULD  
+  0090 072b         [4]     BSR   *+45 ;abs = 00bd
+  831:        LCD_OutChar(n/100+'0'); /* hundreds digit */
+  0092 3b           [2]     PSHD  
+  0093 0710         [4]     BSR   *+18 ;abs = 00a5
+  832:        n = n%100;
+  0095 3a           [3]     PULD  
+  0096 0716         [4]     BSR   *+24 ;abs = 00ae
+  833:        LCD_OutChar(n/10+'0'); /* tens digit */
+  0098 3b           [2]     PSHD  
+  0099 070a         [4]     BSR   *+12 ;abs = 00a5
+  834:        LCD_OutChar(n%10+'0'); /* ones digit */
+  009b 3a           [3]     PULD  
+  009c 0719         [4]     BSR   *+27 ;abs = 00b7
+  009e cb30         [1]     ADDB  #48
+  00a0 160000       [4]     JSR   LCD_OutChar
+  835:      }
+  836:  }
+  00a3 3a           [3]     PULD  
+  00a4 3d           [5]     RTS   
+  00a5 1810         [12]    IDIV  
+  00a7 b751         [1]     TFR   X,B
+  00a9 cb30         [1]     ADDB  #48
+  00ab 060000       [3]     JMP   LCD_OutChar
+  00ae ce0064       [2]     LDX   #100
+  00b1 1810         [12]    IDIV  
+  00b3 ce000a       [2]     LDX   #10
+  00b6 3d           [5]     RTS   
+  00b7 ce000a       [2]     LDX   #10
+  00ba 1810         [12]    IDIV  
+  00bc 3d           [5]     RTS   
+  00bd ce03e8       [2]     LDX   #1000
+  00c0 1810         [12]    IDIV  
+  00c2 ce0064       [2]     LDX   #100
+  00c5 3d           [5]     RTS   
+  837:  
+  838:  //-----------------------LCD_GoTo-----------------------
+  839:  // Move cursor
+  840:  // Input: line number is 1 to 8, column from 1 to 21 
+  841:  // Output: none
+  842:  // errors: it will ignore legal addresses
+  843:  void LCD_GoTo(int line, int column){
+*** EVALUATION ***
+
+Function: LCD_GoTo
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  844:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 2759         [3/1]   BEQ   *+91 ;abs = 005f
+  845:      return;  // not open
+  846:    }
+  847:    if((line<1) || (line>8)) return;
+  0006 ee84         [3]     LDX   4,SP
+  0008 8e0001       [2]     CPX   #1
+  000b 2d52         [3/1]   BLT   *+84 ;abs = 005f
+  000d 8e0008       [2]     CPX   #8
+  0010 2e4d         [3/1]   BGT   *+79 ;abs = 005f
+  848:    if((column<1) || (column>21)) return;
+  0012 ed80         [3]     LDY   0,SP
+  0014 8d0001       [2]     CPY   #1
+  0017 2d46         [3/1]   BLT   *+72 ;abs = 005f
+  0019 8d0015       [2]     CPY   #21
+  001c 2e41         [3/1]   BGT   *+67 ;abs = 005f
+  849:    if(line<5){
+  001e 8e0005       [2]     CPX   #5
+  0021 2c05         [3/1]   BGE   *+7 ;abs = 0028
+  850:      bDown = 0;             // normal position on lines 1,2,3,4
+  0023 790000       [3]     CLR   bDown
+  851:    } else{
+  0026 2005         [3]     BRA   *+7 ;abs = 002d
+  852:      bDown = 0xFF;          // shifted down on lines 5,6,7,8
+  0028 c6ff         [1]     LDAB  #255
+  002a 7b0000       [3]     STAB  bDown
+  853:    }
+  854:    Page = 0xB8+line-1;      // 0xB8 to 0xBF
+  002d e685         [3]     LDAB  5,SP
+  002f cbb7         [1]     ADDB  #183
+  0031 7b0000       [3]     STAB  Page
+  855:    if(column<12){
+  0034 8d000c       [2]     CPY   #12
+  0037 2c14         [3/1]   BGE   *+22 ;abs = 004d
+  856:      Column1 = 59+6*column; // 0x41+6*(column-1);
+  0039 c606         [1]     LDAB  #6
+  003b a681         [3]     LDAA  1,SP
+  003d 12           [1]     MUL   
+  003e cb3b         [1]     ADDB  #59
+  0040 7b0000       [3]     STAB  Column1
+  857:      bLeft1 = 1;  
+  0043 c601         [1]     LDAB  #1
+  0045 7b0000       [3]     STAB  bLeft1
+  858:      bRight1 = 0;           // on left side
+  0048 790000       [3]     CLR   bRight1
+  859:    } else{
+  004b 2012         [3]     BRA   *+20 ;abs = 005f
+  860:      Column1 = 6*column-5;  // 0x43+6*(column-12);
+  004d c606         [1]     LDAB  #6
+  004f a681         [3]     LDAA  1,SP
+  0051 12           [1]     MUL   
+  0052 c005         [1]     SUBB  #5
+  0054 7b0000       [3]     STAB  Column1
+  861:      bLeft1 = 0;  
+  0057 790000       [3]     CLR   bLeft1
+  862:      bRight1 = 1;           // on right side
+  005a c601         [1]     LDAB  #1
+  005c 7b0000       [3]     STAB  bRight1
+  863:    }
+  864:  }
+  005f 3a           [3]     PULD  
+  0060 3d           [5]     RTS   
+  865:   
+  866:  
+  867:  
+  868:  //---------lcdTinyOutDigit-------------------------
+  869:  // display tiny digits
+  870:  // input: digit from 0 to 9 
+  871:  // output: none
+  872:  // no error checking
+  873:  void lcdTinyOutDigit(unsigned short digit){
+*** EVALUATION ***
+
+Function: lcdTinyOutDigit
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+  874:  unsigned char *pt;
+  875:    if(TinyDown==0){
+  0002 f60000       [3]     LDAB  TinyDown
+  0005 2607         [3/1]   BNE   *+9 ;abs = 000e
+  876:      pt = (unsigned char *) &TinyFont[digit*3];
+  0007 0734         [4]     BSR   *+54 ;abs = 003d
+  0009 c30000       [2]     ADDD  #TinyFont
+  877:    } else if(TinyDown==1){
+  000c 201b         [3]     BRA   *+29 ;abs = 0029
+  000e c101         [1]     CMPB  #1
+  0010 2607         [3/1]   BNE   *+9 ;abs = 0019
+  878:      pt = (unsigned char *) &TinyFont1[digit*3];
+  0012 0729         [4]     BSR   *+43 ;abs = 003d
+  0014 c30000       [2]     ADDD  #TinyFont1
+  879:    } else if(TinyDown==2){
+  0017 2010         [3]     BRA   *+18 ;abs = 0029
+  0019 c102         [1]     CMPB  #2
+  001b 2607         [3/1]   BNE   *+9 ;abs = 0024
+  880:      pt = (unsigned char *) &TinyFont2[digit*3];
+  001d 071e         [4]     BSR   *+32 ;abs = 003d
+  001f c30000       [2]     ADDD  #TinyFont2
+  881:    } else {
+  0022 2005         [3]     BRA   *+7 ;abs = 0029
+  882:      pt = (unsigned char *) &TinyFont3[digit*3];
+  0024 0717         [4]     BSR   *+25 ;abs = 003d
+  0026 c30000       [2]     ADDD  #TinyFont3
+  0029 6c82         [2]     STD   2,SP
+  883:    }
+  884:    lcdData(*pt++);  // copy three bytes 
+  002b ee82         [3]     LDX   2,SP
+  002d 0716         [4]     BSR   *+24 ;abs = 0045
+  885:    lcdData(*pt++);   
+  002f 0714         [4]     BSR   *+22 ;abs = 0045
+  886:    lcdData(*pt++);
+  0031 e600         [3]     LDAB  0,X
+  0033 160000       [4]     JSR   lcdData
+  887:    lcdData(0);      // intercharacter space   
+  0036 c7           [1]     CLRB  
+  0037 160000       [4]     JSR   lcdData
+  888:  }
+  003a 1b84         [2]     LEAS  4,SP
+  003c 3d           [5]     RTS   
+  003d c603         [1]     LDAB  #3
+  003f 87           [1]     CLRA  
+  0040 ed82         [3]     LDY   2,SP
+  0042 13           [3]     EMUL  
+  0043 87           [1]     CLRA  
+  0044 3d           [5]     RTS   
+  0045 e630         [3]     LDAB  1,X+
+  0047 34           [2]     PSHX  
+  0048 160000       [4]     JSR   lcdData
+  004b 30           [3]     PULX  
+  004c 3d           [5]     RTS   
+  889:  //---------lcdTinyOutPoint-------------------------
+  890:  // display tiny decimal point
+  891:  // input: none
+  892:  // output: none
+  893:  void lcdTinyOutPoint(void){
+*** EVALUATION ***
+
+Function: lcdTinyOutPoint
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  894:    if(TinyDown==0){
+  0000 f60000       [3]     LDAB  TinyDown
+  0003 2604         [3/1]   BNE   *+6 ;abs = 0009
+  895:      lcdData(16);
+  0005 c610         [1]     LDAB  #16
+  896:    } else if(TinyDown==1){
+  0007 2011         [3]     BRA   *+19 ;abs = 001a
+  0009 c101         [1]     CMPB  #1
+  000b 2604         [3/1]   BNE   *+6 ;abs = 0011
+  897:      lcdData(32);
+  000d c620         [1]     LDAB  #32
+  898:    } else if(TinyDown==2){
+  000f 2009         [3]     BRA   *+11 ;abs = 001a
+  0011 c102         [1]     CMPB  #2
+  0013 2603         [3/1]   BNE   *+5 ;abs = 0018
+  899:      lcdData(64);
+  0015 c640         [1]     LDAB  #64
+  900:    } else {
+  0017 8f           [2]     SKIP2 
+  901:      lcdData(128);
+  0018 c680         [1]     LDAB  #128
+  001a 160000       [4]     JSR   lcdData
+  902:    }
+  903:    lcdData(0);      // intercharacter space   
+  001d c7           [1]     CLRB  
+  001e 060000       [3]     JMP   lcdData
+  904:  }
+  905:  //---------lcdTinyOutSpace-------------------------
+  906:  // display space
+  907:  // input: none
+  908:  // output: none
+  909:  void lcdTinyOutSpace(void){
+*** EVALUATION ***
+
+Function: lcdTinyOutSpace
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  910:    lcdData(0);      // intercharacter space   
+  0000 c7           [1]     CLRB  
+  0001 160000       [4]     JSR   lcdData
+  911:    lcdData(0);      // intercharacter space   
+  0004 c7           [1]     CLRB  
+  0005 160000       [4]     JSR   lcdData
+  912:    lcdData(0);      // intercharacter space   
+  0008 c7           [1]     CLRB  
+  0009 160000       [4]     JSR   lcdData
+  913:    lcdData(0);      // intercharacter space   
+  000c c7           [1]     CLRB  
+  000d 060000       [3]     JMP   lcdData
+  914:  }
+  915:  
+  916:  //---------lcdTinyOutMinus-------------------------
+  917:  // display tiny minus sign
+  918:  // input: none
+  919:  // output: none
+  920:  void lcdTinyOutMinus(void){
+*** EVALUATION ***
+
+Function: lcdTinyOutMinus
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  921:    if(TinyDown==0){
+  0000 f60000       [3]     LDAB  TinyDown
+  0003 2609         [3/1]   BNE   *+11 ;abs = 000e
+  922:      lcdData(4);
+  0005 c604         [1]     LDAB  #4
+  0007 160000       [4]     JSR   lcdData
+  923:      lcdData(4);
+  000a c604         [1]     LDAB  #4
+  924:    } else if(TinyDown==1){
+  000c 2021         [3]     BRA   *+35 ;abs = 002f
+  000e c101         [1]     CMPB  #1
+  0010 2609         [3/1]   BNE   *+11 ;abs = 001b
+  925:      lcdData(8);
+  0012 c608         [1]     LDAB  #8
+  0014 160000       [4]     JSR   lcdData
+  926:      lcdData(8);
+  0017 c608         [1]     LDAB  #8
+  927:    } else if(TinyDown==2){
+  0019 2014         [3]     BRA   *+22 ;abs = 002f
+  001b c102         [1]     CMPB  #2
+  001d 2609         [3/1]   BNE   *+11 ;abs = 0028
+  928:      lcdData(16);
+  001f c610         [1]     LDAB  #16
+  0021 160000       [4]     JSR   lcdData
+  929:      lcdData(16);
+  0024 c610         [1]     LDAB  #16
+  930:    } else {
+  0026 2007         [3]     BRA   *+9 ;abs = 002f
+  931:      lcdData(32);
+  0028 c620         [1]     LDAB  #32
+  002a 160000       [4]     JSR   lcdData
+  932:      lcdData(32);
+  002d c620         [1]     LDAB  #32
+  002f 160000       [4]     JSR   lcdData
+  933:    }
+  934:    lcdData(0);      // intercharacter space   
+  0032 c7           [1]     CLRB  
+  0033 060000       [3]     JMP   lcdData
+  935:  }
+  936:  
+  937:  //---------lcdTinyOutPlus-------------------------
+  938:  // display a little space instead of plus sign
+  939:  // input: none
+  940:  // output: none
+  941:  void lcdTinyOutPlus(void){
+*** EVALUATION ***
+
+Function: lcdTinyOutPlus
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  942:    lcdData(0);      // intercharacter space   
+  0000 c7           [1]     CLRB  
+  0001 160000       [4]     JSR   lcdData
+  943:    lcdData(0);      // intercharacter space   
+  0004 c7           [1]     CLRB  
+  0005 160000       [4]     JSR   lcdData
+  944:    lcdData(0);      // intercharacter space   
+  0008 c7           [1]     CLRB  
+  0009 060000       [3]     JMP   lcdData
+  945:  }
+  946:  
+  947:  //------lcdTinyOutFix------------------------
+  948:  // display 4 character tiny number
+  949:  // input: num 0 to 999
+  950:  // output:none
+  951:  // no error checking
+  952:  void lcdTinyOutFix(unsigned short num){
+*** EVALUATION ***
+
+Function: lcdTinyOutFix
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  953:    if(XaxisResolution == 0){      // shown as   0.    9.   99.  999.
+  0001 fc0000       [3]     LDD   XaxisResolution
+  0004 2638         [3/1]   BNE   *+58 ;abs = 003e
+  954:      if(num < 10){
+  0006 ec80         [3]     LDD   0,SP
+  0008 8c000a       [2]     CPD   #10
+  000b 2406         [3/1]   BCC   *+8 ;abs = 0013
+  955:        lcdTinyOutSpace(); 
+  000d 0700         [4]     BSR   lcdTinyOutSpace
+  956:        lcdTinyOutSpace();
+  000f 0700         [4]     BSR   lcdTinyOutSpace
+  957:      } else if(num < 100){
+  0011 201c         [3]     BRA   *+30 ;abs = 002f
+  0013 8c0064       [2]     CPD   #100
+  0016 2409         [3/1]   BCC   *+11 ;abs = 0021
+  958:        lcdTinyOutSpace();
+  0018 0700         [4]     BSR   lcdTinyOutSpace
+  959:        lcdTinyOutDigit(num/10);   // tens digit 1 to 9
+  001a ce000a       [2]     LDX   #10
+  001d ec80         [3]     LDD   0,SP
+  960:      } else{
+  001f 200c         [3]     BRA   *+14 ;abs = 002d
+  961:        lcdTinyOutDigit(num/100);  // hundreds digit 1 to 9
+  0021 ce0064       [2]     LDX   #100
+  0024 160000       [4]     JSR   lcdTinyOutFix:0x00ab
+  962:  			num = num%100;             // 0 to 99
+  0027 160000       [4]     JSR   lcdTinyOutFix:0x00b2
+  963:        lcdTinyOutDigit(num/10);   // tens digit 1 to 9
+  002a ce000a       [2]     LDX   #10
+  002d 077c         [4]     BSR   *+126 ;abs = 00ab
+  964:      }
+  965:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+  002f ec80         [3]     LDD   0,SP
+  0031 ce000a       [2]     LDX   #10
+  0034 1810         [12]    IDIV  
+  0036 160000       [4]     JSR   lcdTinyOutDigit
+  966:      lcdTinyOutPoint();
+  0039 160000       [4]     JSR   lcdTinyOutPoint
+  967:    }else if(XaxisResolution == 1){// shown as  0.0   0.9   9.9  99.9
+  003c 206b         [3]     BRA   *+109 ;abs = 00a9
+  003e 8c0001       [2]     CPD   #1
+  0041 2621         [3/1]   BNE   *+35 ;abs = 0064
+  968:      if(num < 100){
+  0043 ec80         [3]     LDD   0,SP
+  0045 8c0064       [2]     CPD   #100
+  0048 2405         [3/1]   BCC   *+7 ;abs = 004f
+  969:        lcdTinyOutSpace();
+  004a 160000       [4]     JSR   lcdTinyOutSpace
+  970:      } else{
+  004d 2007         [3]     BRA   *+9 ;abs = 0056
+  971:        lcdTinyOutDigit(num/100);  // hundreds digit 1 to 9
+  004f ce0064       [2]     LDX   #100
+  0052 0757         [4]     BSR   *+89 ;abs = 00ab
+  972:  			num = num%100;             // 0 to 99
+  0054 075c         [4]     BSR   *+94 ;abs = 00b2
+  973:      }
+  974:      lcdTinyOutDigit(num/10);     // tens digit 1 to 9
+  0056 ec80         [3]     LDD   0,SP
+  0058 ce000a       [2]     LDX   #10
+  005b 074e         [4]     BSR   *+80 ;abs = 00ab
+  975:      lcdTinyOutPoint();
+  005d 160000       [4]     JSR   lcdTinyOutPoint
+  976:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+  0060 ec80         [3]     LDD   0,SP
+  977:    }else if(XaxisResolution == 2){//shown as 0.00  0.09  0.99  9.99 
+  0062 203d         [3]     BRA   *+63 ;abs = 00a1
+  0064 8c0002       [2]     CPD   #2
+  0067 261b         [3/1]   BNE   *+29 ;abs = 0084
+  978:      lcdTinyOutDigit(num/100);    // hundreds digit 1 to 9
+  0069 ec80         [3]     LDD   0,SP
+  006b ce0064       [2]     LDX   #100
+  006e 073b         [4]     BSR   *+61 ;abs = 00ab
+  979:     	num = num%100;               // 0 to 99
+  0070 ec80         [3]     LDD   0,SP
+  0072 ce0064       [2]     LDX   #100
+  0075 1810         [12]    IDIV  
+  980:      lcdTinyOutPoint();
+  0077 3b           [2]     PSHD  
+  0078 160000       [4]     JSR   lcdTinyOutPoint
+  981:      lcdTinyOutDigit(num/10);     // tens digit 1 to 9
+  007b ce000a       [2]     LDX   #10
+  007e ec80         [3]     LDD   0,SP
+  0080 0729         [4]     BSR   *+43 ;abs = 00ab
+  982:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+  983:    }else if(XaxisResolution == 3){// shown as .000  .009  .099  .999
+  0082 201c         [3]     BRA   *+30 ;abs = 00a0
+  0084 8c0003       [2]     CPD   #3
+  0087 2620         [3/1]   BNE   *+34 ;abs = 00a9
+  984:      lcdTinyOutDigit(num/100);    // hundreds digit 1 to 9
+  0089 ec80         [3]     LDD   0,SP
+  008b ce0064       [2]     LDX   #100
+  008e 071b         [4]     BSR   *+29 ;abs = 00ab
+  985:      lcdTinyOutPoint();
+  0090 160000       [4]     JSR   lcdTinyOutPoint
+  986:     	num = num%100;               // 0 to 99
+  0093 ec80         [3]     LDD   0,SP
+  0095 ce0064       [2]     LDX   #100
+  0098 1810         [12]    IDIV  
+  987:      lcdTinyOutDigit(num/10);     // tens digit 1 to 9
+  009a ce000a       [2]     LDX   #10
+  009d 3b           [2]     PSHD  
+  009e 070b         [4]     BSR   *+13 ;abs = 00ab
+  988:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+  00a0 3a           [3]     PULD  
+  00a1 ce000a       [2]     LDX   #10
+  00a4 1810         [12]    IDIV  
+  00a6 160000       [4]     JSR   lcdTinyOutDigit
+  989:    }
+  990:  }
+  00a9 3a           [3]     PULD  
+  00aa 3d           [5]     RTS   
+  00ab 1810         [12]    IDIV  
+  00ad b754         [1]     TFR   X,D
+  00af 060000       [3]     JMP   lcdTinyOutDigit
+  00b2 ec82         [3]     LDD   2,SP
+  00b4 ce0064       [2]     LDX   #100
+  00b7 1810         [12]    IDIV  
+  00b9 6c82         [2]     STD   2,SP
+  00bb 3d           [5]     RTS   
+  991:  
+  992:  //-----------------------LCD_PlotXaxis-----------------------
+  993:  // Draw X axis 
+  994:  // Input: min max, resolution, and label  
+  995:  // Output: none
+  996:  // X axis numbers min and max range from 0 to 999
+  997:  // resolution>3 means no numbers are displayed
+  998:  // number->       0    9    99   999
+  999:  // 0  shown as   0.    9.   99.  999.
+ 1000:  // 1  shown as  0.0   0.9   9.9  99.9
+ 1001:  // 2  shown as 0.00  0.09  0.99  9.99
+ 1002:  // 3  shown as .000  .009  .099  .999
+ 1003:  // label has 13 character maximum size
+ 1004:  // errors: min and max must be less than or equal to 999
+ 1005:  void LCD_PlotXaxis(unsigned short min, unsigned short max,
+ 1006:    unsigned short resolution, char *label){
+*** EVALUATION ***
+
+Function: LCD_PlotXaxis
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 1b90         [2]     LEAS  -16,SP
+  0002 3b           [2]     PSHD  
+ 1007:    unsigned short i; 
+ 1008:    char Xlabel[14];          // maximum of 13 characters
+ 1009:    if(OpenFlag==0){
+  0003 fc0000       [3]     LDD   OpenFlag
+  0006 277a         [3/1]   BEQ   *+124 ;abs = 0082
+ 1010:      return;  // not open
+ 1011:    }
+ 1012:    if((min > max)||(max > 999)){
+  0008 ecf018       [3]     LDD   24,SP
+  000b acf016       [3]     CPD   22,SP
+  000e 2272         [3/1]   BHI   *+116 ;abs = 0082
+  0010 ecf016       [3]     LDD   22,SP
+  0013 8c03e7       [2]     CPD   #999
+  0016 226a         [3/1]   BHI   *+108 ;abs = 0082
+ 1013:      return;  // bad parameters
+ 1014:    }
+ 1015:  	XaxisResolution = resolution;
+  0018 ecf014       [3]     LDD   20,SP
+  001b 7c0000       [3]     STD   XaxisResolution
+ 1016:  	i = 0;
+  001e c7           [1]     CLRB  
+  001f 87           [1]     CLRA  
+  0020 6c82         [2]     STD   2,SP
+  0022 ee80         [3]     LDX   0,SP
+ 1017:  	do{
+ 1018:  	  Xlabel[i] = *label;
+  0024 1984         [2]     LEAY  4,SP
+  0026 b764         [1]     TFR   Y,D
+  0028 e382         [3]     ADDD  2,SP
+  002a b746         [1]     TFR   D,Y
+  002c e630         [3]     LDAB  1,X+
+  002e 6b40         [2]     STAB  0,Y
+ 1019:  	  label++; i++;
+  0030 ed82         [3]     LDY   2,SP
+  0032 02           [1]     INY   
+  0033 6d82         [2]     STY   2,SP
+ 1020:  	}
+ 1021:  	while(i<14);
+  0035 8d000e       [2]     CPY   #14
+  0038 25ea         [3/1]   BCS   *-20 ;abs = 0024
+ 1022:  	Xlabel[13] = 0; // truncate to 13 characters maximum
+  003a 69f011       [3]     CLR   17,SP
+ 1023:  	LCD_GoTo(7,6);  // second to last row
+  003d c607         [1]     LDAB  #7
+  003f 87           [1]     CLRA  
+  0040 3b           [2]     PSHD  
+  0041 53           [1]     DECB  
+  0042 160000       [4]     JSR   LCD_GoTo
+  0045 3a           [3]     PULD  
+ 1024:    LCD_OutString(Xlabel);
+  0046 1a84         [2]     LEAX  4,SP
+  0048 b754         [1]     TFR   X,D
+  004a 160000       [4]     JSR   LCD_OutString
+ 1025:    TinyDown = 2;      // shift down two pixels
+  004d c602         [1]     LDAB  #2
+  004f 7b0000       [3]     STAB  TinyDown
+ 1026:    CS2 = 0;   			   // paint left number on left side
+  0052 1d000002     [4]     BCLR  _PTP,#2
+ 1027:    CS1 = 1;           // left enable
+  0056 1c000001     [4]     BSET  _PTP,#1
+ 1028:    lcdCmd(0xBE);      // Page 7 
+  005a c6be         [1]     LDAB  #190
+  005c 160000       [4]     JSR   lcdCmd
+ 1029:    lcdCmd(0x4C);      // byte number = 12
+  005f c64c         [1]     LDAB  #76
+  0061 160000       [4]     JSR   lcdCmd
+ 1030:    lcdTinyOutFix(min);
+  0064 ecf018       [3]     LDD   24,SP
+  0067 160000       [4]     JSR   lcdTinyOutFix
+ 1031:    CS2 = 1;   			   // paint right number on right side
+  006a 1c000002     [4]     BSET  _PTP,#2
+ 1032:    CS1 = 0;           // right enable
+  006e 1d000001     [4]     BCLR  _PTP,#1
+ 1033:    lcdCmd(0xBE);      // Page 7 
+  0072 c6be         [1]     LDAB  #190
+  0074 160000       [4]     JSR   lcdCmd
+ 1034:    lcdCmd(0x72);      // byte number = 50
+  0077 c672         [1]     LDAB  #114
+  0079 160000       [4]     JSR   lcdCmd
+ 1035:    lcdTinyOutFix(max);
+  007c ecf016       [3]     LDD   22,SP
+  007f 160000       [4]     JSR   lcdTinyOutFix
+ 1036:  }
+  0082 1bf012       [2]     LEAS  18,SP
+  0085 3d           [5]     RTS   
+ 1037:  
+ 1038:  
+ 1039:  //------lcdTinyOutFix2------------------------
+ 1040:  // display 4 character tiny number
+ 1041:  // input: num -99 to 99
+ 1042:  // output:none
+ 1043:  // no error checking
+ 1044:  void lcdTinyOutFix2(short snum){ 
+*** EVALUATION ***
+
+Function: lcdTinyOutFix2
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 1b9c         [2]     LEAS  -4,SP
+ 1045:  unsigned short num;
+ 1046:  unsigned short bSign;
+ 1047:    if(snum<0){
+  0002 8c0000       [2]     CPD   #0
+  0005 2c0b         [3/1]   BGE   *+13 ;abs = 0012
+ 1048:      bSign = 1;
+  0007 ce0001       [2]     LDX   #1
+  000a 6e82         [2]     STX   2,SP
+ 1049:      num = -snum;
+  000c 40           [1]     NEGA  
+  000d 50           [1]     NEGB  
+  000e 8200         [1]     SBCA  #0
+ 1050:    } else{
+  0010 2004         [3]     BRA   *+6 ;abs = 0016
+ 1051:      bSign = 0;
+  0012 6983         [2]     CLR   3,SP
+  0014 6982         [2]     CLR   2,SP
+ 1052:      num = snum;
+  0016 6c80         [2]     STD   0,SP
+ 1053:    }
+ 1054:    if(YaxisResolution == 0){      // shown as  -99     -1    0   1   99
+  0018 fc0000       [3]     LDD   YaxisResolution
+  001b 2635         [3/1]   BNE   *+55 ;abs = 0052
+ 1055:      if(num < 10){
+  001d ec80         [3]     LDD   0,SP
+  001f 8c000a       [2]     CPD   #10
+  0022 2411         [3/1]   BCC   *+19 ;abs = 0035
+ 1056:        lcdTinyOutSpace(); 			   // no tens digit
+  0024 160000       [4]     JSR   lcdTinyOutSpace
+ 1057:        if(bSign){
+  0027 ec82         [3]     LDD   2,SP
+  0029 2705         [3/1]   BEQ   *+7 ;abs = 0030
+ 1058:          lcdTinyOutMinus();
+  002b 160000       [4]     JSR   lcdTinyOutMinus
+ 1059:        } else{
+  002e 2013         [3]     BRA   *+21 ;abs = 0043
+ 1060:          lcdTinyOutPlus();
+  0030 160000       [4]     JSR   lcdTinyOutPlus
+  0033 200e         [3]     BRA   *+16 ;abs = 0043
+ 1061:        }
+ 1062:      } else{
+ 1063:        if(bSign){
+  0035 ec82         [3]     LDD   2,SP
+  0037 2705         [3/1]   BEQ   *+7 ;abs = 003e
+ 1064:          lcdTinyOutMinus();
+  0039 160000       [4]     JSR   lcdTinyOutMinus
+ 1065:        } else{
+  003c 2003         [3]     BRA   *+5 ;abs = 0041
+ 1066:          lcdTinyOutPlus();
+  003e 160000       [4]     JSR   lcdTinyOutPlus
+ 1067:        }
+ 1068:        lcdTinyOutDigit(num/10);   // tens digit 1 to 9
+  0041 074a         [4]     BSR   *+76 ;abs = 008d
+ 1069:      }
+ 1070:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+  0043 ec80         [3]     LDD   0,SP
+  0045 ce000a       [2]     LDX   #10
+  0048 1810         [12]    IDIV  
+  004a 160000       [4]     JSR   lcdTinyOutDigit
+ 1071:      lcdTinyOutPoint();
+  004d 160000       [4]     JSR   lcdTinyOutPoint
+ 1072:    }else if(YaxisResolution == 1){// shown as  -9.9  -0.1  0.0 0.1  9.9
+  0050 2038         [3]     BRA   *+58 ;abs = 008a
+  0052 8c0001       [2]     CPD   #1
+  0055 2613         [3/1]   BNE   *+21 ;abs = 006a
+ 1073:      if(bSign){
+  0057 ec82         [3]     LDD   2,SP
+  0059 2705         [3/1]   BEQ   *+7 ;abs = 0060
+ 1074:        lcdTinyOutMinus();
+  005b 160000       [4]     JSR   lcdTinyOutMinus
+ 1075:      } else{
+  005e 2003         [3]     BRA   *+5 ;abs = 0063
+ 1076:        lcdTinyOutPlus();
+  0060 160000       [4]     JSR   lcdTinyOutPlus
+ 1077:      }
+ 1078:      lcdTinyOutDigit(num/10);     // tens digit 1 to 9
+  0063 0728         [4]     BSR   *+42 ;abs = 008d
+ 1079:      lcdTinyOutPoint();
+  0065 160000       [4]     JSR   lcdTinyOutPoint
+ 1080:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+ 1081:    }else if(YaxisResolution == 2){// shown as -.99  -.01  .00 .01  .99 
+  0068 2016         [3]     BRA   *+24 ;abs = 0080
+  006a 8c0002       [2]     CPD   #2
+  006d 261b         [3/1]   BNE   *+29 ;abs = 008a
+ 1082:      if(bSign){
+  006f ec82         [3]     LDD   2,SP
+  0071 2705         [3/1]   BEQ   *+7 ;abs = 0078
+ 1083:        lcdTinyOutMinus();
+  0073 160000       [4]     JSR   lcdTinyOutMinus
+ 1084:      } else{
+  0076 2003         [3]     BRA   *+5 ;abs = 007b
+ 1085:        lcdTinyOutPlus();
+  0078 160000       [4]     JSR   lcdTinyOutPlus
+ 1086:      }
+ 1087:      lcdTinyOutPoint();
+  007b 160000       [4]     JSR   lcdTinyOutPoint
+ 1088:      lcdTinyOutDigit(num/10);     // tens digit 1 to 9
+  007e 070d         [4]     BSR   *+15 ;abs = 008d
+ 1089:      lcdTinyOutDigit(num%10);     // ones digit 1 to 9
+  0080 ec80         [3]     LDD   0,SP
+  0082 ce000a       [2]     LDX   #10
+  0085 1810         [12]    IDIV  
+  0087 160000       [4]     JSR   lcdTinyOutDigit
+ 1090:    }
+ 1091:  }
+  008a 1b84         [2]     LEAS  4,SP
+  008c 3d           [5]     RTS   
+  008d ec82         [3]     LDD   2,SP
+  008f ce000a       [2]     LDX   #10
+  0092 1810         [12]    IDIV  
+  0094 b754         [1]     TFR   X,D
+  0096 060000       [3]     JMP   lcdTinyOutDigit
+ 1092:  // ********* lcdFillYline***********
+ 1093:  // get one line of Ylabel
+ 1094:  //    AGM1264F 128-bit by 64-bit graphics display
+ 1095:  // Input: ASCII string, 8 characters max
+ 1096:  //        mask is 0x01,0x02,0x04,0x08,0x10,0x20 or 0x40
+ 1097:  // Output: none
+ 1098:  // characters must be between 32 and 126 inclusive
+ 1099:  unsigned char Yline[6];  // data for side-ways letters, one vertical line
+ 1100:  // Yline[0] goes into row 7, 0xBE
+ 1101:  // Yline[1] goes into row 6, 0xBD
+ 1102:  // Yline[2] goes into row 5, 0xBC
+ 1103:  // Yline[3] goes into row 4, 0xBB
+ 1104:  // Yline[4] goes into row 3, 0xBA
+ 1105:  // Yline[5] goes into row 2, 0xB9
+ 1106:  void lcdFillYline(unsigned char mask, char *label){
+*** EVALUATION ***
+
+Function: lcdFillYline
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 1b98         [2]     LEAS  -8,SP
+  0002 3b           [2]     PSHD  
+ 1107:  unsigned short i,j,cnt; unsigned char letter,data,ymask;
+ 1108:  // i is index into font table
+ 1109:  // j is index into Yline
+ 1110:  // cnt is used to move 5 pixels from font table into Yline
+ 1111:  // letter is one ASCII from input string
+ 1112:  // data is information from font table
+ 1113:  // j with ymask allows bit access to 48 bits of Yline
+ 1114:    for(j=0; j<6; j++){
+  0003 ce0000       [2]     LDX   #0
+ 1115:      Yline[j] = 0;     // default is blank
+  0006 69e20000     [3]     CLR   Yline,X
+  000a 08           [1]     INX   
+  000b 8e0006       [2]     CPX   #6
+  000e 25f6         [3/1]   BCS   *-8 ;abs = 0006
+ 1116:    }
+ 1117:    j = 0;              // index into Yline
+  0010 c7           [1]     CLRB  
+  0011 87           [1]     CLRA  
+  0012 6c83         [2]     STD   3,SP
+ 1118:    ymask = 0x80;
+  0014 c680         [1]     LDAB  #128
+  0016 6b82         [2]     STAB  2,SP
+ 1119:    do{
+ 1120:      letter = *label++;            // next character 
+  0018 ee80         [3]     LDX   0,SP
+  001a e630         [3]     LDAB  1,X+
+  001c 6e80         [2]     STX   0,SP
+  001e 6b89         [2]     STAB  9,SP
+ 1121:      if(letter == 0) return;       // done 
+  0020 2756         [3/1]   BEQ   *+88 ;abs = 0078
+ 1122:      if(letter<32) letter = 32;    // nonprinting
+  0022 c120         [1]     CMPB  #32
+  0024 2504         [3/1]   BCS   *+6 ;abs = 002a
+ 1123:      if(letter>126) letter = 32;   // nonprinting
+  0026 c17e         [1]     CMPB  #126
+  0028 2304         [3/1]   BLS   *+6 ;abs = 002e
+  002a c620         [1]     LDAB  #32
+  002c 6b89         [2]     STAB  9,SP
+ 1124:      i = 5*(letter-32);            // index into font table
+  002e e689         [3]     LDAB  9,SP
+  0030 87           [1]     CLRA  
+  0031 830020       [2]     SUBD  #32
+  0034 b746         [1]     TFR   D,Y
+  0036 c605         [1]     LDAB  #5
+  0038 87           [1]     CLRA  
+  0039 13           [3]     EMUL  
+  003a 6c87         [2]     STD   7,SP
+ 1125:      for(cnt=5; cnt>0; cnt--){
+  003c c605         [1]     LDAB  #5
+  003e 87           [1]     CLRA  
+  003f 6c85         [2]     STD   5,SP
+ 1126:        data = Font[i];        // each character is 5 pixels wide 
+  0041 ee87         [3]     LDX   7,SP
+  0043 e6e20000     [4]     LDAB  Font,X
+ 1127:        i++;
+  0047 08           [1]     INX   
+  0048 6e87         [2]     STX   7,SP
+ 1128:        if(data&mask){
+  004a e48c         [3]     ANDB  12,SP
+  004c 270c         [3/1]   BEQ   *+14 ;abs = 005a
+ 1129:          Yline[j] |= ymask;   // set bit
+  004e ee83         [3]     LDX   3,SP
+  0050 e682         [3]     LDAB  2,SP
+  0052 eae20000     [4]     ORAB  Yline,X
+  0056 6be20000     [3]     STAB  Yline,X
+ 1130:        }
+ 1131:        ymask = ymask >>1;     // 80,40,20,10,8,4,2,1
+  005a 6482         [3]     LSR   2,SP
+ 1132:        if(ymask == 0){
+  005c e682         [3]     LDAB  2,SP
+  005e 2602         [3/1]   BNE   *+4 ;abs = 0062
+ 1133:          ymask = 0x80;    // next byte of Yline
+  0060 0719         [4]     BSR   *+27 ;abs = 007b
+  0062 ee85         [3]     LDX   5,SP
+  0064 09           [1]     DEX   
+  0065 6e85         [2]     STX   5,SP
+  0067 26d8         [3/1]   BNE   *-38 ;abs = 0041
+ 1134:          j++;
+ 1135:        }
+ 1136:      }
+ 1137:      ymask = ymask >>1;     // add intercharacter space
+  0069 6482         [3]     LSR   2,SP
+ 1138:      if(ymask == 0){
+  006b e682         [3]     LDAB  2,SP
+  006d 2602         [3/1]   BNE   *+4 ;abs = 0071
+ 1139:        ymask = 0x80;    // next byte of Yline
+  006f 070a         [4]     BSR   *+12 ;abs = 007b
+ 1140:        j++;
+ 1141:      }
+ 1142:    }
+ 1143:    while(j<6);
+  0071 ec83         [3]     LDD   3,SP
+  0073 8c0006       [2]     CPD   #6
+  0076 25a0         [3/1]   BCS   *-94 ;abs = 0018
+ 1144:  }
+  0078 1b8a         [2]     LEAS  10,SP
+  007a 3d           [5]     RTS   
+  007b c680         [1]     LDAB  #128
+  007d 6b84         [2]     STAB  4,SP
+  007f ee85         [3]     LDX   5,SP
+  0081 08           [1]     INX   
+  0082 6e85         [2]     STX   5,SP
+  0084 3d           [5]     RTS   
+ 1145:    
+ 1146:  
+ 1147:  
+ 1148:  //-----------------------LCD_PlotYaxis-----------------------
+ 1149:  // Draw Y axis 
+ 1150:  // Input: min, center, max, resolution, label, and number of hash marks
+ 1151:  //        min, center, max are the integer part ranging from -99 to +99
+ 1152:  //        resolution is 0,1,2 where to put decimal point 
+ 1153:  //                      any other value means no numbers are displayed
+ 1154:  //  number->    -99    -1    0    1    99     
+ 1155:  // 0  shown as -99.   -1.    0.   1.   99.
+ 1156:  // 1  shown as -9.9  -0.1   0.0  0.1   9.9
+ 1157:  // 2  shown as -.99  -.01   .00  .01   .99
+ 1158:  //        label is an ASCII string, up to 8 characters
+ 1159:  // Output: none
+ 1160:  // errors: must be called once, before calling Plot
+ 1161:  void LCD_PlotYaxis(short min, short center, short max,
+ 1162:    unsigned short resolution, char *label){
+*** EVALUATION ***
+
+Function: LCD_PlotYaxis
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6cac         [2]     STD   4,-SP
+ 1163:    unsigned char page,column; // access to Ylabel area
+ 1164:    unsigned short j;          // index into Yline
+ 1165:    unsigned char mask;        // used to get one line at a time
+ 1166:    if(OpenFlag==0){
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 18270097     [4/3]   LBEQ  *+155 ;abs = 00a0
+ 1167:      return;  // not open
+ 1168:    }
+ 1169:    if((min > max)||(center < min)||(center > max)){
+  0009 ec8c         [3]     LDD   12,SP
+  000b ac88         [3]     CPD   8,SP
+  000d 2e08         [3/1]   BGT   *+10 ;abs = 0017
+  000f ee8a         [3]     LDX   10,SP
+  0011 ae8c         [3]     CPX   12,SP
+  0013 2d07         [3/1]   BLT   *+9 ;abs = 001c
+  0015 ae88         [3]     CPX   8,SP
+  0017 2e0c         [3/1]   BGT   *+14 ;abs = 0025
+ 1170:      return;  // bad parameters
+ 1171:    }
+ 1172:    if((min < -99)||(max > 99)){
+  0019 8cff9d       [2]     CPD   #65437
+  001c 182d0080     [4/3]   LBLT  *+132 ;abs = 00a0
+  0020 ec88         [3]     LDD   8,SP
+  0022 8c0063       [2]     CPD   #99
+  0025 2e79         [3/1]   BGT   *+123 ;abs = 00a0
+ 1173:      return;  // bad parameters
+ 1174:    }
+ 1175:  	YaxisResolution = resolution;
+  0027 ec86         [3]     LDD   6,SP
+  0029 7c0000       [3]     STD   YaxisResolution
+ 1176:    CS2 = 0;   			   // paint all numbers on left side
+  002c 1d000002     [4]     BCLR  _PTP,#2
+ 1177:    CS1 = 1;           // left enable
+  0030 1c000001     [4]     BSET  _PTP,#1
+ 1178:    column = 0x40;
+  0034 cc0140       [2]     LDD   #320
+  0037 6b83         [2]     STAB  3,SP
+ 1179:  	for(mask=0x01; mask<0x80; mask = mask<<1){
+  0039 6a82         [2]     STAA  2,SP
+ 1180:  	// mask goes 1,2,4,8,10,20,40
+ 1181:  	  lcdFillYline(mask,label); // get 48 bits
+  003b e682         [3]     LDAB  2,SP
+  003d 37           [2]     PSHB  
+  003e ec81         [3]     LDD   1,SP
+  0040 160000       [4]     JSR   lcdFillYline
+  0043 33           [3]     PULB  
+ 1182:  	  page = 0xBE; // row 7
+ 1183:  	  for(j=0; j<6; j++){
+  0044 ce0000       [2]     LDX   #0
+  0047 c6be         [1]     LDAB  #190
+ 1184:  	    lcdCmd(page);    // row 7,6,5,4,3,2
+  0049 37           [2]     PSHB  
+  004a 34           [2]     PSHX  
+  004b 160000       [4]     JSR   lcdCmd
+ 1185:  	    lcdCmd(column);  // column 1,2,3,4,5,6,7
+  004e e686         [3]     LDAB  6,SP
+  0050 160000       [4]     JSR   lcdCmd
+ 1186:  	    lcdData(Yline[j]);
+  0053 ee80         [3]     LDX   0,SP
+  0055 e6e20000     [4]     LDAB  Yline,X
+  0059 160000       [4]     JSR   lcdData
+ 1187:  	    page--;          // BE, BD, BC, BB, BA, B9
+  005c e682         [3]     LDAB  2,SP
+  005e 53           [1]     DECB  
+  005f 30           [3]     PULX  
+  0060 08           [1]     INX   
+  0061 8e0006       [2]     CPX   #6
+  0064 1b81         [2]     LEAS  1,SP
+  0066 25e1         [3/1]   BCS   *-29 ;abs = 0049
+ 1188:  	  }
+ 1189:  	  column++;          // 40,41,42,43,44,45,46 
+  0068 6283         [3]     INC   3,SP
+  006a 6882         [3]     LSL   2,SP
+  006c e682         [3]     LDAB  2,SP
+  006e c180         [1]     CMPB  #128
+  0070 25c9         [3/1]   BCS   *-53 ;abs = 003b
+ 1190:  	}
+ 1191:  
+ 1192:  	TinyDown = 0;      // shift down no pixels
+  0072 790000       [3]     CLR   TinyDown
+ 1193:    lcdCmd(0xB9);      // Page 2 
+  0075 c6b9         [1]     LDAB  #185
+  0077 160000       [4]     JSR   lcdCmd
+ 1194:    lcdCmd(0x48);      // byte number = 8
+  007a c648         [1]     LDAB  #72
+  007c 160000       [4]     JSR   lcdCmd
+ 1195:    lcdTinyOutFix2(max);
+  007f ec88         [3]     LDD   8,SP
+  0081 160000       [4]     JSR   lcdTinyOutFix2
+ 1196:  	TinyDown = 2;      // shift down two pixels
+  0084 c602         [1]     LDAB  #2
+  0086 7b0000       [3]     STAB  TinyDown
+ 1197:    lcdCmd(0xBB);      // Page 4 
+  0089 c6bb         [1]     LDAB  #187
+  008b 0716         [4]     BSR   *+24 ;abs = 00a3
+ 1198:    lcdCmd(0x48);      // byte number = 8
+ 1199:    lcdTinyOutFix2(center);
+  008d ec8a         [3]     LDD   10,SP
+  008f 160000       [4]     JSR   lcdTinyOutFix2
+ 1200:  	TinyDown = 3;      // shift down three pixels
+  0092 c603         [1]     LDAB  #3
+  0094 7b0000       [3]     STAB  TinyDown
+ 1201:    lcdCmd(0xBD);      // Page 6 
+  0097 c6bd         [1]     LDAB  #189
+  0099 0708         [4]     BSR   *+10 ;abs = 00a3
+ 1202:    lcdCmd(0x48);      // byte number = 8
+ 1203:    lcdTinyOutFix2(min);
+  009b ec8c         [3]     LDD   12,SP
+  009d 160000       [4]     JSR   lcdTinyOutFix2
+ 1204:  
+ 1205:  }
+  00a0 1b84         [2]     LEAS  4,SP
+  00a2 3d           [5]     RTS   
+  00a3 160000       [4]     JSR   lcdCmd
+  00a6 c648         [1]     LDAB  #72
+  00a8 060000       [3]     JMP   lcdCmd
+ 1206:  
+ 1207:  //-----------------------LCD_PlotClear-----------------------
+ 1208:  // Clear plot window, 
+ 1209:  // Input: min max, specify range of Y axis  
+ 1210:  // plotPixel number of data points drawn into the same X-axis pixel
+ 1211:  // 4 means it takes 400 calls to LCD_Plot to draw one sweep
+ 1212:  // plotPixel can range from 1 to 100
+ 1213:  // Output: none
+ 1214:  // errors: must be called once, before calling Plot
+ 1215:  void LCD_PlotClear(short min, short max, unsigned char plotPixel){
+*** EVALUATION ***
+
+Function: LCD_PlotClear
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6bac         [2]     STAB  4,-SP
+ 1216:  int i,j;  unsigned char page;
+ 1217:    if(OpenFlag==0){
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 18270125     [4/3]   LBEQ  *+297 ;abs = 012e
+ 1218:      return;  // not open
+ 1219:    }
+ 1220:    if((plotPixel<1)||(plotPixel>100)) plotPixel=1;
+  0009 e680         [3]     LDAB  0,SP
+  000b c101         [1]     CMPB  #1
+  000d 2504         [3/1]   BCS   *+6 ;abs = 0013
+  000f c164         [1]     CMPB  #100
+  0011 2304         [3/1]   BLS   *+6 ;abs = 0017
+  0013 c601         [1]     LDAB  #1
+  0015 6b80         [2]     STAB  0,SP
+ 1221:    PlotPixel = plotPixel;
+  0017 e680         [3]     LDAB  0,SP
+  0019 7b0000       [3]     STAB  PlotPixel
+ 1222:    RangeY = max-min;
+  001c ec86         [3]     LDD   6,SP
+  001e a388         [3]     SUBD  8,SP
+  0020 7c0000       [3]     STD   RangeY
+ 1223:    MinY = min;
+  0023 ec88         [3]     LDD   8,SP
+  0025 7c0000       [3]     STD   MinY
+ 1224:    SubCount = PlotPixel;
+  0028 f60000       [3]     LDAB  PlotPixel
+  002b 87           [1]     CLRA  
+  002c 7c0000       [3]     STD   SubCount
+ 1225:    Xcolumn = 0x56;    // byte number 22
+  002f c656         [1]     LDAB  #86
+  0031 7b0000       [3]     STAB  Xcolumn
+ 1226:    bRightx = 0;       // to be placed into CS2, start on left
+  0034 7a0000       [3]     STAA  bRightx
+ 1227:    bLeftx = 1;        // to be placed into CS1
+  0037 42           [1]     INCA  
+  0038 7a0000       [3]     STAA  bLeftx
+ 1228:    for(j=1; j<6; j++){
+  003b b706         [1]     SEX   A,Y
+ 1229:      Yline[j] = 0;    // default is blank
+  003d 69ea0000     [3]     CLR   Yline,Y
+  0041 02           [1]     INY   
+  0042 8d0006       [2]     CPY   #6
+  0045 2df6         [3/1]   BLT   *-8 ;abs = 003d
+ 1230:    }
+ 1231:    CS2 = 0;   			   
+  0047 1d000002     [4]     BCLR  _PTP,#2
+ 1232:    CS1 = 1;           // left enable
+  004b 1c000001     [4]     BSET  _PTP,#1
+ 1233:    lcdCmd(0xB9);      // Page 2 
+  004f c6b9         [1]     LDAB  #185
+  0051 160000       [4]     JSR   LCD_PlotClear:0x0131
+ 1234:    lcdCmd(0x55);      // byte number = 21
+ 1235:    lcdData(0xFF);     // Yaxis line
+ 1236:    lcdData(0x01); Yline[5]=0x01;    // top hash
+  0054 c601         [1]     LDAB  #1
+  0056 160000       [4]     JSR   lcdData
+  0059 c601         [1]     LDAB  #1
+  005b 7b0000       [3]     STAB  Yline:5
+ 1237:    for(i=0;i<41;i++){
+  005e ce0000       [2]     LDX   #0
+ 1238:      lcdData(0);
+  0061 c7           [1]     CLRB  
+  0062 160000       [4]     JSR   LCD_PlotClear:0x013e
+  0065 8e0029       [2]     CPX   #41
+  0068 2df7         [3/1]   BLT   *-7 ;abs = 0061
+ 1239:    }
+ 1240:    lcdCmd(0xBA);      // Page 3 
+  006a c6ba         [1]     LDAB  #186
+  006c 160000       [4]     JSR   LCD_PlotClear:0x0131
+ 1241:    lcdCmd(0x55);      // byte number = 21
+ 1242:    lcdData(0xFF);     // Yaxis line
+ 1243:    lcdData(0x02); Yline[4]=0x02;    // 75% hash
+  006f c602         [1]     LDAB  #2
+  0071 160000       [4]     JSR   lcdData
+  0074 c602         [1]     LDAB  #2
+  0076 7b0000       [3]     STAB  Yline:4
+ 1244:    for(i=0;i<41;i++){
+  0079 ce0000       [2]     LDX   #0
+ 1245:      lcdData(0);
+  007c c7           [1]     CLRB  
+  007d 160000       [4]     JSR   LCD_PlotClear:0x013e
+  0080 8e0029       [2]     CPX   #41
+  0083 2df7         [3/1]   BLT   *-7 ;abs = 007c
+ 1246:    }
+ 1247:    lcdCmd(0xBB);      // Page 4 
+  0085 c6bb         [1]     LDAB  #187
+  0087 160000       [4]     JSR   LCD_PlotClear:0x0131
+ 1248:    lcdCmd(0x55);      // byte number = 21
+ 1249:    lcdData(0xFF);     // Yaxis line
+ 1250:    lcdData(0x10); Yline[3]=0x10;    // 50% hash
+  008a c610         [1]     LDAB  #16
+  008c 160000       [4]     JSR   lcdData
+  008f c610         [1]     LDAB  #16
+  0091 7b0000       [3]     STAB  Yline:3
+ 1251:    for(i=0;i<41;i++){
+  0094 ce0000       [2]     LDX   #0
+ 1252:      lcdData(0);
+  0097 c7           [1]     CLRB  
+  0098 160000       [4]     JSR   LCD_PlotClear:0x013e
+  009b 8e0029       [2]     CPX   #41
+  009e 2df7         [3/1]   BLT   *-7 ;abs = 0097
+ 1253:    }
+ 1254:    lcdCmd(0xBC);      // Page 5 
+  00a0 c6bc         [1]     LDAB  #188
+  00a2 160000       [4]     JSR   LCD_PlotClear:0x0131
+ 1255:    lcdCmd(0x55);      // byte number = 21
+ 1256:    lcdData(0xFF);     // Yaxis line
+ 1257:    lcdData(0x40); Yline[2]=0x40;    // 25% hash
+  00a5 c640         [1]     LDAB  #64
+  00a7 160000       [4]     JSR   lcdData
+  00aa c640         [1]     LDAB  #64
+  00ac 7b0000       [3]     STAB  Yline:2
+ 1258:    for(i=0;i<41;i++){
+  00af ce0000       [2]     LDX   #0
+ 1259:      lcdData(0);
+  00b2 c7           [1]     CLRB  
+  00b3 160000       [4]     JSR   LCD_PlotClear:0x013e
+  00b6 8e0029       [2]     CPX   #41
+  00b9 2df7         [3/1]   BLT   *-7 ;abs = 00b2
+ 1260:    }
+ 1261:    lcdCmd(0xBD);      // Page 6 
+  00bb c6bd         [1]     LDAB  #189
+  00bd 0772         [4]     BSR   *+116 ;abs = 0131
+ 1262:    lcdCmd(0x55);      // byte number = 21
+ 1263:    lcdData(0xFF);     // Yaxis line
+ 1264:    Yline[1] = 0x80;   // Xaxis
+  00bf c680         [1]     LDAB  #128
+  00c1 7b0000       [3]     STAB  Yline:1
+ 1265:    for(j=0; j<4; j++){
+  00c4 c7           [1]     CLRB  
+  00c5 87           [1]     CLRA  
+  00c6 6c81         [2]     STD   1,SP
+ 1266:      for(i=0;i<9;i++){
+  00c8 ce0000       [2]     LDX   #0
+ 1267:        lcdData(0x80);  // X axis
+  00cb c680         [1]     LDAB  #128
+  00cd 076f         [4]     BSR   *+113 ;abs = 013e
+  00cf 8e0009       [2]     CPX   #9
+  00d2 2df7         [3/1]   BLT   *-7 ;abs = 00cb
+ 1268:      }
+ 1269:      lcdData(0xC0);    // X axis and hash
+  00d4 077b         [4]     BSR   *+125 ;abs = 0151
+  00d6 8e0004       [2]     CPX   #4
+  00d9 2ded         [3/1]   BLT   *-17 ;abs = 00c8
+ 1270:    }
+ 1271:    lcdData(0x80);      // X axis
+  00db c680         [1]     LDAB  #128
+  00dd 160000       [4]     JSR   lcdData
+ 1272:    lcdData(0x80);      // X axis
+  00e0 c680         [1]     LDAB  #128
+  00e2 160000       [4]     JSR   lcdData
+ 1273:    
+ 1274:    CS2 = 1;   			   
+  00e5 1c000002     [4]     BSET  _PTP,#2
+ 1275:    CS1 = 0;             // right enable
+  00e9 1d000001     [4]     BCLR  _PTP,#1
+ 1276:    for(page=0xB9;page<0xBD; page++){
+  00ed c6b9         [1]     LDAB  #185
+  00ef 6b83         [2]     STAB  3,SP
+ 1277:      lcdCmd(page);      // Page 2,3,4,5 
+  00f1 e683         [3]     LDAB  3,SP
+  00f3 0750         [4]     BSR   *+82 ;abs = 0145
+ 1278:      lcdCmd(0x40);      // byte number = 0
+ 1279:      for(i=0;i<58;i++){
+ 1280:        lcdData(0);
+  00f5 c7           [1]     CLRB  
+  00f6 0746         [4]     BSR   *+72 ;abs = 013e
+  00f8 8e003a       [2]     CPX   #58
+  00fb 2df8         [3/1]   BLT   *-6 ;abs = 00f5
+  00fd 6283         [3]     INC   3,SP
+  00ff e683         [3]     LDAB  3,SP
+  0101 c1bd         [1]     CMPB  #189
+  0103 25ec         [3/1]   BCS   *-18 ;abs = 00f1
+ 1281:      }
+ 1282:    }
+ 1283:    lcdCmd(0xBD);      // Page 6 
+  0105 c6bd         [1]     LDAB  #189
+  0107 073c         [4]     BSR   *+62 ;abs = 0145
+ 1284:    lcdCmd(0x40);      // byte number = 0
+ 1285:    for(i=0;i<8;i++){
+ 1286:      lcdData(0x80);    // X axis
+  0109 c680         [1]     LDAB  #128
+  010b 0731         [4]     BSR   *+51 ;abs = 013e
+  010d 8e0008       [2]     CPX   #8
+  0110 2df7         [3/1]   BLT   *-7 ;abs = 0109
+ 1287:    }
+ 1288:    lcdData(0xC0);    // X axis and hash
+  0112 c6c0         [1]     LDAB  #192
+  0114 160000       [4]     JSR   lcdData
+ 1289:    for(j=0; j<5; j++){
+  0117 c7           [1]     CLRB  
+  0118 87           [1]     CLRA  
+  0119 6c81         [2]     STD   1,SP
+ 1290:      for(i=0;i<9;i++){
+  011b ce0000       [2]     LDX   #0
+ 1291:        lcdData(0x80);  // X axis
+  011e c680         [1]     LDAB  #128
+  0120 071c         [4]     BSR   *+30 ;abs = 013e
+  0122 8e0009       [2]     CPX   #9
+  0125 2df7         [3/1]   BLT   *-7 ;abs = 011e
+ 1292:      }
+ 1293:      lcdData(0xC0);    // X axis and hash
+  0127 0728         [4]     BSR   *+42 ;abs = 0151
+  0129 8e0005       [2]     CPX   #5
+  012c 2ded         [3/1]   BLT   *-17 ;abs = 011b
+  012e 1b84         [2]     LEAS  4,SP
+  0130 3d           [5]     RTS   
+  0131 160000       [4]     JSR   lcdCmd
+  0134 c655         [1]     LDAB  #85
+  0136 160000       [4]     JSR   lcdCmd
+  0139 c6ff         [1]     LDAB  #255
+  013b 060000       [3]     JMP   lcdData
+  013e 34           [2]     PSHX  
+  013f 160000       [4]     JSR   lcdData
+  0142 30           [3]     PULX  
+  0143 08           [1]     INX   
+  0144 3d           [5]     RTS   
+  0145 160000       [4]     JSR   lcdCmd
+  0148 c640         [1]     LDAB  #64
+  014a 160000       [4]     JSR   lcdCmd
+  014d ce0000       [2]     LDX   #0
+  0150 3d           [5]     RTS   
+  0151 c6c0         [1]     LDAB  #192
+  0153 160000       [4]     JSR   lcdData
+  0156 ee83         [3]     LDX   3,SP
+  0158 08           [1]     INX   
+  0159 6e83         [2]     STX   3,SP
+  015b 3d           [5]     RTS   
+ 1294:    }
+ 1295:  }
+ 1296:  const unsigned char BitMask[8]={
+ 1297:    0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01
+ 1298:  };
+ 1299:  
+ 1300:  //-----------------------LCD_Plot-----------------------
+ 1301:  // Plot one data point
+ 1302:  // Input: data between min and max  
+ 1303:  // Output: none
+ 1304:  // errors: must call LCD_PlotClear first
+ 1305:  void LCD_Plot(short data){
+*** EVALUATION ***
+
+Function: LCD_Plot
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+  0000 6caa         [2]     STD   6,-SP
+  0002 36           [2]     PSHA  
+ 1306:  unsigned short pixel;
+ 1307:  unsigned short j;  // index into Yline
+ 1308:  unsigned char page;
+ 1309:    if(OpenFlag==0){
+  0003 fc0000       [3]     LDD   OpenFlag
+  0006 18270115     [4/3]   LBEQ  *+281 ;abs = 011f
+ 1310:      return;  // not open
+ 1311:    }
+ 1312:    if(data<MinY)data=MinY;
+  000a fc0000       [3]     LDD   MinY
+  000d ac81         [3]     CPD   1,SP
+  000f 2f02         [3/1]   BLE   *+4 ;abs = 0013
+  0011 6c81         [2]     STD   1,SP
+ 1313:  //  data = 40*(data-MinY);
+ 1314:  //  pixel = data/RangeY;  // 0 to 39, truncate down
+ 1315:    asm ldd  data
+  0013 ec81         [3]     LDD   1,SP
+ 1316:    asm subd MinY    // must be positive
+  0015 b30000       [3]     SUBD  MinY
+ 1317:    asm ldy  #40
+  0018 cd0028       [2]     LDY   #40
+ 1318:    asm emul         // 32-bit Y:D is 40*(data-MinY)
+  001b 13           [3]     EMUL  
+ 1319:    asm ldx  RangeY
+  001c fe0000       [3]     LDX   RangeY
+ 1320:    asm ediv         // 16-bit Y is 40*(data-MinY)/RangeY
+  001f 11           [11]    EDIV  
+ 1321:    asm sty  pixel   // should be 0 to 40
+  0020 6d83         [2]     STY   3,SP
+ 1322:    if(pixel > 39){
+  0022 ec83         [3]     LDD   3,SP
+  0024 8c0027       [2]     CPD   #39
+  0027 2305         [3/1]   BLS   *+7 ;abs = 002e
+ 1323:      pixel = 39;
+  0029 c627         [1]     LDAB  #39
+  002b 87           [1]     CLRA  
+  002c 6c83         [2]     STD   3,SP
+ 1324:    }
+ 1325:    j = 1+(pixel/8);   // 1,2,3,4,5
+  002e ec83         [3]     LDD   3,SP
+  0030 49           [1]     LSRD  
+  0031 49           [1]     LSRD  
+  0032 49           [1]     LSRD  
+  0033 c30001       [2]     ADDD  #1
+  0036 6c85         [2]     STD   5,SP
+ 1326:    Yline[j] |= BitMask[pixel&0x07];
+  0038 e684         [3]     LDAB  4,SP
+  003a c407         [1]     ANDB  #7
+  003c ce0000       [2]     LDX   #BitMask
+  003f a6e5         [3]     LDAA  B,X
+  0041 ee85         [3]     LDX   5,SP
+  0043 aae20000     [4]     ORAA  Yline,X
+  0047 6ae20000     [3]     STAA  Yline,X
+ 1327:    SubCount--;
+  004b fe0000       [3]     LDX   SubCount
+  004e 09           [1]     DEX   
+  004f 7e0000       [3]     STX   SubCount
+ 1328:    if(SubCount==0){
+  0052 182600c9     [4/3]   LBNE  *+205 ;abs = 011f
+ 1329:    // output 5 bytes to LCD
+ 1330:      CS1 = bLeftx;
+  0056 1e00000106   [5]     BRSET bLeftx,#1,*+11 ;abs = 0061
+  005b 1d000001     [4]     BCLR  _PTP,#1
+  005f 2004         [3]     BRA   *+6 ;abs = 0065
+  0061 1c000001     [4]     BSET  _PTP,#1
+ 1331:      CS2 = bRightx;      // select correct side
+  0065 1e00000106   [5]     BRSET bRightx,#1,*+11 ;abs = 0070
+  006a 1d000002     [4]     BCLR  _PTP,#2
+  006e 2004         [3]     BRA   *+6 ;abs = 0074
+  0070 1c000002     [4]     BSET  _PTP,#2
+ 1332:  	  page = 0xBD;        // start in row 6
+ 1333:  	  for(j=1; j<6; j++){
+  0074 cd0001       [2]     LDY   #1
+  0077 c6bd         [1]     LDAB  #189
+  0079 6b80         [2]     STAB  0,SP
+ 1334:  	    lcdCmd(page);     // row 6,5,4,3,2
+  007b e680         [3]     LDAB  0,SP
+  007d 35           [2]     PSHY  
+  007e 160000       [4]     JSR   lcdCmd
+ 1335:  	    lcdCmd(Xcolumn);  // column X parameter
+  0081 f60000       [3]     LDAB  Xcolumn
+  0084 160000       [4]     JSR   lcdCmd
+ 1336:  	    lcdData(Yline[j]);  // 5 bytes is 40 pixels 
+  0087 ee80         [3]     LDX   0,SP
+  0089 e6e20000     [4]     LDAB  Yline,X
+  008d 160000       [4]     JSR   lcdData
+ 1337:  	    page--;          // BE, BD, BC, BB, BA, B9
+  0090 e682         [3]     LDAB  2,SP
+  0092 53           [1]     DECB  
+  0093 30           [3]     PULX  
+  0094 08           [1]     INX   
+  0095 8e0006       [2]     CPX   #6
+  0098 b756         [1]     TFR   X,Y
+  009a 6b80         [2]     STAB  0,SP
+  009c 25dd         [3/1]   BCS   *-33 ;abs = 007b
+ 1338:  	  }
+ 1339:    
+ 1340:    // setup for next line
+ 1341:      Xcolumn++;
+  009e 720000       [4]     INC   Xcolumn
+ 1342:      Yline[5] = 0x00;    
+ 1343:      Yline[4] = 0x00;    
+  00a1 c7           [1]     CLRB  
+  00a2 87           [1]     CLRA  
+  00a3 7c0000       [3]     STD   Yline:4
+ 1344:      Yline[3] = 0x00;    
+ 1345:      Yline[2] = 0x00;    
+  00a6 7c0000       [3]     STD   Yline:2
+ 1346:      Yline[1] = 0x80;   // bottom bit is x axis 
+  00a9 c680         [1]     LDAB  #128
+  00ab 7b0000       [3]     STAB  Yline:1
+ 1347:      if(bLeftx){
+  00ae f60000       [3]     LDAB  bLeftx
+  00b1 2728         [3/1]   BEQ   *+42 ;abs = 00db
+ 1348:        if(Xcolumn == 0x80){
+  00b3 f60000       [3]     LDAB  Xcolumn
+  00b6 c180         [1]     CMPB  #128
+  00b8 260e         [3/1]   BNE   *+16 ;abs = 00c8
+ 1349:          Xcolumn = 0x40;	 // beginning of right side
+  00ba c640         [1]     LDAB  #64
+  00bc 7b0000       [3]     STAB  Xcolumn
+ 1350:          bLeftx = 0;
+  00bf 7a0000       [3]     STAA  bLeftx
+ 1351:          bRightx = 1;     // switch to right side
+  00c2 42           [1]     INCA  
+  00c3 7a0000       [3]     STAA  bRightx
+ 1352:        } else{
+  00c6 2050         [3]     BRA   *+82 ;abs = 0118
+ 1353:          switch(Xcolumn){
+  00c8 c17d         [1]     CMPB  #125
+  00ca 224c         [3/1]   BHI   *+78 ;abs = 0118
+  00cc 160000       [4]     JSR   _CASE_SEARCH_8_BYTE
+  00cf 7d           DC.B  125
+  00d0 49           DC.B  73
+  00d1 5f           DC.B  95
+  00d2 08           DC.B  8
+  00d3 69           DC.B  105
+  00d4 06           DC.B  6
+  00d5 73           DC.B  115
+  00d6 3e           DC.B  62
+  00d7 7d           DC.B  125
+  00d8 3c           DC.B  60
+  00d9 2038         [3]     BRA   *+58 ;abs = 0113
+ 1354:            case 0x5F:
+ 1355:            case 0x69:
+ 1356:            case 0x73:
+ 1357:            case 0x7D: Yline[1] = 0xC0; break;  // hash
+ 1358:          }
+ 1359:        }
+ 1360:      } else{              // on right
+ 1361:        if(Xcolumn == 0x7A){
+  00db f60000       [3]     LDAB  Xcolumn
+  00de c17a         [1]     CMPB  #122
+  00e0 261c         [3/1]   BNE   *+30 ;abs = 00fe
+ 1362:          Xcolumn = 0x56;	 // beginning of left side
+  00e2 c656         [1]     LDAB  #86
+  00e4 7b0000       [3]     STAB  Xcolumn
+ 1363:          bLeftx = 1;
+  00e7 42           [1]     INCA  
+  00e8 7a0000       [3]     STAA  bLeftx
+ 1364:          bRightx = 0;     // switch to left side
+  00eb 790000       [3]     CLR   bRightx
+ 1365:          Yline[5] = 0x01;    // top hash
+ 1366:          Yline[4] = 0x02;    // 75% hash
+  00ee ce0201       [2]     LDX   #513
+  00f1 7e0000       [3]     STX   Yline:4
+ 1367:          Yline[3] = 0x10;    // 50% hash
+ 1368:          Yline[2] = 0x40;    // 25% hash
+  00f4 cd4010       [2]     LDY   #16400
+  00f7 7d0000       [3]     STY   Yline:2
+ 1369:          Yline[1] = 0x80;    // X axis
+  00fa c680         [1]     LDAB  #128
+ 1370:        } else{
+  00fc 2017         [3]     BRA   *+25 ;abs = 0115
+ 1371:          switch(Xcolumn){
+  00fe c177         [1]     CMPB  #119
+  0100 2216         [3/1]   BHI   *+24 ;abs = 0118
+  0102 160000       [4]     JSR   _CASE_SEARCH_8_BYTE
+  0105 77           DC.B  119
+  0106 13           DC.B  19
+  0107 47           DC.B  71
+  0108 0c           DC.B  12
+  0109 51           DC.B  81
+  010a 0a           DC.B  10
+  010b 5b           DC.B  91
+  010c 08           DC.B  8
+  010d 65           DC.B  101
+  010e 06           DC.B  6
+  010f 6f           DC.B  111
+  0110 04           DC.B  4
+  0111 77           DC.B  119
+  0112 02           DC.B  2
+ 1372:            case 0x47:
+ 1373:            case 0x51:
+ 1374:            case 0x5B:
+ 1375:            case 0x65:
+ 1376:            case 0x6F:
+ 1377:            case 0x77: Yline[1] = 0xC0; break;  // hash
+  0113 c6c0         [1]     LDAB  #192
+  0115 7b0000       [3]     STAB  Yline:1
+ 1378:          }
+ 1379:        }
+ 1380:      }
+ 1381:      SubCount = PlotPixel;
+  0118 f60000       [3]     LDAB  PlotPixel
+  011b 87           [1]     CLRA  
+  011c 7c0000       [3]     STD   SubCount
+ 1382:    }
+ 1383:  }
+  011f 1b87         [2]     LEAS  7,SP
+  0121 3d           [5]     RTS   
+ 1384:  
+ 1385:  
+ 1386:  void LCD_Test(void){
+*** EVALUATION ***
+
+Function: LCD_Test
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\LCDG.c.o -WmsgSd1106
+
+ 1387:  #if TEST
+ 1388:    LCD_Clear(0xFF);
+ 1389:  // *********pause here*************
+ 1390:  
+ 1391:    LCD_Clear(0);
+ 1392:    LCD_GoTo(1,1);  LCD_OutChar('1');
+ 1393:    LCD_GoTo(2,2);  LCD_OutChar('2');
+ 1394:    LCD_GoTo(3,3);  LCD_OutChar('3');
+ 1395:    LCD_GoTo(4,4);  LCD_OutChar('4');
+ 1396:    LCD_GoTo(5,5);  LCD_OutChar('5');
+ 1397:    LCD_GoTo(6,6);  LCD_OutChar('6');
+ 1398:    LCD_GoTo(7,7);  LCD_OutChar('7');
+ 1399:    LCD_GoTo(8,8);  LCD_OutChar('8');
+ 1400:    LCD_GoTo(1,9);  LCD_OutChar('9');
+ 1401:    LCD_GoTo(2,10); LCD_OutChar('0');
+ 1402:    LCD_GoTo(3,11); LCD_OutChar('1');
+ 1403:    LCD_GoTo(4,12); LCD_OutChar('2');
+ 1404:    LCD_GoTo(5,13); LCD_OutChar('3');
+ 1405:    LCD_GoTo(6,14); LCD_OutChar('4');
+ 1406:    LCD_GoTo(7,15); LCD_OutChar('5');
+ 1407:    LCD_GoTo(8,16); LCD_OutChar('6');
+ 1408:    LCD_GoTo(1,17); LCD_OutChar('7');
+ 1409:    LCD_GoTo(2,18); LCD_OutChar('8');
+ 1410:    LCD_GoTo(3,19); LCD_OutChar('9');
+ 1411:    LCD_GoTo(4,20); LCD_OutChar('0');
+ 1412:    LCD_GoTo(5,21); LCD_OutChar('1');
+ 1413:  // *********pause here*************
+ 1414:  
+ 1415:    LCD_Clear(0);
+ 1416:  // *********pause here*************
+ 1417:  
+ 1418:    LCD_VTest(0xFF,0x00); // BUG STILL HERE
+ 1419:  // *********pause here*************
+ 1420:  
+ 1421:    LCD_VTest(0x00,0xFF);
+ 1422:  // *********pause here*************
+ 1423:  
+ 1424:    LCD_VTest(0xAA,0x08);
+ 1425:  // *********pause here*************
+ 1426:  
+ 1427:    LCD_VTest(0x01,0x02);
+ 1428:  // *********pause here*************
+ 1429:  
+ 1430:    LCD_GoTo(8,1);    LCD_OutString("098765432109876543210"); 
+ 1431:    LCD_GoTo(7,1);    LCD_OutString("qwertyuiopasdfghjklzx"); 
+ 1432:    LCD_GoTo(6,1);    LCD_OutString("012345678901234567890"); 
+ 1433:    LCD_GoTo(5,1);    LCD_OutString("abcdefghijklmnopqrstu"); 
+ 1434:    LCD_GoTo(4,1);    LCD_OutString("098765432109876543210"); 
+ 1435:    LCD_GoTo(3,1);    LCD_OutString("qwertyuiopasdfghjklzx"); 
+ 1436:    LCD_GoTo(2,1);    LCD_OutString("012345678901234567890"); 
+ 1437:    LCD_GoTo(1,1);    LCD_OutString("abcdefghijklmnopqrstu");
+ 1438:  // *********pause here*************
+ 1439:  
+ 1440:    LCD_GoTo(4,1);    LCD_OutString("0 9 8 7 6 5 4 3 2 1 0"); 
+ 1441:    LCD_GoTo(3,1);    LCD_OutString("q w e r t y u i o p a"); 
+ 1442:    LCD_GoTo(2,1);    LCD_OutString(" 0 1 2 3 4 5 6 7 8 9 "); 
+ 1443:    LCD_GoTo(1,1);    LCD_OutString(" a  b  c  d  e  f  g "); 
+ 1444:    LCD_GoTo(8,1);    LCD_OutString("0 9 8 7 6 5 4 3 2 1 0"); 
+ 1445:    LCD_GoTo(7,1);    LCD_OutString("q w e r t y u i o p a"); 
+ 1446:    LCD_GoTo(6,1);    LCD_OutString(" 0 1 2 3 4 5 6 7 8 9 "); 
+ 1447:    LCD_GoTo(5,1);    LCD_OutString(" a  b  c  d  e  f  g ");
+ 1448:  // *********pause here*************
+ 1449:    
+ 1450:    LCD_DrawImageTest();
+ 1451:  #endif
+ 1452:  }
+  0000 3d           [5]     RTS   
+ 1453:  

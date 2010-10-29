@@ -1,0 +1,211 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.38 Build 9056, Feb 26 2009
+
+    1:  /* ************************ Main.c *****************************
+    2:   * AGM1264 example
+    3:   * ************************************************************ */
+    4:   
+    5:  // 9S12DP512
+    6:  // Jonathan W. Valvano 11/20/09 
+    7:  
+    8:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+    9:  //    You may use, edit, run or distribute this file 
+   10:  //    as long as the above copyright notice remains 
+   11:  
+   12:  // Input on PAD4, from slide pot connected to to +5 and ground
+   13:  // heartbeats, PP7 every 3000, PP5 at sampling rate
+   14:  
+   15:  // AGM1264 graphics interface
+   16:  // gnd    =  1- AGM1264F ground
+   17:  // +5V    =  2- AGM1264F Vcc (with 0.1uF cap to ground)
+   18:  // pot    =  3- AGM1264F Vo (center pin of 10k pot)
+   19:  // PP2    =  4- AGM1264F D/I (0 for command, 1 for data)
+   20:  // gnd    =  5- AGM1264F R/W (blind cycle synchronization)
+   21:  // PP3    =  6- AGM1264F E   (1 to latch in data/command)
+   22:  // PH0    =  7- AGM1264F DB0
+   23:  // PH1    =  8- AGM1264F DB1
+   24:  // PH2    =  9- AGM1264F DB2
+   25:  // PH3    = 10- AGM1264F DB3
+   26:  // PH4    = 11- AGM1264F DB4
+   27:  // PH5    = 12- AGM1264F DB5
+   28:  // PH6    = 13- AGM1264F DB6
+   29:  // PH7    = 14- AGM1264F DB7
+   30:  // PP0    = 15- AGM1264F CS1 (controls left half of LCD)
+   31:  // PP1    = 16- AGM1264F CS2 (controls right half of LCD)
+   32:  // +5V    = 17- AGM1264F RES (reset)
+   33:  // pot    = 18- ADM1264F Vee (-10V)
+   34:  // 10k pot from pin 18 to ground, with center to pin 3
+   35:  // references   http://www.azdisplays.com/prod/g1264f.php
+   36:  // sample code  http://www.azdisplays.com/PDF/agm1264f_code.pdf
+   37:  // data sheet   http://www.azdisplays.com/PDF/agm1264f.pdf
+   38:  
+   39:  
+   40:  // TCNT will become 1.5 MHz, calling LCD_Init, which calls Timer_Init
+   41:  
+   42:  #include <hidef.h>      /* common defines and macros */
+   43:  #include <mc9s12dp512.h>     /* derivative information */
+   44:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+   45:  
+   46:  #include "PLL.h"
+   47:  #include "adc.h"
+   48:  #include "LCDG.h"
+   49:  #include "Timer.h"
+   50:  
+   51:  unsigned short ADCsample;	// ADC sample, 0 to 1023
+   52:  unsigned short Voltage;   // 0.01 volts, 0 to 500
+   53:  unsigned short ADCcount;  // 0 to 2999
+   54:  unsigned short StartTime; // in seconds
+   55:  void main(void) {  
+*** EVALUATION ***
+
+Function: main
+Source  : D:\EE345L\9S12DP512\AGM1264_DP512\Sources\main.c
+Options : -Cc -CPUHCS12 -D__NO_FLOAT__ -D_HCS12_SERIALMON -Env"GENPATH=D:\EE345L\9S12DP512\AGM1264_DP512;D:\EE345L\9S12DP512\AGM1264_DP512\bin;D:\EE345L\9S12DP512\AGM1264_DP512\prm;D:\EE345L\9S12DP512\AGM1264_DP512\cmd;D:\EE345L\9S12DP512\AGM1264_DP512\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -EnvOBJPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -EnvTEXTPATH=D:\EE345L\9S12DP512\AGM1264_DP512\bin -Lasm=%n.lst -Ms -ObjN=D:\EE345L\9S12DP512\AGM1264_DP512\AGM1264_DP512_Data\HCS12_Serial_Monitor\ObjectCode\main.c.o -WmsgSd1106
+
+   56:    PLL_Init();
+  0000 160000       [4]     JSR   PLL_Init
+   57:    LCD_Init();   // TCNT at 1.5 MHz
+  0003 160000       [4]     JSR   LCD_Init
+   58:    ADC_Init();   // Activate ADC 
+  0006 160000       [4]     JSR   ADC_Init
+   59:    DDRP |= 0xA0; // heartbeats, PP7 every 3000, PP5 at sampling rate
+  0009 1c0000a0     [4]     BSET  _DDRP,#160
+   60:    EnableInterrupts;
+  000d 10ef         [1]     CLI   
+   61:  
+   62:    LCD_Test();  // to run this, set TEST=1 inside LCDG.c, single step through
+  000f 160000       [4]     JSR   LCD_Test
+   63:    LCD_Clear(0);
+  0012 c7           [1]     CLRB  
+  0013 160000       [4]     JSR   LCD_Clear
+   64:  
+   65:    LCD_OutString("Jonathan Valvano"); 
+  0016 cc0000       [2]     LDD   #"Jonathan Valvano"
+  0019 160000       [4]     JSR   LCD_OutString
+   66:    LCD_PlotYaxis(0, 25, 50, 1, "Voltage");
+  001c c7           [1]     CLRB  
+  001d 87           [1]     CLRA  
+  001e 3b           [2]     PSHD  
+  001f c619         [1]     LDAB  #25
+  0021 3b           [2]     PSHD  
+  0022 58           [1]     LSLB  
+  0023 3b           [2]     PSHD  
+  0024 c601         [1]     LDAB  #1
+  0026 3b           [2]     PSHD  
+  0027 cc0000       [2]     LDD   #"Voltage"
+  002a 160000       [4]     JSR   LCD_PlotYaxis
+   67:    LCD_PlotClear(0, 500, 30); //30*100=3000 points/sweep
+  002d c7           [1]     CLRB  
+  002e 87           [1]     CLRA  
+  002f 6ca5         [2]     STD   6,+SP
+  0031 ce01f4       [2]     LDX   #500
+  0034 34           [2]     PSHX  
+  0035 c61e         [1]     LDAB  #30
+  0037 160000       [4]     JSR   LCD_PlotClear
+   68:    StartTime = 0; ADCcount = 0;
+  003a c7           [1]     CLRB  
+  003b 87           [1]     CLRA  
+  003c 7c0000       [3]     STD   StartTime
+  003f 7c0000       [3]     STD   ADCcount
+   69:    LCD_PlotXaxis(StartTime, StartTime+3, 0, "Time (sec)");
+  0042 6ca1         [2]     STD   2,+SP
+  0044 c603         [1]     LDAB  #3
+  0046 3b           [2]     PSHD  
+  0047 c7           [1]     CLRB  
+  0048 3b           [2]     PSHD  
+  0049 cc0000       [2]     LDD   #"Time (sec)"
+  004c 160000       [4]     JSR   LCD_PlotXaxis
+   70:    LCD_GoTo(8,1);
+  004f c608         [1]     LDAB  #8
+  0051 87           [1]     CLRA  
+  0052 6ca3         [2]     STD   4,+SP
+  0054 c601         [1]     LDAB  #1
+  0056 160000       [4]     JSR   LCD_GoTo
+  0059 3a           [3]     PULD  
+   71:    LCD_OutFix2(0);
+  005a c7           [1]     CLRB  
+  005b 87           [1]     CLRA  
+  005c 160000       [4]     JSR   LCD_OutFix2
+   72:    LCD_OutString(" volts"); 
+  005f cc0000       [2]     LDD   #" volts"
+  0062 160000       [4]     JSR   LCD_OutString
+   73:    for(;;) {
+  0065 2077         [3]     BRA   *+121 ;abs = 00de
+   74:      Timer_Wait1ms(1);          // very inaccurate time, should use interrupts
+  0067 c601         [1]     LDAB  #1
+  0069 87           [1]     CLRA  
+  006a 160000       [4]     JSR   Timer_Wait1ms
+   75:      ADCsample = ADC_In(0x84);	 // right justified channel 4
+  006d c684         [1]     LDAB  #132
+  006f 87           [1]     CLRA  
+  0070 160000       [4]     JSR   ADC_In
+  0073 7c0000       [3]     STD   ADCsample
+   76:      PTP ^= 0x20;               // heartbeat
+  0076 f60000       [3]     LDAB  _PTP
+  0079 c820         [1]     EORB  #32
+  007b 7b0000       [3]     STAB  _PTP
+   77:    asm ldd  ADCsample
+  007e fc0000       [3]     LDD   ADCsample
+   78:    asm ldy  #500
+  0081 cd01f4       [2]     LDY   #500
+   79:    asm emul        // 32-bit Y:D is 500*ADCsample
+  0084 13           [3]     EMUL  
+   80:    asm ldx  #1023
+  0085 ce03ff       [2]     LDX   #1023
+   81:    asm ediv        // 16-bit Y is (500*ADCsample)/1023
+  0088 11           [11]    EDIV  
+   82:    asm sty  Voltage
+  0089 7d0000       [3]     STY   Voltage
+   83:      LCD_Plot(Voltage);
+  008c fc0000       [3]     LDD   Voltage
+  008f 160000       [4]     JSR   LCD_Plot
+   84:      ADCcount++;             // 0 to 2999
+  0092 fe0000       [3]     LDX   ADCcount
+  0095 08           [1]     INX   
+  0096 7e0000       [3]     STX   ADCcount
+   85:      if(ADCcount == 3000){   // end of sweep??
+  0099 8e0bb8       [2]     CPX   #3000
+  009c 2640         [3/1]   BNE   *+66 ;abs = 00de
+   86:        PTP ^= 0x80;          // heartbeat after 3000 samples
+  009e f60000       [3]     LDAB  _PTP
+  00a1 c880         [1]     EORB  #128
+  00a3 7b0000       [3]     STAB  _PTP
+   87:        StartTime = StartTime+3;
+  00a6 fe0000       [3]     LDX   StartTime
+  00a9 1a03         [2]     LEAX  3,X
+  00ab 7e0000       [3]     STX   StartTime
+   88:        if(StartTime>900) StartTime=0;
+  00ae 8e0384       [2]     CPX   #900
+  00b1 2305         [3/1]   BLS   *+7 ;abs = 00b8
+  00b3 c7           [1]     CLRB  
+  00b4 87           [1]     CLRA  
+  00b5 7c0000       [3]     STD   StartTime
+   89:        LCD_PlotXaxis(StartTime, StartTime+3, 0, "Time (sec)");
+  00b8 fe0000       [3]     LDX   StartTime
+  00bb 34           [2]     PSHX  
+  00bc 1a03         [2]     LEAX  3,X
+  00be 34           [2]     PSHX  
+  00bf c7           [1]     CLRB  
+  00c0 87           [1]     CLRA  
+  00c1 3b           [2]     PSHD  
+  00c2 cc0000       [2]     LDD   #"Time (sec)"
+  00c5 160000       [4]     JSR   LCD_PlotXaxis
+   90:        LCD_GoTo(8,1);
+  00c8 c608         [1]     LDAB  #8
+  00ca 87           [1]     CLRA  
+  00cb 6ca3         [2]     STD   4,+SP
+  00cd c601         [1]     LDAB  #1
+  00cf 160000       [4]     JSR   LCD_GoTo
+  00d2 3a           [3]     PULD  
+   91:        LCD_OutFix2(Voltage);
+  00d3 fc0000       [3]     LDD   Voltage
+  00d6 160000       [4]     JSR   LCD_OutFix2
+   92:        ADCcount = 0;
+  00d9 c7           [1]     CLRB  
+  00da 87           [1]     CLRA  
+  00db 7c0000       [3]     STD   ADCcount
+   93:      }
+   94:    } 
+  00de 2087         [3]     BRA   *-119 ;abs = 0067
+   95:  }
+   96:  
