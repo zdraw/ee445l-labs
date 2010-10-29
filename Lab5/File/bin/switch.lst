@@ -1,0 +1,36 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include "switch.h"
+    2:   
+    3:  //---------------------Switch_Init---------------------
+    4:  // sets DDRP for switches
+    5:  // Input: none
+    6:  // Output: none  
+    7:  void Switch_Init(void) {
+*** EVALUATION ***
+
+Function: Switch_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+    8:    DDRP &= ~0x07; 
+  0000 1d000007     [4]     BCLR  _DDRP,#7
+    9:  }
+  0004 3d           [5]     RTS   
+   10:    
+   11:  //---------------------Switch_Data---------------------
+   12:  // Input: none
+   13:  // Output: Switch data  
+   14:  unsigned char Switch_Data(void) {
+*** EVALUATION ***
+
+Function: Switch_Data
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\prm;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\Zelda\Lab5_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   15:    return (PTP&0x07);
+  0000 f60000       [3]     LDAB  _PTP
+  0003 c407         [1]     ANDB  #7
+   16:  }
+  0005 3d           [5]     RTS   

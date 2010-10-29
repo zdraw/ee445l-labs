@@ -1,0 +1,135 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include "music.h"
+    2:  #include "DAC.h"
+    3:  #include "switch.h"
+    4:                             
+    5:  unsigned char Buf_Read(unsigned char page, unsigned long addr) {
+*** EVALUATION ***
+
+Function: Buf_Read
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File;C:\Users\Raz\Documents\EE 445L\Lab5\File\bin;C:\Users\Raz\Documents\EE 445L\Lab5\File\prm;C:\Users\Raz\Documents\EE 445L\Lab5\File\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\File\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  0001 34           [2]     PSHX  
+    6:    unsigned char *pt;
+    7:    PPAGE = page;
+  0002 e686         [3]     LDAB  6,SP
+  0004 5b00         [2]     STAB  _PPAGE
+    8:    pt = (unsigned char *) (addr);
+  0006 ee82         [3]     LDX   2,SP
+    9:    return (*pt);  
+  0008 e600         [3]     LDAB  0,X
+   10:  }
+  000a 1b84         [2]     LEAS  4,SP
+  000c 3d           [5]     RTS   
+   11:  
+   12:  unsigned static long i;
+   13:  
+   14:  //---------------------Music_InitOC0---------------------
+   15:  // arm output compare 0 for melody
+   16:  // also enables timer to 43 ns period
+   17:  // Input: none
+   18:  // Output: none               
+   19:  void Music_InitOC0(void){
+*** EVALUATION ***
+
+Function: Music_InitOC0
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File;C:\Users\Raz\Documents\EE 445L\Lab5\File\bin;C:\Users\Raz\Documents\EE 445L\Lab5\File\prm;C:\Users\Raz\Documents\EE 445L\Lab5\File\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\File\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+   20:    TSCR1 = 0x80;   // Enable TCNT, 24MHz boot mode, 8MHz in run mode
+  0000 c680         [1]     LDAB  #128
+  0002 5b00         [2]     STAB  _TSCR1
+   21:    TSCR2 = 0x00;   // divide by 1 TCNT prescale, TOI disarm, sets period to 42.67 ns
+  0004 790000       [3]     CLR   _TSCR2
+   22:    PACTL = 0;      // timer prescale used for TCNT
+  0007 790000       [3]     CLR   _PACTL
+   23:    i = 0;
+  000a c7           [1]     CLRB  
+  000b 87           [1]     CLRA  
+  000c 7c0000       [3]     STD   i:2
+  000f 7c0000       [3]     STD   i
+   24:    DDRP |= 0x80;
+  0012 1c000080     [4]     BSET  _DDRP,#128
+   25:    TIOS |= 0x01;   // activate TC0 as output compare
+  0016 4c0001       [4]     BSET  _TIOS,#1
+   26:    TIE  |= 0x01;   // arm OC0
+  0019 4c0001       [4]     BSET  _TIE,#1
+   27:    TC0   = TCNT+50;// first interrupt right away
+  001c de00         [3]     LDX   _TCNT
+  001e 1ae032       [2]     LEAX  50,X
+  0021 5e00         [2]     STX   _TC0
+   28:  }          
+  0023 3d           [5]     RTS   
+   29:  
+   30:  // OC handler for melody
+   31:  interrupt 8 void TC0Handler() {
+*** EVALUATION ***
+
+Function: TC0Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File;C:\Users\Raz\Documents\EE 445L\Lab5\File\bin;C:\Users\Raz\Documents\EE 445L\Lab5\File\prm;C:\Users\Raz\Documents\EE 445L\Lab5\File\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\File\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+   32:    TFLG1 = 0x01;
+  0000 c601         [1]     LDAB  #1
+  0002 5b00         [2]     STAB  _TFLG1
+   33:    
+   34:    DAC_Out(Buf_Read(0x20 + i/16000, 0x8000 + i%16000));  
+  0004 cc3e80       [2]     LDD   #16000
+  0007 3b           [2]     PSHD  
+  0008 ce0000       [2]     LDX   #0
+  000b 34           [2]     PSHX  
+  000c fc0000       [3]     LDD   i:2
+  000f fe0000       [3]     LDX   i
+  0012 160000       [4]     JSR   _LDIVU
+  0015 cb20         [1]     ADDB  #32
+  0017 37           [2]     PSHB  
+  0018 cc3e80       [2]     LDD   #16000
+  001b 3b           [2]     PSHD  
+  001c ce0000       [2]     LDX   #0
+  001f 34           [2]     PSHX  
+  0020 fc0000       [3]     LDD   i:2
+  0023 fe0000       [3]     LDX   i
+  0026 160000       [4]     JSR   _LMODU
+  0029 8a80         [1]     ORAA  #128
+  002b ce0000       [2]     LDX   #0
+  002e 0700         [4]     BSR   Buf_Read
+  0030 32           [3]     PULA  
+  0031 160000       [4]     JSR   DAC_Out
+   35:    i++;
+  0034 fc0000       [3]     LDD   i:2
+  0037 fe0000       [3]     LDX   i
+  003a 160000       [4]     JSR   _LINC
+  003d 7c0000       [3]     STD   i:2
+  0040 7e0000       [3]     STX   i
+   36:    
+   37:    TC0 += FREQ5;
+  0043 dc00         [3]     LDD   _TC0
+  0045 c31102       [2]     ADDD  #4354
+  0048 5c00         [2]     STD   _TC0
+   38:  }
+  004a 0b           [8]     RTI   
+   39:  
+   40:  //---------------------Music_Restart---------------------
+   41:  // Restarts music
+   42:  // Input: none
+   43:  // Output: none               
+   44:  void Music_Restart(void) {
+*** EVALUATION ***
+
+Function: Music_Restart
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources\music.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File;C:\Users\Raz\Documents\EE 445L\Lab5\File\bin;C:\Users\Raz\Documents\EE 445L\Lab5\File\prm;C:\Users\Raz\Documents\EE 445L\Lab5\File\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\File\Lab5_Data\Standard\ObjectCode\music.c.o" -WmsgSd1106
+
+   45:    i = 0;
+  0000 c7           [1]     CLRB  
+  0001 87           [1]     CLRA  
+  0002 7c0000       [3]     STD   i:2
+  0005 7c0000       [3]     STD   i
+   46:  }
+  0008 3d           [5]     RTS   
+   47:  
+   48:  

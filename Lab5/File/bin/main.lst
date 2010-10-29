@@ -1,0 +1,63 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include <hidef.h>      /* common defines and macros */
+    2:  #include <mc9s12dp512.h>     /* derivative information */
+    3:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+    4:                
+    5:  #include "PLL.h"
+    6:  #include "DAC.h"
+    7:  #include "music.h"
+    8:  #include "switch.h"
+    9:  
+   10:  
+   11:  void main(void) {
+*** EVALUATION ***
+
+Function: main
+Source  : C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File;C:\Users\Raz\Documents\EE 445L\Lab5\File\bin;C:\Users\Raz\Documents\EE 445L\Lab5\File\prm;C:\Users\Raz\Documents\EE 445L\Lab5\File\cmd;C:\Users\Raz\Documents\EE 445L\Lab5\File\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab5\File\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab5\File\Lab5_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+
+   12:    // Initialize needed modules
+   13:    PLL_Init(); 
+  0000 160000       [4]     JSR   PLL_Init
+   14:    DAC_Init();
+  0003 160000       [4]     JSR   DAC_Init
+   15:    Switch_Init();
+  0006 160000       [4]     JSR   Switch_Init
+   16:    Music_InitOC0();
+  0009 160000       [4]     JSR   Music_InitOC0
+   17:    
+   18:    // Start off paused
+   19:    asm cli
+  000c 10ef         [1]     CLI   
+   20:        
+   21:    for(;;) {
+  000e 201c         [3]     BRA   *+30 ;abs = 002c
+   22:      // Play button
+   23:      if(Switch_Data()&0x08) {
+  0010 160000       [4]     JSR   Switch_Data
+  0013 c408         [1]     ANDB  #8
+  0015 2702         [3/1]   BEQ   *+4 ;abs = 0019
+   24:        asm cli  
+  0017 10ef         [1]     CLI   
+   25:      }
+   26:      // Pause button
+   27:      if(Switch_Data()&0x04) {
+  0019 160000       [4]     JSR   Switch_Data
+  001c c404         [1]     ANDB  #4
+  001e 2702         [3/1]   BEQ   *+4 ;abs = 0022
+   28:        asm sei 
+  0020 1410         [1]     SEI   
+   29:      }
+   30:      // Restart button
+   31:      if(Switch_Data()&0x02) {
+  0022 160000       [4]     JSR   Switch_Data
+  0025 c402         [1]     ANDB  #2
+  0027 27e7         [3/1]   BEQ   *-23 ;abs = 0010
+   32:        Music_Restart();
+  0029 160000       [4]     JSR   Music_Restart
+   33:      }
+   34:    }
+  002c 20e2         [3]     BRA   *-28 ;abs = 0010
+   35:  }
