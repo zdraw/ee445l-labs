@@ -1,0 +1,15 @@
+Net Completion Report
+---------------------
+
+Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108 (PCB - Net Completion Report).txt
+Report Written : Friday, October 29, 2010
+Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.pcb
+Design Title   : 
+Created        : 9/11/2009 4:58:24 PM
+Last Saved     : 10/28/2010 3:28:48 AM
+Editing Time   : 2720 min
+Units          : mil (precision 0)
+
+
+No breaks found, all nets are fully routed.
+End Of Report.
