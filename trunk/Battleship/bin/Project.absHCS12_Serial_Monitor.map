@@ -20,6 +20,7 @@ adc.c.o                                 Model: SMALL,         Lang: ANSI-C
 LCDG.c.o                                Model: SMALL,         Lang: ANSI-C
 PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 Timer.C.o                               Model: SMALL,         Lang: ANSI-C
+game.c.o                                Model: SMALL,         Lang: ANSI-C
 
 *********************************************************************************************
 STARTUP SECTION
@@ -28,8 +29,8 @@ Entry point: 0xC029 (_Startup)
 _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
-  _Range   pZeroOut       0x900     696
-  _Copy    *toCopyDownBeg 0xC611
+  _Range   pZeroOut       0x900     1938
+  _Copy    *toCopyDownBeg 0xC759
 } _startupData;
 
 *********************************************************************************************
@@ -38,8 +39,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.text                           1465     R     0xC045     0xC5FD   ROM_C000
-.copy                              2     R     0xC611     0xC612   ROM_C000
+.text                           1793     R     0xC045     0xC745   ROM_C000
+.copy                              2     R     0xC759     0xC75A   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -566,14 +567,13 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_23e                   2   N/I      0x23E      0x23F   .absSeg522
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg523
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
-.bss                             490   R/W      0x900      0xAE9   RAM
-.common                          206   R/W      0xAEA      0xBB7   RAM
-RUNTIME                           19     R     0xC5FE     0xC610   ROM_C000
+.bss                            1938   R/W      0x900     0x1091   RAM
+RUNTIME                           19     R     0xC746     0xC758   ROM_C000
 .vectSeg525_vect                   2     R     0xFFFE     0xFFFF   .vectSeg525
 
 Summary of section sizes per section type:
-READ_ONLY (R):         615 (dec:     1557)
-READ_WRITE (R/W):      3B8 (dec:      952)
+READ_ONLY (R):         75D (dec:     1885)
+READ_WRITE (R/W):      892 (dec:     2194)
 NO_INIT (N/I):         24E (dec:      590)
 
 *********************************************************************************************
@@ -1128,8 +1128,8 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _BSHL                                     C5FE       8       8       1   RUNTIME     
-     _CASE_CHECKED                             C606       B      11       1   RUNTIME     
+     _BSHL                                     C746       8       8       1   RUNTIME     
+     _CASE_CHECKED                             C74E       B      11       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- adc.c.o --
 - PROCEDURES:
@@ -1139,31 +1139,36 @@ MODULE:                 -- LCDG.c.o --
 - PROCEDURES:
      lcdCmd                                    C069      2A      42       8   .text       
      lcdData                                   C093      17      23       2   .text       
-     LCD_Init                                  C0AA      50      80       1   .text       
-     LCD_Clear                                 C0FA      4B      75       1   .text       
-     OutByte                                   C145      12      18       1   .text       
-     setGridPixel                              C157      3A      58      33   .text       
-     LCD_DrawGrid                              C191     42A    1066      57   .text       
+     LCD_Init                                  C0AA      39      57       1   .text       
+     LCD_Clear                                 C0E3      4B      75       1   .text       
+     OutByte                                   C12E      12      18       1   .text       
+     setGridPixel                              C140      3A      58      34   .text       
+     LCD_DrawGrid                              C17A     3FC    1020      60   .text       
 - VARIABLES:
      OpenFlag                                   900       2       2       2   .bss        
      grid                                       902     1E8     488      13   .bss        
-     Column1                                    AEA       1       1       1   .common     
-     bLeft1                                     AEB       1       1       1   .common     
-     bRight1                                    AEC       1       1       1   .common     
-     Page                                       AED       1       1       1   .common     
-     bDown                                      AEE       1       1       1   .common     
-     TinyDown                                   AEF       1       1       1   .common     
-     field                                      AF0      C8     200      11   .common     
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  C5BB      15      21       1   .text       
+     PLL_Init                                  C576      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- Timer.C.o --
 - PROCEDURES:
-     Timer_Init                                C5D0       D      13       1   .text       
-     Timer_Wait                                C5DD      11      17       6   .text       
-     Timer_Wait1ms                             C5EE      10      16       1   .text       
+     Timer_Init                                C58B       D      13       1   .text       
+     Timer_Wait                                C598      11      17       6   .text       
+     Timer_Wait1ms                             C5A9      10      16       1   .text       
 - VARIABLES:
+MODULE:                 -- game.c.o --
+- PROCEDURES:
+     Game_UpdateShips                          C5B9     18D     397      12   .text       
+- VARIABLES:
+     screen                                     AEA       2       2       1   .bss        
+     ships                                      AEC      28      40       4   .bss        
+     numShips                                   B14       2       2       1   .bss        
+     enemyAttacks                               B16     258     600       3   .bss        
+     numEnemyAttacks                            D6E       2       2       1   .bss        
+     playerAttacks                              D70     258     600       3   .bss        
+     numPlayerAttacks                           FC8       2       2       1   .bss        
+     field.1                                    FCA      C8     200       5   .bss        
 
 *********************************************************************************************
 MODULE STATISTIC
@@ -1174,9 +1179,10 @@ MODULE STATISTIC
   Start12.c.o                                  0     59      0
   rtshc12.c.o (ansisi.lib)                     0     19      0
   adc.c.o                                      0     12      0
-  LCDG.c.o                                   696   1362      0
+  LCDG.c.o                                   490   1293      0
   PLL.c.o                                      0     21      0
   Timer.C.o                                    0     46      0
+  game.c.o                                  1448    397      0
   other                                      256     12      2
 
 *********************************************************************************************
@@ -1184,9 +1190,10 @@ SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
   main ADC_Init lcdCmd lcdData LCD_Init LCD_Clear OutByte setGridPixel 
-  LCD_DrawGrid PLL_Init Timer_Init Timer_Wait Timer_Wait1ms 
+  LCD_DrawGrid PLL_Init Timer_Init Timer_Wait Timer_Wait1ms Game_UpdateShips 
 SECTION: ".bss"
-  OpenFlag grid 
+  OpenFlag grid screen ships numShips enemyAttacks numEnemyAttacks 
+  playerAttacks numPlayerAttacks field.1 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".abs_section_8"
@@ -2239,8 +2246,6 @@ SECTION: ".abs_section_2ae"
   _CAN4RXTSR 
 SECTION: ".abs_section_2be"
   _CAN4TXTSR 
-SECTION: ".common"
-  Column1 bLeft1 bRight1 Page bDown TinyDown field 
 SECTION: "RUNTIME"
   _BSHL _CASE_CHECKED 
 
@@ -2775,30 +2780,32 @@ OBJECT LIST SORTED BY ADDRESS
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
      OpenFlag                                   900       2       2       2   .bss        
      grid                                       902     1E8     488      13   .bss        
-     Column1                                    AEA       1       1       1   .common     
-     bLeft1                                     AEB       1       1       1   .common     
-     bRight1                                    AEC       1       1       1   .common     
-     Page                                       AED       1       1       1   .common     
-     bDown                                      AEE       1       1       1   .common     
-     TinyDown                                   AEF       1       1       1   .common     
-     field                                      AF0      C8     200      11   .common     
+     screen                                     AEA       2       2       1   .bss        
+     ships                                      AEC      28      40       4   .bss        
+     numShips                                   B14       2       2       1   .bss        
+     enemyAttacks                               B16     258     600       3   .bss        
+     numEnemyAttacks                            D6E       2       2       1   .bss        
+     playerAttacks                              D70     258     600       3   .bss        
+     numPlayerAttacks                           FC8       2       2       1   .bss        
+     field.1                                    FCA      C8     200       5   .bss        
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
      main                                      C045      18      24       1   .text       
      ADC_Init                                  C05D       C      12       1   .text       
      lcdCmd                                    C069      2A      42       8   .text       
      lcdData                                   C093      17      23       2   .text       
-     LCD_Init                                  C0AA      50      80       1   .text       
-     LCD_Clear                                 C0FA      4B      75       1   .text       
-     OutByte                                   C145      12      18       1   .text       
-     setGridPixel                              C157      3A      58      33   .text       
-     LCD_DrawGrid                              C191     42A    1066      57   .text       
-     PLL_Init                                  C5BB      15      21       1   .text       
-     Timer_Init                                C5D0       D      13       1   .text       
-     Timer_Wait                                C5DD      11      17       6   .text       
-     Timer_Wait1ms                             C5EE      10      16       1   .text       
-     _BSHL                                     C5FE       8       8       1   RUNTIME     
-     _CASE_CHECKED                             C606       B      11       1   RUNTIME     
+     LCD_Init                                  C0AA      39      57       1   .text       
+     LCD_Clear                                 C0E3      4B      75       1   .text       
+     OutByte                                   C12E      12      18       1   .text       
+     setGridPixel                              C140      3A      58      34   .text       
+     LCD_DrawGrid                              C17A     3FC    1020      60   .text       
+     PLL_Init                                  C576      15      21       1   .text       
+     Timer_Init                                C58B       D      13       1   .text       
+     Timer_Wait                                C598      11      17       6   .text       
+     Timer_Wait1ms                             C5A9      10      16       1   .text       
+     Game_UpdateShips                          C5B9     18D     397      12   .text       
+     _BSHL                                     C746       8       8       1   RUNTIME     
+     _CASE_CHECKED                             C74E       B      11       1   RUNTIME     
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
@@ -2812,23 +2819,22 @@ rtshc12.c.o (ansisi.lib):
   _CASE_SEARCH_BYTE _CASE_SEARCH_8 _CASE_SEARCH_8_BYTE _FCALL _FPCMP 
 adc.c.o:
   ADC_In 
-LCDG.c.o:
-  LCD_GoTo 
 Timer.C.o:
   Timer_Wait10ms 
+game.c.o:
+  Game_Init 
 NOT USED VARIABLES
 main.c.o:
   ADCsample Voltage ADCcount StartTime 
 rtshc12.c.o (ansisi.lib):
   _PowOfTwo_8 _PowOfTwo_16 _PowOfTwo_32 errno 
 LCDG.c.o:
-  TinyFont TinyFont1 TinyFont2 TinyFont3 Font Xcolumn bRightx bLeftx PlotPixel 
-  SubCount XaxisResolution YaxisResolution MinY RangeY 
+  MinY RangeY 
 
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC611 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC759 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2838,22 +2844,24 @@ OBJECT-DEPENDENCIES SECTION
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
 main                      USES PLL_Init LCD_Init ADC_Init _DDRP LCD_Clear 
-                                LCD_DrawGrid 
+                                Game_UpdateShips 
 ADC_Init                  USES _ATD0CTL23 _ATD0CTL45 
 lcdCmd                    USES _PTP Timer_Wait _PTH 
 lcdData                   USES _PTP _PTH Timer_Wait 
 LCD_Init                  USES Timer_Init _DDRH _DDRP _PTP Timer_Wait1ms 
-                                lcdCmd OpenFlag Column1 bLeft1 bRight1 Page bDown 
-                                TinyDown 
+                                lcdCmd OpenFlag 
 LCD_Clear                 USES OpenFlag _PTP lcdCmd lcdData 
 OutByte                   USES lcdCmd lcdData 
 setGridPixel              USES _BSHL grid 
-LCD_DrawGrid              USES LCD_DrawGrid field grid _CASE_CHECKED 
-                                setGridPixel _PTP OutByte 
+LCD_DrawGrid              USES grid LCD_DrawGrid _CASE_CHECKED setGridPixel 
+                                _PTP OutByte 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
 Timer_Init                USES _TSCR1 _TSCR2 _PACTL 
 Timer_Wait                USES _TCNT 
 Timer_Wait1ms             USES Timer_Wait 
+Game_UpdateShips          USES Game_UpdateShips screen ships field.1 numShips 
+                                enemyAttacks numEnemyAttacks playerAttacks numPlayerAttacks 
+                                LCD_DrawGrid 
 
 *********************************************************************************************
 DEPENDENCY TREE
@@ -2886,20 +2894,22 @@ DEPENDENCY TREE
  |  |     | 
  |  |     +- Timer_Wait           (see above)
  |  |        
- |  +- LCD_DrawGrid        
+ |  +- Game_UpdateShips    
  |     | 
- |     +- _CASE_CHECKED       
- |     |    
- |     +- setGridPixel        
- |     |  | 
- |     |  +- _BSHL               
- |     |       
- |     +- OutByte             
+ |     +- LCD_DrawGrid        
  |        | 
- |        +- lcdCmd               (see above)
- |        |  
- |        +- lcdData              (see above)
- |           
+ |        +- _CASE_CHECKED       
+ |        |    
+ |        +- setGridPixel        
+ |        |  | 
+ |        |  +- _BSHL               
+ |        |       
+ |        +- OutByte             
+ |           | 
+ |           +- lcdCmd               (see above)
+ |           |  
+ |           +- lcdData              (see above)
+ |              
  +- _Startup            
     | 
     +- Init                
@@ -2913,5 +2923,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 6
-Total size of all blocks to be downloaded: 1557
+Total size of all blocks to be downloaded: 1885
 
