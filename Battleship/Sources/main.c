@@ -47,6 +47,7 @@
 #include "adc.h"
 #include "LCDG.h"
 #include "Timer.h"
+#include "Game.h"
 
 unsigned short ADCsample;	// ADC sample, 0 to 1023
 unsigned short Voltage;   // 0.01 volts, 0 to 500
@@ -60,7 +61,7 @@ void main(void) {
   EnableInterrupts;
 
   LCD_Clear(0);
-  LCD_DrawGrid();
+  Game_UpdateShips();
   
   for(;;) {
       
