@@ -6,15 +6,43 @@ Report Written : Monday, November 01, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/1/2010 9:39:12 AM
-Editing Time   : 3238 min
+Last Saved     : 11/1/2010 4:26:35 PM
+Editing Time   : 3276 min
 Units          : mil (precision 0)
 
 Results
 -------
 
+Gap in Net "GND" between (9338,8550) and (3100,1263) 
+    GND.
+Gap in Net "GND" between (3100,1263) and (1438,1088) 
+    GND.
+Gap in Net "GND" between (1438,1088) and (1175,1088) 
+    GND.
+Gap in Net "GND" between (1175,1088) and (1175,1250) 
+    GND.
+Gap in Net "PS1" between (9223,11066) and (4338,1088) 
+    PS1.
+Gap in Net "PS0" between (9223,11092) and (4138,1088) 
+    PS0.
+Gap in Net "N0502" between (3815,1088) and (1075,1250) 
+    N0502.
+Gap in Net "N0504" between (3815,1188) and (1788,1250) 
+    N0504.
+Gap in Net "N0504" between (1788,1250) and (1788,1088) 
+    N0504.
+Gap in Net "N0506" between (2200,1263) and (1438,1250) 
+    N0506.
+Gap in Net "N0506" between (1438,1250) and (1075,1088) 
+    N0506.
+Gap in Net "N0506" between (2200,1263) and (3878,1138) 
+    N0506.
+Gap in Net "N0511" between (2400,1263) and (4438,1088) 
+    N0511.
+Gap in Net "N0512" between (2300,1263) and (4238,1088) 
+    N0512.
 
-No errors found
+Number of errors found : 14
 
 Settings
 --------
