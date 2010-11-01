@@ -59,37 +59,10 @@ void main(void) {
   DDRP |= 0xA0; // heartbeats, PP7 every 3000, PP5 at sampling rate
   EnableInterrupts;
 
-  LCD_Test();  // to run this, set TEST=1 inside LCDG.c, single step through
   LCD_Clear(0);
-
-  LCD_OutString("Jonathan Valvano"); 
-  LCD_PlotYaxis(0, 25, 50, 1, "Voltage");
-  LCD_PlotClear(0, 500, 30); //30*100=3000 points/sweep
-  StartTime = 0; ADCcount = 0;
-  LCD_PlotXaxis(StartTime, StartTime+3, 0, "Time (sec)");
-  LCD_GoTo(8,1);
-  LCD_OutFix2(0);
-  LCD_OutString(" volts"); 
+  LCD_DrawGrid();
+  
   for(;;) {
-    Timer_Wait1ms(1);          // very inaccurate time, should use interrupts
-    ADCsample = ADC_In(0x84);	 // right justified channel 4
-    PTP ^= 0x20;               // heartbeat
-  asm ldd  ADCsample
-  asm ldy  #500
-  asm emul        // 32-bit Y:D is 500*ADCsample
-  asm ldx  #1023
-  asm ediv        // 16-bit Y is (500*ADCsample)/1023
-  asm sty  Voltage
-    LCD_Plot(Voltage);
-    ADCcount++;             // 0 to 2999
-    if(ADCcount == 3000){   // end of sweep??
-      PTP ^= 0x80;          // heartbeat after 3000 samples
-      StartTime = StartTime+3;
-      if(StartTime>900) StartTime=0;
-      LCD_PlotXaxis(StartTime, StartTime+3, 0, "Time (sec)");
-      LCD_GoTo(8,1);
-      LCD_OutFix2(Voltage);
-      ADCcount = 0;
-    }
+      
   } 
 }

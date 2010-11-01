@@ -238,3 +238,5 @@ void LCD_DrawImageTest(void);
 // Input: none
 // Output: none
 void LCD_Test(void);
+
+void LCD_DrawGrid(void);

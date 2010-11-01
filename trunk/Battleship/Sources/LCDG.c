@@ -344,496 +344,6 @@ void OutByte(unsigned char page, unsigned char column,unsigned char data){
   lcdData(data);   // data
 }
 
-// ********* LCD_VTest***********
-// Clear the vertical lines image on the
-//    AGM1264F 128-bit by 64-bit graphics display
-// Input: none
-// Output: none
-void LCD_VTest(unsigned char num1, unsigned char num2){
-unsigned char page;
-  int i;
-  CS2 = 0;          
-  CS1 = 1;         // left enable
-  for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
-    for(i=0x40; i<=0x7F; i=i+2){
-      OutByte(page,i,num1);
-      OutByte(page,i+1,num2);       
-    }
-  }
-  CS1 = 0;         
-  CS2 = 1;         // right enable
-  for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
-    for(i=0x40; i<=0x7F; i=i+2){
-      OutByte(page,i,num1);
-      OutByte(page,i+1,num2);       
-    }
-  }
-}
-
-
-// ********* LCD_DrawImage***********
-// Draw an entire 1024 byte (8192 bit) image on the
-//    AGM1264F 128-bit by 64-bit graphics display
-// Input: pointer to 1024 bytes of data
-// Output: none
-void LCD_DrawImage(const unsigned char *pt){
-unsigned char page;
-  int i;
-  if(OpenFlag == 0) return;
-  LCD_Clear(0);
-  CS2 = 0;
-  CS1 = 1;         // left enable
-  for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
-    for(i=0x40; i<=0x7F; i=i+1){
-      if(*pt){
-        OutByte(page,i,*pt);  // copy one byte to left
-      }
-      pt++;
-    }
-  }
-    
-  CS1 = 0;
-  CS2 = 1;          // right enable
-  for(page=0xB8; page<=0xBF; page++){ // pages 0 to 7
-    for(i=0x40; i<=0x7F; i=i+1){
-      if(*pt){
-        OutByte(page,i,*pt);  // copy one byte to right
-      }
-      pt++;
-    }
-  }
-}
-#if TEST
-unsigned char const TestImage2[1024]={
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,
-  0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00,0xFF,0x00
-};
-unsigned char const TestImage[1024] ={
-// left half
-0,0,0,0,0,0,0,0,32,112,112,112,112,112,112,240,240,240,240,224,224,224,224,192,192,192,128,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,3,3,7,7,15,15,31,63,126,252,248,248,240,240,224,192,128,128,0,0,0,0,0,0,0,0,0,0,0,0,0,128,0,0,128,0,0,128,0,0,128,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,3,7,15,31,31,63,63,127,255,254,254,252,252,252,252,252,252,254,255,255,255,255,255,255,255,255,255,255,255,255,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,28,60,62,63,127,127,127,127,63,63,63,31,31,127,255,255,255,255,255,255,255,255,255,255,255,255,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,31,255,255,255,255,255,255,255,255,255,255,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,15,255,255,255,255,255,255,255,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,248,254,255,255,255,255,255,255,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,7,15,31,31,31,31,
-// right half
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,128,192,192,192,224,224,224,224,240,240,240,240,112,112,112,112,112,112,32,0,0,0,0,0,0,0,0,
-0,128,0,0,128,0,0,128,0,0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,128,128,192,224,240,240,248,248,252,126,63,31,15,15,7,7,3,3,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-255,255,255,255,255,255,255,255,255,255,255,255,254,252,252,252,252,252,252,254,254,255,127,63,63,31,31,15,7,3,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-255,255,255,255,255,255,255,255,255,255,255,255,127,31,31,63,63,63,127,127,127,127,63,62,60,28,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-255,255,255,255,255,255,255,255,255,255,31,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-255,255,255,255,255,255,255,15,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-255,255,255,255,255,255,254,248,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-31,31,31,31,15,7,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-};
-// ********* LCD_DrawImageTest***********
-// Draw an entire 1024 byte (8192 bit) image on the
-//    AGM1264F 128-bit by 64-bit graphics display
-// Input: none, used above test image
-// Output: none
-void LCD_DrawImageTest(void){
-  LCD_DrawImage(TestImage);
-}
-#endif
-
-
-// ********* LCD_OutChar***********
-// Output ASCII character on the
-//    AGM1264F 128-bit by 64-bit graphics display
-// Input: 7-bit ASCII to display
-// Output: none
-// letter must be between 32 and 127 inclusive
-// execute LCD_GoTo to specify cursor location
-void LCD_OutChar(unsigned char letter){
-unsigned short i,cnt;
-  if(OpenFlag == 0) return;
-// page 0 is 0xB8, varies from 0xB7 to 0xBF
-  if(letter<32) return;
-  if(letter>127) return;
-  i = 5*(letter-32); // index into font table
-  CS2 = bRight1;   // right enable
-  CS1 = bLeft1;    // left enable
-  lcdCmd(Page);    // Page address 0 to 7 
-  lcdCmd(Column1); // Column = 0
-  for(cnt=5; cnt>0; cnt--){
-    if(bDown){
-      lcdData(Font[i]<<1);  // copy one byte, shifted down 
-    } else{
-      lcdData(Font[i]);  // copy one byte 
-    }
-    i++;
-    Column1++;
-    if(bLeft1&&(Column1==0x80)){
-      Column1 = 0x40;
-      bLeft1 = 0;  
-      bRight1 = 1;     // switch to right side
-      CS2 = bRight1;   // right enable
-      CS1 = bLeft1;    // left enable
-      lcdCmd(Page);    // Page address 0 to 7) 
-      lcdCmd(Column1); // Column = 0
-    }
-    if(bRight1&&(Column1==0x7F)){
-      Column1 = 0x41;
-      bLeft1 = 1;  
-      bRight1 = 0;     // switch to left side
-      CS2 = bRight1;   // right enable
-      CS1 = bLeft1;    // left enable
-      lcdCmd(Page);    // Page address 0 to 7) 
-      lcdCmd(Column1); // Column = 0
-    }
-  }
-  lcdData(0);  // inter-character space copy one byte 
-  Column1++;
-  if(bLeft1&&(Column1==0x80)){
-    Column1 = 0x40;
-    bLeft1 = 0;  
-    bRight1 = 1;     // switch to right side
-    CS2 = bRight1;   // right enable
-    CS1 = bLeft1;    // left enable
-    lcdCmd(Page);    // Page address 0 to 7) 
-    lcdCmd(Column1); // Column = 0
-  }
-  if(bRight1&&(Column1==0x7F)){
-    Column1 = 0x41;
-    bLeft1 = 1;  
-    bRight1 = 0;     // switch to left side
-    CS2 = bRight1;   // right enable
-    CS1 = bLeft1;    // left enable
-    lcdCmd(Page);    // Page address 0 to 7) 
-    lcdCmd(Column1); // Column = 0
-  }
-}  
-
-
-  
-//---------------------LCD_OutString--------------
-// Display String
-// Input: pointer to NULL-terminationed ASCII string 
-// Output: none
-void LCD_OutString(char *pt){ 
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  while(*pt){
-    LCD_OutChar((unsigned char)*pt);
-    pt++;
-  }
-}
-  
-
-
-//-----------------------LCD_OutDec-----------------------
-// Output a 16-bit number in unsigned decimal format
-// Input: 16-bit unsigned number 
-// Output: none
-// fixed size 5 digits of output, right justified 
-void LCD_OutDec(unsigned short n){
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if(n < 10){
-    LCD_OutString("    ");
-    LCD_OutChar(n+'0'); /* n is between 0 and 9 */
-  } else if(n<100){
-    LCD_OutString("   ");
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  } else if(n<1000){
-      LCD_OutString("  ");
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else if(n<10000){
-      LCD_OutChar(' ');  
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else {
-      LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
-      n = n%10000;
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-}
-//-----------------------LCD_OutSDec-----------------------
-// Output a 16-bit number in signed decimal format
-// Input: 16-bit signed number 
-// Output: none
-// fixed size 6 digits of output, right justified 
-void LCD_OutSDec(short n){  
-unsigned char sign=' ';
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if(n < 0){
-    n = -n;       // negative
-    sign = '-';
-  }
-  if(n < 10){
-    LCD_OutString("    ");
-    LCD_OutChar(sign);
-    LCD_OutChar(n+'0'); /* n is between 0 and 9 */
-  } else if(n<100){
-    LCD_OutString("   ");
-    LCD_OutChar(sign);
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  } else if(n<1000){
-      LCD_OutString("  ");
-      LCD_OutChar(sign);
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else if(n<10000){
-      LCD_OutChar(' ');  
-      LCD_OutChar(sign);
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else {
-      LCD_OutChar(sign);
-      LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
-      n = n%10000;
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-}
-//-----------------------LCD_OutFix1-----------------------
-// Output a 16-bit number in unsigned decimal fixed-point
-// with resolution = 0.1 
-// Input: 16-bit unsigned number 
-// Output: none
-// fixed size is 6 characters of output, right justified
-// if input is 12345, then display is 1234.5 
-void LCD_OutFix1(unsigned short n){
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if(n < 10){
-    LCD_OutString("   0.");
-    LCD_OutChar(n+'0'); /* n is between 0 and 9 */
-  } else if(n<100){
-    LCD_OutString("   ");
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar('.');      /* decimal point */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  } else if(n<1000){
-      LCD_OutString("  ");
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar('.');      /* decimal point */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else if(n<10000){
-      LCD_OutChar(' ');  
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar('.');      /* decimal point */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else {
-      LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
-      n = n%10000;
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar('.');      /* decimal point */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-}
-//-----------------------LCD_OutFix2-----------------------
-// Output a 16-bit number in unsigned decimal fixed-point
-// with resolution = 0.01 
-// Input: 16-bit unsigned number 
-// Output: none
-// fixed size is 6 characters of output, right justified
-// if input is 12345, then display is 123.45 
-void LCD_OutFix2(unsigned short n){
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if(n < 10){
-    LCD_OutString("  0.0");
-    LCD_OutChar(n+'0'); /* n is between 0 and 9 */
-  } else if(n<100){
-    LCD_OutString("  0.");
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  } else if(n<1000){
-    LCD_OutString("  ");
-    LCD_OutChar(n/100+'0'); /* hundreds digit */
-    n = n%100;
-    LCD_OutChar('.');      /* decimal point */
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  }
-  else if(n<10000){
-    LCD_OutChar(' ');  
-    LCD_OutChar(n/1000+'0'); /* thousands digit */
-    n = n%1000;
-    LCD_OutChar(n/100+'0'); /* hundreds digit */
-    n = n%100;
-    LCD_OutChar('.');      /* decimal point */
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  }
-  else {
-    LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
-    n = n%10000;
-    LCD_OutChar(n/1000+'0'); /* thousands digit */
-    n = n%1000;
-    LCD_OutChar(n/100+'0'); /* hundreds digit */
-    n = n%100;
-    LCD_OutChar('.');      /* decimal point */
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  }
-}
-//-----------------------LCD_OutFix2b-----------------------
-// Output a 16-bit number in unsigned decimal fixed-point
-// with resolution = 0.01 
-// Input: 16-bit unsigned number, 0 to 9999 
-// Output: none
-// fixed size is 5 characters of output, right justified
-// if input is 1234, then display is 12.34 
-void LCD_OutFix2b(unsigned short n){
-  if(OpenFlag==0){
-    return;  // not open
-  }
-    
-  if(n < 10){
-    LCD_OutString(" 0.0");
-    LCD_OutChar(n+'0'); /* n is between 0 and 9 */
-  } else if(n<100){
-    LCD_OutString(" 0.");
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  } else if(n<1000){
-    LCD_OutChar(' ');
-    LCD_OutChar(n/100+'0'); /* hundreds digit */
-    n = n%100;
-    LCD_OutChar('.');      /* decimal point */
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  }
-  else if(n<10000){
-    LCD_OutChar(n/1000+'0'); /* thousands digit */
-    n = n%1000;
-    LCD_OutChar(n/100+'0'); /* hundreds digit */
-    n = n%100;
-    LCD_OutChar('.');       /* decimal point */
-    LCD_OutChar(n/10+'0');  /* tens digit */
-    LCD_OutChar(n%10+'0');  /* ones digit */
-  }
-  else {
-    LCD_OutString("**.**");
-  }
-}
-//-----------------------LCD_OutFix3-----------------------
-// Output a 16-bit number in unsigned decimal fixed-point
-// with resolution = 0.001 
-// Input: 16-bit unsigned number 
-// Output: none
-// fixed size is 6 characters of output, right justified
-// if input is 12345, then display is 12.345 
-void LCD_OutFix3(unsigned short n){
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if(n < 10){
-    LCD_OutString(" 0.00");
-    LCD_OutChar(n+'0');  /* n is between 0 and 9 */
-  } else if(n<100){
-    LCD_OutString(" 0.0");
-    LCD_OutChar(n/10+'0'); /* tens digit */
-    LCD_OutChar(n%10+'0'); /* ones digit */
-  } else if(n<1000){
-      LCD_OutString(" 0.");
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else if(n<10000){
-      LCD_OutChar(' ');  
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      LCD_OutChar('.');      /* decimal point */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-    else {
-      LCD_OutChar(n/10000+'0'); /* ten-thousands digit */
-      n = n%10000;
-      LCD_OutChar(n/1000+'0'); /* thousands digit */
-      LCD_OutChar('.');      /* decimal point */
-      n = n%1000;
-      LCD_OutChar(n/100+'0'); /* hundreds digit */
-      n = n%100;
-      LCD_OutChar(n/10+'0'); /* tens digit */
-      LCD_OutChar(n%10+'0'); /* ones digit */
-    }
-}
 
 //-----------------------LCD_GoTo-----------------------
 // Move cursor
@@ -862,591 +372,199 @@ void LCD_GoTo(int line, int column){
     bRight1 = 1;           // on right side
   }
 }
- 
 
 
-//---------lcdTinyOutDigit-------------------------
-// display tiny digits
-// input: digit from 0 to 9 
-// output: none
-// no error checking
-void lcdTinyOutDigit(unsigned short digit){
-unsigned char *pt;
-  if(TinyDown==0){
-    pt = (unsigned char *) &TinyFont[digit*3];
-  } else if(TinyDown==1){
-    pt = (unsigned char *) &TinyFont1[digit*3];
-  } else if(TinyDown==2){
-    pt = (unsigned char *) &TinyFont2[digit*3];
-  } else {
-    pt = (unsigned char *) &TinyFont3[digit*3];
-  }
-  lcdData(*pt++);  // copy three bytes 
-  lcdData(*pt++);   
-  lcdData(*pt++);
-  lcdData(0);      // intercharacter space   
-}
-//---------lcdTinyOutPoint-------------------------
-// display tiny decimal point
-// input: none
-// output: none
-void lcdTinyOutPoint(void){
-  if(TinyDown==0){
-    lcdData(16);
-  } else if(TinyDown==1){
-    lcdData(32);
-  } else if(TinyDown==2){
-    lcdData(64);
-  } else {
-    lcdData(128);
-  }
-  lcdData(0);      // intercharacter space   
-}
-//---------lcdTinyOutSpace-------------------------
-// display space
-// input: none
-// output: none
-void lcdTinyOutSpace(void){
-  lcdData(0);      // intercharacter space   
-  lcdData(0);      // intercharacter space   
-  lcdData(0);      // intercharacter space   
-  lcdData(0);      // intercharacter space   
-}
+#define EMPTY         0
+#define SHIPEND_UP    1
+#define SHIPEND_DOWN  2
+#define SHIPEND_LEFT  3
+#define SHIPEND_RIGHT 4
+#define SHIP_VERT     5
+#define SHIP_HORIZ    6
+#define HIT           7
+#define MISS          8
 
-//---------lcdTinyOutMinus-------------------------
-// display tiny minus sign
-// input: none
-// output: none
-void lcdTinyOutMinus(void){
-  if(TinyDown==0){
-    lcdData(4);
-    lcdData(4);
-  } else if(TinyDown==1){
-    lcdData(8);
-    lcdData(8);
-  } else if(TinyDown==2){
-    lcdData(16);
-    lcdData(16);
-  } else {
-    lcdData(32);
-    lcdData(32);
-  }
-  lcdData(0);      // intercharacter space   
-}
-
-//---------lcdTinyOutPlus-------------------------
-// display a little space instead of plus sign
-// input: none
-// output: none
-void lcdTinyOutPlus(void){
-  lcdData(0);      // intercharacter space   
-  lcdData(0);      // intercharacter space   
-  lcdData(0);      // intercharacter space   
-}
-
-//------lcdTinyOutFix------------------------
-// display 4 character tiny number
-// input: num 0 to 999
-// output:none
-// no error checking
-void lcdTinyOutFix(unsigned short num){
-  if(XaxisResolution == 0){      // shown as   0.    9.   99.  999.
-    if(num < 10){
-      lcdTinyOutSpace(); 
-      lcdTinyOutSpace();
-    } else if(num < 100){
-      lcdTinyOutSpace();
-      lcdTinyOutDigit(num/10);   // tens digit 1 to 9
-    } else{
-      lcdTinyOutDigit(num/100);  // hundreds digit 1 to 9
-			num = num%100;             // 0 to 99
-      lcdTinyOutDigit(num/10);   // tens digit 1 to 9
-    }
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-    lcdTinyOutPoint();
-  }else if(XaxisResolution == 1){// shown as  0.0   0.9   9.9  99.9
-    if(num < 100){
-      lcdTinyOutSpace();
-    } else{
-      lcdTinyOutDigit(num/100);  // hundreds digit 1 to 9
-			num = num%100;             // 0 to 99
-    }
-    lcdTinyOutDigit(num/10);     // tens digit 1 to 9
-    lcdTinyOutPoint();
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-  }else if(XaxisResolution == 2){//shown as 0.00  0.09  0.99  9.99 
-    lcdTinyOutDigit(num/100);    // hundreds digit 1 to 9
-   	num = num%100;               // 0 to 99
-    lcdTinyOutPoint();
-    lcdTinyOutDigit(num/10);     // tens digit 1 to 9
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-  }else if(XaxisResolution == 3){// shown as .000  .009  .099  .999
-    lcdTinyOutDigit(num/100);    // hundreds digit 1 to 9
-    lcdTinyOutPoint();
-   	num = num%100;               // 0 to 99
-    lcdTinyOutDigit(num/10);     // tens digit 1 to 9
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-  }
-}
-
-//-----------------------LCD_PlotXaxis-----------------------
-// Draw X axis 
-// Input: min max, resolution, and label  
-// Output: none
-// X axis numbers min and max range from 0 to 999
-// resolution>3 means no numbers are displayed
-// number->       0    9    99   999
-// 0  shown as   0.    9.   99.  999.
-// 1  shown as  0.0   0.9   9.9  99.9
-// 2  shown as 0.00  0.09  0.99  9.99
-// 3  shown as .000  .009  .099  .999
-// label has 13 character maximum size
-// errors: min and max must be less than or equal to 999
-void LCD_PlotXaxis(unsigned short min, unsigned short max,
-  unsigned short resolution, char *label){
-  unsigned short i; 
-  char Xlabel[14];          // maximum of 13 characters
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if((min > max)||(max > 999)){
-    return;  // bad parameters
-  }
-	XaxisResolution = resolution;
-	i = 0;
-	do{
-	  Xlabel[i] = *label;
-	  label++; i++;
-	}
-	while(i<14);
-	Xlabel[13] = 0; // truncate to 13 characters maximum
-	LCD_GoTo(7,6);  // second to last row
-  LCD_OutString(Xlabel);
-  TinyDown = 2;      // shift down two pixels
-  CS2 = 0;   			   // paint left number on left side
-  CS1 = 1;           // left enable
-  lcdCmd(0xBE);      // Page 7 
-  lcdCmd(0x4C);      // byte number = 12
-  lcdTinyOutFix(min);
-  CS2 = 1;   			   // paint right number on right side
-  CS1 = 0;           // right enable
-  lcdCmd(0xBE);      // Page 7 
-  lcdCmd(0x72);      // byte number = 50
-  lcdTinyOutFix(max);
-}
+unsigned volatile int field[10][10]; 
+unsigned static char grid[8][61]; 
 
 
-//------lcdTinyOutFix2------------------------
-// display 4 character tiny number
-// input: num -99 to 99
-// output:none
-// no error checking
-void lcdTinyOutFix2(short snum){ 
-unsigned short num;
-unsigned short bSign;
-  if(snum<0){
-    bSign = 1;
-    num = -snum;
-  } else{
-    bSign = 0;
-    num = snum;
-  }
-  if(YaxisResolution == 0){      // shown as  -99     -1    0   1   99
-    if(num < 10){
-      lcdTinyOutSpace(); 			   // no tens digit
-      if(bSign){
-        lcdTinyOutMinus();
-      } else{
-        lcdTinyOutPlus();
-      }
-    } else{
-      if(bSign){
-        lcdTinyOutMinus();
-      } else{
-        lcdTinyOutPlus();
-      }
-      lcdTinyOutDigit(num/10);   // tens digit 1 to 9
-    }
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-    lcdTinyOutPoint();
-  }else if(YaxisResolution == 1){// shown as  -9.9  -0.1  0.0 0.1  9.9
-    if(bSign){
-      lcdTinyOutMinus();
-    } else{
-      lcdTinyOutPlus();
-    }
-    lcdTinyOutDigit(num/10);     // tens digit 1 to 9
-    lcdTinyOutPoint();
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-  }else if(YaxisResolution == 2){// shown as -.99  -.01  .00 .01  .99 
-    if(bSign){
-      lcdTinyOutMinus();
-    } else{
-      lcdTinyOutPlus();
-    }
-    lcdTinyOutPoint();
-    lcdTinyOutDigit(num/10);     // tens digit 1 to 9
-    lcdTinyOutDigit(num%10);     // ones digit 1 to 9
-  }
+
+void setGridPixel(int row, int col, int x, int y) {
+  grid[((row*6)+x)/8][(col*6)+y] |= 1 << (((row*6)+x)%8);    
 }
-// ********* lcdFillYline***********
-// get one line of Ylabel
-//    AGM1264F 128-bit by 64-bit graphics display
-// Input: ASCII string, 8 characters max
-//        mask is 0x01,0x02,0x04,0x08,0x10,0x20 or 0x40
-// Output: none
-// characters must be between 32 and 126 inclusive
-unsigned char Yline[6];  // data for side-ways letters, one vertical line
-// Yline[0] goes into row 7, 0xBE
-// Yline[1] goes into row 6, 0xBD
-// Yline[2] goes into row 5, 0xBC
-// Yline[3] goes into row 4, 0xBB
-// Yline[4] goes into row 3, 0xBA
-// Yline[5] goes into row 2, 0xB9
-void lcdFillYline(unsigned char mask, char *label){
-unsigned short i,j,cnt; unsigned char letter,data,ymask;
-// i is index into font table
-// j is index into Yline
-// cnt is used to move 5 pixels from font table into Yline
-// letter is one ASCII from input string
-// data is information from font table
-// j with ymask allows bit access to 48 bits of Yline
-  for(j=0; j<6; j++){
-    Yline[j] = 0;     // default is blank
-  }
-  j = 0;              // index into Yline
-  ymask = 0x80;
-  do{
-    letter = *label++;            // next character 
-    if(letter == 0) return;       // done 
-    if(letter<32) letter = 32;    // nonprinting
-    if(letter>126) letter = 32;   // nonprinting
-    i = 5*(letter-32);            // index into font table
-    for(cnt=5; cnt>0; cnt--){
-      data = Font[i];        // each character is 5 pixels wide 
-      i++;
-      if(data&mask){
-        Yline[j] |= ymask;   // set bit
-      }
-      ymask = ymask >>1;     // 80,40,20,10,8,4,2,1
-      if(ymask == 0){
-        ymask = 0x80;    // next byte of Yline
-        j++;
-      }
-    }
-    ymask = ymask >>1;     // add intercharacter space
-    if(ymask == 0){
-      ymask = 0x80;    // next byte of Yline
-      j++;
-    }
-  }
-  while(j<6);
-}
+
+void LCD_DrawGrid(void) { 
+  int i, j;
   
-
-
-//-----------------------LCD_PlotYaxis-----------------------
-// Draw Y axis 
-// Input: min, center, max, resolution, label, and number of hash marks
-//        min, center, max are the integer part ranging from -99 to +99
-//        resolution is 0,1,2 where to put decimal point 
-//                      any other value means no numbers are displayed
-//  number->    -99    -1    0    1    99     
-// 0  shown as -99.   -1.    0.   1.   99.
-// 1  shown as -9.9  -0.1   0.0  0.1   9.9
-// 2  shown as -.99  -.01   .00  .01   .99
-//        label is an ASCII string, up to 8 characters
-// Output: none
-// errors: must be called once, before calling Plot
-void LCD_PlotYaxis(short min, short center, short max,
-  unsigned short resolution, char *label){
-  unsigned char page,column; // access to Ylabel area
-  unsigned short j;          // index into Yline
-  unsigned char mask;        // used to get one line at a time
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if((min > max)||(center < min)||(center > max)){
-    return;  // bad parameters
-  }
-  if((min < -99)||(max > 99)){
-    return;  // bad parameters
-  }
-	YaxisResolution = resolution;
-  CS2 = 0;   			   // paint all numbers on left side
-  CS1 = 1;           // left enable
-  column = 0x40;
-	for(mask=0x01; mask<0x80; mask = mask<<1){
-	// mask goes 1,2,4,8,10,20,40
-	  lcdFillYline(mask,label); // get 48 bits
-	  page = 0xBE; // row 7
-	  for(j=0; j<6; j++){
-	    lcdCmd(page);    // row 7,6,5,4,3,2
-	    lcdCmd(column);  // column 1,2,3,4,5,6,7
-	    lcdData(Yline[j]);
-	    page--;          // BE, BD, BC, BB, BA, B9
-	  }
-	  column++;          // 40,41,42,43,44,45,46 
-	}
-
-	TinyDown = 0;      // shift down no pixels
-  lcdCmd(0xB9);      // Page 2 
-  lcdCmd(0x48);      // byte number = 8
-  lcdTinyOutFix2(max);
-	TinyDown = 2;      // shift down two pixels
-  lcdCmd(0xBB);      // Page 4 
-  lcdCmd(0x48);      // byte number = 8
-  lcdTinyOutFix2(center);
-	TinyDown = 3;      // shift down three pixels
-  lcdCmd(0xBD);      // Page 6 
-  lcdCmd(0x48);      // byte number = 8
-  lcdTinyOutFix2(min);
-
-}
-
-//-----------------------LCD_PlotClear-----------------------
-// Clear plot window, 
-// Input: min max, specify range of Y axis  
-// plotPixel number of data points drawn into the same X-axis pixel
-// 4 means it takes 400 calls to LCD_Plot to draw one sweep
-// plotPixel can range from 1 to 100
-// Output: none
-// errors: must be called once, before calling Plot
-void LCD_PlotClear(short min, short max, unsigned char plotPixel){
-int i,j;  unsigned char page;
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if((plotPixel<1)||(plotPixel>100)) plotPixel=1;
-  PlotPixel = plotPixel;
-  RangeY = max-min;
-  MinY = min;
-  SubCount = PlotPixel;
-  Xcolumn = 0x56;    // byte number 22
-  bRightx = 0;       // to be placed into CS2, start on left
-  bLeftx = 1;        // to be placed into CS1
-  for(j=1; j<6; j++){
-    Yline[j] = 0;    // default is blank
-  }
-  CS2 = 0;   			   
-  CS1 = 1;           // left enable
-  lcdCmd(0xB9);      // Page 2 
-  lcdCmd(0x55);      // byte number = 21
-  lcdData(0xFF);     // Yaxis line
-  lcdData(0x01); Yline[5]=0x01;    // top hash
-  for(i=0;i<41;i++){
-    lcdData(0);
-  }
-  lcdCmd(0xBA);      // Page 3 
-  lcdCmd(0x55);      // byte number = 21
-  lcdData(0xFF);     // Yaxis line
-  lcdData(0x02); Yline[4]=0x02;    // 75% hash
-  for(i=0;i<41;i++){
-    lcdData(0);
-  }
-  lcdCmd(0xBB);      // Page 4 
-  lcdCmd(0x55);      // byte number = 21
-  lcdData(0xFF);     // Yaxis line
-  lcdData(0x10); Yline[3]=0x10;    // 50% hash
-  for(i=0;i<41;i++){
-    lcdData(0);
-  }
-  lcdCmd(0xBC);      // Page 5 
-  lcdCmd(0x55);      // byte number = 21
-  lcdData(0xFF);     // Yaxis line
-  lcdData(0x40); Yline[2]=0x40;    // 25% hash
-  for(i=0;i<41;i++){
-    lcdData(0);
-  }
-  lcdCmd(0xBD);      // Page 6 
-  lcdCmd(0x55);      // byte number = 21
-  lcdData(0xFF);     // Yaxis line
-  Yline[1] = 0x80;   // Xaxis
-  for(j=0; j<4; j++){
-    for(i=0;i<9;i++){
-      lcdData(0x80);  // X axis
+  for(i=0; i<10; i++) {
+    for(j=0; j<10; j++) {
+      field[i][j] = EMPTY;      
     }
-    lcdData(0xC0);    // X axis and hash
   }
-  lcdData(0x80);      // X axis
-  lcdData(0x80);      // X axis
   
-  CS2 = 1;   			   
-  CS1 = 0;             // right enable
-  for(page=0xB9;page<0xBD; page++){
-    lcdCmd(page);      // Page 2,3,4,5 
-    lcdCmd(0x40);      // byte number = 0
-    for(i=0;i<58;i++){
-      lcdData(0);
-    }
-  }
-  lcdCmd(0xBD);      // Page 6 
-  lcdCmd(0x40);      // byte number = 0
-  for(i=0;i<8;i++){
-    lcdData(0x80);    // X axis
-  }
-  lcdData(0xC0);    // X axis and hash
-  for(j=0; j<5; j++){
-    for(i=0;i<9;i++){
-      lcdData(0x80);  // X axis
-    }
-    lcdData(0xC0);    // X axis and hash
-  }
-}
-const unsigned char BitMask[8]={
-  0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01
-};
-
-//-----------------------LCD_Plot-----------------------
-// Plot one data point
-// Input: data between min and max  
-// Output: none
-// errors: must call LCD_PlotClear first
-void LCD_Plot(short data){
-unsigned short pixel;
-unsigned short j;  // index into Yline
-unsigned char page;
-  if(OpenFlag==0){
-    return;  // not open
-  }
-  if(data<MinY)data=MinY;
-//  data = 40*(data-MinY);
-//  pixel = data/RangeY;  // 0 to 39, truncate down
-  asm ldd  data
-  asm subd MinY    // must be positive
-  asm ldy  #40
-  asm emul         // 32-bit Y:D is 40*(data-MinY)
-  asm ldx  RangeY
-  asm ediv         // 16-bit Y is 40*(data-MinY)/RangeY
-  asm sty  pixel   // should be 0 to 40
-  if(pixel > 39){
-    pixel = 39;
-  }
-  j = 1+(pixel/8);   // 1,2,3,4,5
-  Yline[j] |= BitMask[pixel&0x07];
-  SubCount--;
-  if(SubCount==0){
-  // output 5 bytes to LCD
-    CS1 = bLeftx;
-    CS2 = bRightx;      // select correct side
-	  page = 0xBD;        // start in row 6
-	  for(j=1; j<6; j++){
-	    lcdCmd(page);     // row 6,5,4,3,2
-	    lcdCmd(Xcolumn);  // column X parameter
-	    lcdData(Yline[j]);  // 5 bytes is 40 pixels 
-	    page--;          // BE, BD, BC, BB, BA, B9
-	  }
+  field[0][0] = SHIPEND_LEFT;
+  field[0][1] = SHIP_HORIZ;
+  field[0][2] = SHIP_HORIZ;  
+  field[0][3] = SHIPEND_RIGHT;
   
-  // setup for next line
-    Xcolumn++;
-    Yline[5] = 0x00;    
-    Yline[4] = 0x00;    
-    Yline[3] = 0x00;    
-    Yline[2] = 0x00;    
-    Yline[1] = 0x80;   // bottom bit is x axis 
-    if(bLeftx){
-      if(Xcolumn == 0x80){
-        Xcolumn = 0x40;	 // beginning of right side
-        bLeftx = 0;
-        bRightx = 1;     // switch to right side
-      } else{
-        switch(Xcolumn){
-          case 0x5F:
-          case 0x69:
-          case 0x73:
-          case 0x7D: Yline[1] = 0xC0; break;  // hash
-        }
+  field[5][0] = SHIPEND_UP;
+  field[6][0] = SHIP_VERT;
+  field[7][0] = SHIP_VERT;
+  field[8][0] = SHIP_VERT;
+  field[9][0] = SHIPEND_DOWN;
+  
+  //PTP |= 0x80;
+  
+        
+  for(j=0; j<61; j++) {
+    grid[0][j] = 0x41;
+    grid[1][j] = 0x10;
+    grid[2][j] = 0x04;
+    grid[3][j] = 0x41;
+    grid[4][j] = 0x10;
+    grid[5][j] = 0x04;
+    grid[6][j] = 0x41;
+    grid[7][j] = 0x10;
+    
+    if(!(j%6)) {
+      for(i=0; i<7; i++) {
+        grid[i][j] = 0xFF;
       }
-    } else{              // on right
-      if(Xcolumn == 0x7A){
-        Xcolumn = 0x56;	 // beginning of left side
-        bLeftx = 1;
-        bRightx = 0;     // switch to left side
-        Yline[5] = 0x01;    // top hash
-        Yline[4] = 0x02;    // 75% hash
-        Yline[3] = 0x10;    // 50% hash
-        Yline[2] = 0x40;    // 25% hash
-        Yline[1] = 0x80;    // X axis
-      } else{
-        switch(Xcolumn){
-          case 0x47:
-          case 0x51:
-          case 0x5B:
-          case 0x65:
-          case 0x6F:
-          case 0x77: Yline[1] = 0xC0; break;  // hash
-        }
+      grid[7][j] = 0x1F;
+    }
+  }
+  
+  for(i=0; i<10; i++) {
+    for(j=0; j<10; j++) {
+      switch(field[i][j]) {
+            
+      /*for(k=0; k < 6; k++) {
+        grid[((i*6)+k)/8][j*6] |= 1 << (((i*6)+k)%8);
+        grid[(i*6)/8][(j*6)+k] |= 1 << ((i*6)%8);
+        
+      }*/
+        case SHIPEND_UP:
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 4, 2);
+          setGridPixel(i, j, 4, 3);
+          setGridPixel(i, j, 4, 4);
+          setGridPixel(i, j, 5, 2);
+          setGridPixel(i, j, 5, 3);
+          setGridPixel(i, j, 5, 4);
+          break;
+        case SHIPEND_DOWN: 
+          setGridPixel(i, j, 1, 2);
+          setGridPixel(i, j, 1, 3);
+          setGridPixel(i, j, 1, 4);
+          setGridPixel(i, j, 2, 2);
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 2, 4);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 4, 3);
+          break;
+        case SHIPEND_LEFT: 
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 2, 4);
+          setGridPixel(i, j, 2, 5);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 3, 5);
+          setGridPixel(i, j, 4, 3);
+          setGridPixel(i, j, 4, 4);
+          setGridPixel(i, j, 4, 5);
+          break;
+        case SHIPEND_RIGHT:
+          setGridPixel(i, j, 2, 1);
+          setGridPixel(i, j, 2, 2);
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 3, 1);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 4, 1);
+          setGridPixel(i, j, 4, 2);
+          setGridPixel(i, j, 4, 3);
+          break;
+        case SHIP_VERT:
+          setGridPixel(i, j, 1, 2);
+          setGridPixel(i, j, 1, 3);
+          setGridPixel(i, j, 1, 4);
+          setGridPixel(i, j, 2, 2);
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 2, 4);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 4, 2);
+          setGridPixel(i, j, 4, 3);
+          setGridPixel(i, j, 4, 4);
+          setGridPixel(i, j, 5, 2);
+          setGridPixel(i, j, 5, 3);
+          setGridPixel(i, j, 5, 4);
+          break;
+        case SHIP_HORIZ: 
+          setGridPixel(i, j, 2, 1);
+          setGridPixel(i, j, 2, 2);
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 2, 4);
+          setGridPixel(i, j, 2, 5);
+          setGridPixel(i, j, 3, 1);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 3, 5);
+          setGridPixel(i, j, 4, 1);
+          setGridPixel(i, j, 4, 2);
+          setGridPixel(i, j, 4, 3);
+          setGridPixel(i, j, 4, 4);
+          setGridPixel(i, j, 4, 5);
+          break;
+        case HIT:
+          setGridPixel(i, j, 1, 1);
+          setGridPixel(i, j, 1, 5);
+          setGridPixel(i, j, 2, 2);
+          setGridPixel(i, j, 2, 4);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 4, 2);
+          setGridPixel(i, j, 4, 4);
+          setGridPixel(i, j, 5, 1);
+          setGridPixel(i, j, 5, 5);
+          break;
+        case MISS:
+          setGridPixel(i, j, 1, 3);
+          setGridPixel(i, j, 2, 2);
+          setGridPixel(i, j, 2, 3);
+          setGridPixel(i, j, 2, 4);
+          setGridPixel(i, j, 3, 1);
+          setGridPixel(i, j, 3, 2);
+          setGridPixel(i, j, 3, 3);
+          setGridPixel(i, j, 3, 4);
+          setGridPixel(i, j, 3, 5);
+          setGridPixel(i, j, 4, 2);
+          setGridPixel(i, j, 4, 3);
+          setGridPixel(i, j, 4, 4);
+          setGridPixel(i, j, 5, 3);
+          break;
+        default:
+          PTP |= 0x80;
+          break;
       }
     }
-    SubCount = PlotPixel;
   }
-}
-
-
-void LCD_Test(void){
-#if TEST
-  LCD_Clear(0xFF);
-// *********pause here*************
-
-  LCD_Clear(0);
-  LCD_GoTo(1,1);  LCD_OutChar('1');
-  LCD_GoTo(2,2);  LCD_OutChar('2');
-  LCD_GoTo(3,3);  LCD_OutChar('3');
-  LCD_GoTo(4,4);  LCD_OutChar('4');
-  LCD_GoTo(5,5);  LCD_OutChar('5');
-  LCD_GoTo(6,6);  LCD_OutChar('6');
-  LCD_GoTo(7,7);  LCD_OutChar('7');
-  LCD_GoTo(8,8);  LCD_OutChar('8');
-  LCD_GoTo(1,9);  LCD_OutChar('9');
-  LCD_GoTo(2,10); LCD_OutChar('0');
-  LCD_GoTo(3,11); LCD_OutChar('1');
-  LCD_GoTo(4,12); LCD_OutChar('2');
-  LCD_GoTo(5,13); LCD_OutChar('3');
-  LCD_GoTo(6,14); LCD_OutChar('4');
-  LCD_GoTo(7,15); LCD_OutChar('5');
-  LCD_GoTo(8,16); LCD_OutChar('6');
-  LCD_GoTo(1,17); LCD_OutChar('7');
-  LCD_GoTo(2,18); LCD_OutChar('8');
-  LCD_GoTo(3,19); LCD_OutChar('9');
-  LCD_GoTo(4,20); LCD_OutChar('0');
-  LCD_GoTo(5,21); LCD_OutChar('1');
-// *********pause here*************
-
-  LCD_Clear(0);
-// *********pause here*************
-
-  LCD_VTest(0xFF,0x00); // BUG STILL HERE
-// *********pause here*************
-
-  LCD_VTest(0x00,0xFF);
-// *********pause here*************
-
-  LCD_VTest(0xAA,0x08);
-// *********pause here*************
-
-  LCD_VTest(0x01,0x02);
-// *********pause here*************
-
-  LCD_GoTo(8,1);    LCD_OutString("098765432109876543210"); 
-  LCD_GoTo(7,1);    LCD_OutString("qwertyuiopasdfghjklzx"); 
-  LCD_GoTo(6,1);    LCD_OutString("012345678901234567890"); 
-  LCD_GoTo(5,1);    LCD_OutString("abcdefghijklmnopqrstu"); 
-  LCD_GoTo(4,1);    LCD_OutString("098765432109876543210"); 
-  LCD_GoTo(3,1);    LCD_OutString("qwertyuiopasdfghjklzx"); 
-  LCD_GoTo(2,1);    LCD_OutString("012345678901234567890"); 
-  LCD_GoTo(1,1);    LCD_OutString("abcdefghijklmnopqrstu");
-// *********pause here*************
-
-  LCD_GoTo(4,1);    LCD_OutString("0 9 8 7 6 5 4 3 2 1 0"); 
-  LCD_GoTo(3,1);    LCD_OutString("q w e r t y u i o p a"); 
-  LCD_GoTo(2,1);    LCD_OutString(" 0 1 2 3 4 5 6 7 8 9 "); 
-  LCD_GoTo(1,1);    LCD_OutString(" a  b  c  d  e  f  g "); 
-  LCD_GoTo(8,1);    LCD_OutString("0 9 8 7 6 5 4 3 2 1 0"); 
-  LCD_GoTo(7,1);    LCD_OutString("q w e r t y u i o p a"); 
-  LCD_GoTo(6,1);    LCD_OutString(" 0 1 2 3 4 5 6 7 8 9 "); 
-  LCD_GoTo(5,1);    LCD_OutString(" a  b  c  d  e  f  g ");
-// *********pause here*************
   
-  LCD_DrawImageTest();
-#endif
+  CS1 = 0;
+  CS2 = 1;  
+  
+  for(i=0; i<8; i++) {
+    for(j=0; j<61; j++) {
+      OutByte(i+0xB8, j+0x40, grid[i][j]);
+    }
+  }
+  
 }
