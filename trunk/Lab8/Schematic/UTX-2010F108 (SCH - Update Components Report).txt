@@ -1,0 +1,202 @@
+Update Components Report
+------------------------
+
+Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (SCH - Update Components Report).txt
+Report Written : Tuesday, November 02, 2010
+Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.sch
+Design Title   : 
+Created        : 
+Last Saved     : 11/3/2010 3:01:20 AM
+Editing Time   : 3093 min
+Units          : mil (precision 0)
+
+Library Files:
+	C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml
+	C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\Stephens.cml
+	C:\Users\Public\Documents\PCB Artist\Library\3M.cml
+	C:\Users\Public\Documents\PCB Artist\Library\74hc.cml
+	C:\Users\Public\Documents\PCB Artist\Library\74hct.cml
+	C:\Users\Public\Documents\PCB Artist\Library\74ls.cml
+	C:\Users\Public\Documents\PCB Artist\Library\4000.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Actel.cml
+	C:\Users\Public\Documents\PCB Artist\Library\AD.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Altera.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Atmel.cml
+	C:\Users\Public\Documents\PCB Artist\Library\AVX.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Capacitor.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Connector.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Csm.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Cypress.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Diode.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Discrete.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Dsm.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Fairchild.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Fairchild1.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Fiducial.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Fuse.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Hamlin.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Hybrid.cml
+	C:\Users\Public\Documents\PCB Artist\Library\IR.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Lattice.cml
+	C:\Users\Public\Documents\PCB Artist\Library\LT.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Maxim.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Microchip.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Murata.cml
+	C:\Users\Public\Documents\PCB Artist\Library\NatSemi.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Omron.cml
+	C:\Users\Public\Documents\PCB Artist\Library\OnSemi.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Opamps.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Pcb.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Qbsm.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Qcsm.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Qsm.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Quicklogic.cml
+	C:\Users\Public\Documents\PCB Artist\Library\relay.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Resistor.cml
+	C:\Users\Public\Documents\PCB Artist\Library\RFMicro.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Schema.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Sm.cml
+	C:\Users\Public\Documents\PCB Artist\Library\ST.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Testpoint.cml
+	C:\Users\Public\Documents\PCB Artist\Library\TI.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Trans.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Transistor.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Vishay.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Wago.cml
+	C:\Users\Public\Documents\PCB Artist\Library\Xilinx.cml
+
+
+Selected items to be updated:
+-----------------------------
+
+    Components:
+
+	+5              []
+	Serpac272Box    [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\Stephens.cml]
+
+    Symbols:
+
+	(None) 
+
+Additional items to be updated:
+-------------------------------
+
+    Components:
+
+	(None) 
+
+    Symbols:
+
+	(None) 
+
+Selected items not to be updated  (Same version as library)
+-----------------------------------------------------------
+
+    Components:
+
+	+5V             [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	0.125Wresistor  [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	0.25Wresistor   [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	7407            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	AGM1264         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	B3F-1050        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	BDMConnector    [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	Capacitor(Tantalum) [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	Ceramic         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	frame           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	Gnd             [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	LEDT1.75        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	LM317L          [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	LM4041          [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	LM7805CT        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	LogicAnalyzer   [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	MAX3232         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	MC34119         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	MC9S12C32MFUE25 [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	OffBoardSwitch  [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	PowerJumper     [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	SerialDB9       [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	SmallPot        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	SPDT            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	Speaker         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	tantalum        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	testpoint       [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	TLV5616         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	XBee            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+	XTAL            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L.cml]
+
+    Symbols:
+
+	+Volt           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	2-jumperpower   [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	AGM1264         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	B3F-Button-NO   [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	BUFFER          [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	BUFFERP         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	Button-NO       [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	CapPol          [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	CapPolar        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	Ceramic         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	DB9             [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	frame           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	Grnd            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	LEDT1.75        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	LM317L          [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	LM7805          [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	LogicAnalyzer   [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	MAX3232         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	MC34119         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	MOLEX-P6        []
+	PortA           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortAD0         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortAnalogPower [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortB           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortClock       [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortE           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortJ_2         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortM_6pin      [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortP           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortPower       [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortS_4         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	PortT           [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	potentiometer   [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	Resistor        [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	Serpac272Box    [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	ShuntDiode      [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	SPDT            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	SPEAKER         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	Testpoint       [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	TLV5617         [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	XBee            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+	XTAL            [C:\Users\Stephen\Desktop\445L\PCBArtistLibrary\EE345L_sch_symbols.ssl]
+
+Errors accessing items in the library:
+--------------------------------------
+
+    Components:
+
+	+5 (not found)
+
+
+Update Components Summary
+-------------------------
+
+Updating all components.
+Update component attribute values
+
+	Selected for update:			  32  Components
+						  42  Symbols
+
+	Selected items to be updated:		   2  Components
+						   0  Symbols
+
+	Additional symbols to be updated:		   0  Symbols
+
+	Selected items NOT to be updated:	  30  Components
+	  (Same version as library)		  42  Symbols
+
+Errors getting items from the library:		   1  Component 
+	  (Not found or read error)			   0  Symbols
+
+
+End Of Report.

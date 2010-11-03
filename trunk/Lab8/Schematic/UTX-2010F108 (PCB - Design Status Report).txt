@@ -1,18 +1,18 @@
 Design Status Report
 --------------------
 
-Report File    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108 (PCB - Design Status Report).txt
-Report Written : Wednesday, October 27, 2010
-Design Path    : C:\Program Files\TExaS\445L\ee445l-labs\Lab8\Schematic\UTX-2010F108.pcb
+Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Design Status Report).txt
+Report Written : Tuesday, November 02, 2010
+Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 10/28/2010 3:27:57 AM
-Editing Time   : 2717 min
+Last Saved     : 11/3/2010 3:25:17 AM
+Editing Time   : 3299 min
 Units          : mil (precision 0)
 
 Board Area
 ----------
-19708438 mil squared
+23320625 mil squared
 
 Layers
 ------
@@ -33,8 +33,8 @@ Component List
 --------------
 Comp Type     Package     Components   Pins
 
-0.125Wresistor  DIL             5       10     
-Ceramic         C               18      36     
+0.125Wresistor  DIL             7       14     
+Ceramic         C               20      40     
 XTAL            DSC             1       2      
 tantalum        C               3       6      
 LM7805CT        TO-220          1       3      
@@ -48,7 +48,7 @@ MAX3232         DIP             1       16
 SerialDB9       SM              1       9      
 SPDT            MISC            1       3      
 MC9S12C32MFUE25 QFP80           1       80     
-0.25Wresistor   DIP             17      34     
+0.25Wresistor   DIP             19      38     
 SmallPot        SIP             1       3      
 AGM1264         MISC            1       24     
 MC34119         DIP             1       8      
@@ -57,37 +57,40 @@ Capacitor(Tantalum) C               2       4
 TLV5616         SKDIP           1       8      
 Speaker         DIP             1       2      
 LogicAnalyzer   DIP             1       16     
+XBee            DIP             1       20     
+LM317L          TO92            1       3      
+7407            DIP             1       14     
 Serpac272Box    MISC            1       3      
 
-Total:                          78      324    
+Total:                          87      373    
 
 Net List
 --------
 Net Class     Nets  Track Length  Vias  Connections   Con Length
 
-Signal          117     109752       26      1          728         
-Power           6       26209        6       0          0           
-Ground          1       20725        2       0          0           
+Signal          122     120909       26      1          566         
+Power           6       28571        6       0          0           
+Ground          1       24046        2       0          0           
 
-Total:          124     156686       34      1          728         
+Total:          129     173526       34      1          566         
 
 Drill List
 ----------
 Drill Diameter  Holes
 
 15              34             
-29              122            
+29              151            
 30              14             
 32              5              
 33              12             
-35              16             
+35              36             
 40              54             
 42              3              
 43              2              
 98              4              
 125             3              
 
-Total number of drill holes 269.
+Total number of drill holes 318.
 Total number of free pads 0.
 
 
