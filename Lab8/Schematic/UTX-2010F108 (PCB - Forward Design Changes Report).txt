@@ -2,55 +2,15 @@ Forward Design Changes Report
 -----------------------------
 
 Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Forward Design Changes Report).txt
-Report Written : Monday, November 01, 2010
+Report Written : Tuesday, November 02, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/1/2010 9:39:12 AM
-Editing Time   : 3238 min
+Last Saved     : 11/3/2010 3:24:10 AM
+Editing Time   : 3297 min
 Units          : mil (precision 0)
 
-Added net "N0502".
-Added net "N0504".
-Added net "N0506".
-Added net "N0511".
-Added net "N0512".
-
-Added component reference "U7" of component "XBee", package "DIP".
-Added component reference "C24" of component "Ceramic", package "C".
-Changed value "V" on component reference "C24" to "0.1uF".
-
-Added component reference "Q1" of component "LM317L", package "TO92".
-Added component reference "R25" of component "0.25Wresistor", package "DIP".
-Changed value "V" on component reference "R25" to "20k".
-
-Added component reference "R26" of component "0.25Wresistor", package "DIP".
-Changed value "V" on component reference "R26" to "24k".
-
-Added component reference "C25" of component "Ceramic", package "C".
-Changed value "V" on component reference "C25" to "0.1uF".
-
-Added component reference "U8" of component "7407", package "DIP".
-
-Connected pin "U7.2" to net "N0512".
-Connected pin "U7.3" to net "N0511".
-Connected pin "U7.1" to net "N0506".
-Connected pin "U7.10" to net "GND".
-Connected pin "C24.1" to net "N0506".
-Connected pin "C24.2" to net "GND".
-Connected pin "Q1.3" to net "N0502".
-Connected pin "Q1.1" to net "N0504".
-Connected pin "Q1.2" to net "N0506".
-Connected pin "R25.1" to net "GND".
-Connected pin "R25.2" to net "N0504".
-Connected pin "R26.1" to net "N0506".
-Connected pin "R26.2" to net "N0504".
-Connected pin "C25.1" to net "N0502".
-Connected pin "C25.2" to net "GND".
-Connected pin "U8.1" to net "PS0".
-Connected pin "U8.2" to net "N0512".
-Connected pin "U8.3" to net "PS1".
-Connected pin "U8.4" to net "N0511".
+The designs are the same, so no design changes to forward.
 
 
 End Of Report.
