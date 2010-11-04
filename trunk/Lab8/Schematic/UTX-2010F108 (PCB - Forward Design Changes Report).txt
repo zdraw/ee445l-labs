@@ -2,12 +2,12 @@ Forward Design Changes Report
 -----------------------------
 
 Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Forward Design Changes Report).txt
-Report Written : Wednesday, November 03, 2010
+Report Written : Thursday, November 04, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/3/2010 4:52:21 PM
-Editing Time   : 3380 min
+Last Saved     : 11/4/2010 7:52:46 PM
+Editing Time   : 3440 min
 Units          : mil (precision 0)
 
 The designs are the same, so no design changes to forward.
