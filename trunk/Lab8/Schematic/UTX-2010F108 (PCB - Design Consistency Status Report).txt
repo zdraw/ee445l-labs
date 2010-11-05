@@ -12,7 +12,5 @@ Units          : mil (precision 0)
 
 Checking integrity of Schematic "C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.sch" with PCB "C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb".
 
-The designs are the same.
-
 
 End Of Report.
