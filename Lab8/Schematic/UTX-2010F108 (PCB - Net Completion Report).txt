@@ -6,8 +6,8 @@ Report Written : Thursday, November 04, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/5/2010 12:28:54 AM
-Editing Time   : 3503 min
+Last Saved     : 11/5/2010 3:35:20 AM
+Editing Time   : 3583 min
 Units          : mil (precision 0)
 
 
