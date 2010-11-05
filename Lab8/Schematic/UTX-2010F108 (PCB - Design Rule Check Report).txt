@@ -2,12 +2,12 @@ Design Rule Check Report
 ------------------------
 
 Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Design Rule Check Report).txt
-Report Written : Thursday, November 04, 2010
+Report Written : Friday, November 05, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/5/2010 4:03:27 AM
-Editing Time   : 3611 min
+Last Saved     : 11/5/2010 5:08:57 AM
+Editing Time   : 3664 min
 Units          : mil (precision 0)
 
 Results
