@@ -6,11 +6,12 @@ Report Written : Thursday, November 04, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/4/2010 7:52:46 PM
-Editing Time   : 3440 min
+Last Saved     : 11/5/2010 12:32:46 AM
+Editing Time   : 3515 min
 Units          : mil (precision 0)
 
-The designs are the same, so no design changes to forward.
+Renamed component reference "SW1" to "Reset".
+
 
 
 End Of Report.

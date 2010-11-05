@@ -1,0 +1,66 @@
+Design Status Report
+--------------------
+
+Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (SCH - Design Status Report).txt
+Report Written : Thursday, November 04, 2010
+Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.sch
+Design Title   : 
+Created        : 
+Last Saved     : 11/5/2010 12:41:14 AM
+Editing Time   : 3282 min
+Units          : mil (precision 0)
+
+Component List
+--------------
+Comp Type     Package      Components   Pins   Unused Gates
+
+frame                           2       0        2      
+0.125Wresistor  DIL             7       14       0      
+Ceramic         C               21      42       0      
+Gnd                             22      22       0      
++5V                             11      11       0      
+XTAL            DSC             1       2        0      
+tantalum        C               3       6        0      
+LM7805CT        TO-220          1       3        0      
+LEDT1.75        SIP             7       14       0      
+OffBoardSwitch  DIP             1       2        0      
+testpoint       SIP             3       3        0      
+B3F-1050        DIP             7       28       0      
+PowerJumper     SIP             1       2        0      
+BDMConnector    MOLEX 87049-0616 1       6        0      
+MAX3232         DIP             1       16       0      
+SerialDB9       SM              1       9        0      
+SPDT            MISC            1       3        0      
+MC9S12C32MFUE25 QFP80           1       80       2      
++5                              6       6        0      
+0.25Wresistor   DIP             19      38       0      
+AGM1264         MISC            1       20       0      
+SmallPot        SIP             1       3        0      
+MC34119         DIP             1       8        0      
+LM4041          MISC            1       3        0      
+Capacitor(Tantalum) C               2       4        0      
+TLV5616         SKDIP           1       8        0      
+LogicAnalyzer   DIP             1       16       0      
+Speaker         DIP             1       2        0      
+XBee            DIP             1       20       0      
+LM317L          TO92            1       3        0      
+7407            DIP             1       14       4      
+Serpac272Box    MISC            1       3        1      
+Jumper3         SIP             2       6        0      
+
+Total:                          132     417      9      
+
+Total number of unused gates in the component bin 4.
+
+Net List
+--------
+Net Class     Nets
+
+Signal          124    
+Power           7      
+Ground          1      
+
+Total:          132    
+
+
+End Of Report.
