@@ -3,7 +3,7 @@
 #include "LCDG.h"
 #include "switch.h"
 
-#define DEBOUNCE_DELAY 1000
+#define DEBOUNCE_DELAY 30000
 
 #define SINGLE_PLAYER 0
 #define MULTI_PLAYER 1  
@@ -30,6 +30,8 @@ struct {
 } cursor;
 
 static int state;
+
+static int buttonFlag;
 
 static ShipType ships[5];
 static int numShips;
@@ -73,7 +75,7 @@ void Game_Update(void) {
     LCD_GoTo(4, 1);
     LCD_OutString("Welcome to Battleship");
     
-    enableOC6(&incState, 60000, 75, 1);
+    enableOC6(&incState, 62500, 9, 1);
   }
   else if (state == PLACING_SHIPS) {
     static unsigned  char field[10][10]; 
@@ -159,7 +161,7 @@ int validShipPos(int index) {
           if(ship.y == ships[i].y) {
             if(ship.x + ship.size > ships[i].x ||
                ship.x < ships[i].x + ships[i].size) {
-              return 0;  
+              return 0;
             }
           }
         }
@@ -170,25 +172,29 @@ int validShipPos(int index) {
   return 1;
 }
 
-unsigned static short flagTime = 0;
+void flag(void) {
+  buttonFlag = 0;
+}
+
 void Game_Up(void) {
   //unsigned static short flagTime = 0;
-  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+  if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
         if(ships[numShips-1].x > 0) {
           ships[numShips-1].x--;
           Game_Update();
         }
+        buttonFlag = 1;
+        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
         break;
     }
   }
-  flagTime = TCNT;
 }
 
 void Game_Down(void) {
   //unsigned static short flagTime = 0;
-  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+  if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
         if((ships[numShips-1].orientation == HORIZONTAL && ships[numShips-1].x < 9) ||
@@ -196,30 +202,32 @@ void Game_Down(void) {
           ships[numShips-1].x++;
           Game_Update();
         }
-      break;
+        buttonFlag = 1;
+        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+        break;
     }
   }  
-  flagTime = TCNT;
 }
 
 void Game_Left(void) {
   //unsigned static short flagTime = 0;
-  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+  if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
         if(ships[numShips-1].y > 0) {
           ships[numShips-1].y--;
           Game_Update();
         }
-      break;
+        buttonFlag = 1;  
+        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+        break;
     }
   }
-  flagTime = TCNT; 
 }
 
 void Game_Right(void) {
   //unsigned static short flagTime = 0;
-  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+  if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
         if((ships[numShips-1].orientation == VERTICAL && ships[numShips-1].y < 9) ||
@@ -227,15 +235,16 @@ void Game_Right(void) {
           ships[numShips-1].y++;
           Game_Update();
         }
-      break;
+        buttonFlag = 1;  
+        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+        break;
     }
   }
-  flagTime = TCNT;
 }
 
 void Game_A(void) {
   //unsigned static short flagTime = 0;
-  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+  if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
       numShips++;
@@ -244,22 +253,29 @@ void Game_A(void) {
       ships[numShips-1].orientation = VERTICAL;
       ships[numShips-1].size = 3;      
       state = PLACING_SHIPS;
-      Game_Update();
+      Game_Update(); 
+      buttonFlag = 1;
+      enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
       break;
     }
-  }
-  flagTime = TCNT; 
+  } 
 }
 
 void Game_B(void) {
   //unsigned static short flagTime = 0;
-  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+  if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
-      ships[numShips-1].orientation ^= 1;
-      Game_Update();
-      break;
+        if((ships[numShips-1].orientation = VERTICAL && 
+            ships[numShips-1].x + ships[numShips-1].size < 10) ||
+           (ships[numShips-1].orientation = HORIZONTAL && 
+            ships[numShips-1].y + ships[numShips-1].size < 10)) {
+          ships[numShips-1].orientation ^= 1;
+          Game_Update();          
+        }
+        buttonFlag = 1;
+        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+        break;
     }
-  }
-  flagTime = TCNT; 
+  } 
 }
