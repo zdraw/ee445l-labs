@@ -78,4 +78,28 @@ void LCD_Init(void);
 // e.g., LCD_Clear(0);  // makes all pixels off
 void LCD_Clear(unsigned char data);
 
-void LCD_DrawGrid(int field[10][10]);
+//-----------------------LCD_GoTo-----------------------
+// Move cursor
+// Input: line number is 1 to 8, column from 1 to 21 
+// Output: none
+// errors: it will ignore legal addresses
+void LCD_GoTo(int line, int column);
+
+
+// ********* LCD_OutChar***********
+// Output ASCII character on the
+//    AGM1264F 128-bit by 64-bit graphics display
+// Input: 7-bit ASCII to display
+// Output: none
+// letter must be between 32 and 127 inclusive
+// execute LCD_GoTo to specify cursor location
+void LCD_OutChar(unsigned char letter);
+
+  
+//---------------------LCD_OutString--------------
+// Display String
+// Input: pointer to NULL-terminationed ASCII string 
+// Output: none
+void LCD_OutString(char *pt);
+
+void LCD_DrawGrid(unsigned char field[10][10]);
