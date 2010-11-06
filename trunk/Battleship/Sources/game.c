@@ -1,29 +1,35 @@
+#include <mc9s12dp512.h>     /* derivative information */
 #include "game.h"
 #include "LCDG.h"
+#include "switch.h"
+
+#define DEBOUNCE_DELAY 1000
 
 #define SINGLE_PLAYER 0
-#define MULTI_PLAYER 1    
-
-#define PLAYER_SCREEN 0
-#define ENEMY_SCREEN 1 
+#define MULTI_PLAYER 1  
 
 #define VERTICAL 0
 #define HORIZONTAL 1
 
 typedef struct {
-  int x;
-  int y;
-  int orientation;
-  int size;
+  unsigned int x:4;
+  unsigned int y:4;
+  unsigned int orientation:1;
+  unsigned int size:3;
 } ShipType; 
 
 typedef struct {
-  int x;
-  int y;
-  int type;
+  unsigned int x:4;
+  unsigned int y:4;
+  unsigned int type:1;
 } AttackType;
 
-static int screen;
+struct {
+  unsigned int x:4;
+  unsigned int y:4;  
+} cursor;
+
+static int state;
 
 static ShipType ships[5];
 static int numShips;
@@ -32,26 +38,53 @@ static AttackType enemyAttacks[100];
 static int numEnemyAttacks;     
 
 static AttackType playerAttacks[100];
-static int numPlayerAttacks;
+static int numPlayerAttacks;  
+
+void incState(void) {
+  switch(state) {
+    case WELCOME:
+      numShips = 1;
+      ships[0].x = 0;
+      ships[0].y = 0;
+      ships[0].orientation = VERTICAL;
+      ships[0].size = 2;      
+      state = PLACING_SHIPS;
+      break;
+  }
+  Game_Update();
+}
 
 void Game_Init(void) {
-  screen = PLAYER_SCREEN;  
+  state = WELCOME;  
   numShips = 0;
   numEnemyAttacks = 0;
   numPlayerAttacks = 0;
-}
+  cursor.x = 0;
+  cursor.y =0;
+  Game_Update();
+}             
 
-void Game_UpdateShips(void) { 
+void Game_Update(void) { 
   int i, j;
-  static int field[10][10];
   
-  for(i=0; i<10; i++) {
-    for(j=0; j<10; j++) {
-      field[i][j] = EMPTY;      
-    }
+  if(state == WELCOME) {
+  
+    LCD_Clear(0);
+    LCD_GoTo(4, 1);
+    LCD_OutString("Welcome to Battleship");
+    
+    enableOC6(&incState, 60000, 75, 1);
   }
-  
-  if(screen == PLAYER_SCREEN) {
+  else if (state == PLACING_SHIPS) {
+    static unsigned  char field[10][10]; 
+    LCD_Clear(0);
+    
+    for(i=0; i<10; i++) {
+      for(j=0; j<10; j++) {
+        field[i][j] = EMPTY;      
+      }
+    }
+    
     for(i=0; i<numShips; i++) {
       ShipType ship = ships[i];
       if(ship.orientation == HORIZONTAL) {
@@ -74,14 +107,159 @@ void Game_UpdateShips(void) {
       AttackType attack = enemyAttacks[i];
       field[attack.x][attack.y] = attack.type;  
     }
+      
+    LCD_DrawGrid(field);
   }
-  else {
-    for(i=0; i<numPlayerAttacks; i++) {
-      AttackType attack = playerAttacks[i];
-      field[attack.x][attack.y] = attack.type;  
+  
+  /*
+    
+    else {
+      for(i=0; i<numPlayerAttacks; i++) {
+        AttackType attack = playerAttacks[i];
+        field[attack.x][attack.y] = attack.type;  
+      }
+    }
+  */
+}
+
+int validShipPos(int index) {
+  ShipType ship = ships[index];
+  int i;
+  
+  for(i=0; i<numShips; i++) {
+    if(i != index) {
+      if(ship.orientation == HORIZONTAL) {
+        if(ships[i].orientation == HORIZONTAL) {
+          if(ship.x == ships[i].x) {
+            if(ship.y + ship.size > ships[i].y ||
+               ship.y < ships[i].y + ships[i].size) {
+              return 0;  
+            }
+          }
+        }
+        else {
+          if(ship.x > ships[i].x && 
+             ship.x < ships[i].x + ships[i].size &&
+             ships[i].y < ship.y &&
+             ships[i].y > ship.y + ship.size) {
+            return 0;  
+          }
+        }
+      }
+      else {
+        if(ships[i].orientation == HORIZONTAL) {
+          if(ship.x > ships[i].x && 
+             ship.x < ships[i].x + ships[i].size &&
+             ships[i].y < ship.y &&
+             ships[i].y > ship.y + ship.size) {
+            return 0;  
+          }
+        }
+        else {
+          if(ship.y == ships[i].y) {
+            if(ship.x + ship.size > ships[i].x ||
+               ship.x < ships[i].x + ships[i].size) {
+              return 0;  
+            }
+          }
+        }
+      }
     }
   }
   
+  return 1;
+}
 
-  LCD_DrawGrid(field);
+unsigned static short flagTime = 0;
+void Game_Up(void) {
+  //unsigned static short flagTime = 0;
+  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+    switch(state) {
+      case PLACING_SHIPS:
+        if(ships[numShips-1].x > 0) {
+          ships[numShips-1].x--;
+          Game_Update();
+        }
+        break;
+    }
+  }
+  flagTime = TCNT;
+}
+
+void Game_Down(void) {
+  //unsigned static short flagTime = 0;
+  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+    switch(state) {
+      case PLACING_SHIPS:
+        if((ships[numShips-1].orientation == HORIZONTAL && ships[numShips-1].x < 9) ||
+            ships[numShips-1].x + ships[numShips-1].size < 10) {
+          ships[numShips-1].x++;
+          Game_Update();
+        }
+      break;
+    }
+  }  
+  flagTime = TCNT;
+}
+
+void Game_Left(void) {
+  //unsigned static short flagTime = 0;
+  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+    switch(state) {
+      case PLACING_SHIPS:
+        if(ships[numShips-1].y > 0) {
+          ships[numShips-1].y--;
+          Game_Update();
+        }
+      break;
+    }
+  }
+  flagTime = TCNT; 
+}
+
+void Game_Right(void) {
+  //unsigned static short flagTime = 0;
+  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+    switch(state) {
+      case PLACING_SHIPS:
+        if((ships[numShips-1].orientation == VERTICAL && ships[numShips-1].y < 9) ||
+            ships[numShips-1].y + ships[numShips-1].size < 10) {
+          ships[numShips-1].y++;
+          Game_Update();
+        }
+      break;
+    }
+  }
+  flagTime = TCNT;
+}
+
+void Game_A(void) {
+  //unsigned static short flagTime = 0;
+  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+    switch(state) {
+      case PLACING_SHIPS:
+      numShips++;
+      ships[numShips-1].x = 0;
+      ships[numShips-1].y = 0;
+      ships[numShips-1].orientation = VERTICAL;
+      ships[numShips-1].size = 3;      
+      state = PLACING_SHIPS;
+      Game_Update();
+      break;
+    }
+  }
+  flagTime = TCNT; 
+}
+
+void Game_B(void) {
+  //unsigned static short flagTime = 0;
+  if(TCNT - flagTime > DEBOUNCE_DELAY) {
+    switch(state) {
+      case PLACING_SHIPS:
+      ships[numShips-1].orientation ^= 1;
+      Game_Update();
+      break;
+    }
+  }
+  flagTime = TCNT; 
 }

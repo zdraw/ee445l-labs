@@ -48,6 +48,7 @@
 #include "LCDG.h"
 #include "Timer.h"
 #include "Game.h"
+#include "switch.h"
 
 unsigned short ADCsample;	// ADC sample, 0 to 1023
 unsigned short Voltage;   // 0.01 volts, 0 to 500
@@ -58,10 +59,11 @@ void main(void) {
   LCD_Init();   // TCNT at 1.5 MHz
   ADC_Init();   // Activate ADC 
   DDRP |= 0xA0; // heartbeats, PP7 every 3000, PP5 at sampling rate
-  EnableInterrupts;
-
-  LCD_Clear(0);
-  Game_UpdateShips();
+  EnableInterrupts; 
+  Key_Init();
+  Game_Init();
+  
+  //enableOC6(&whee, 60000, 25, 5);
   
   for(;;) {
       
