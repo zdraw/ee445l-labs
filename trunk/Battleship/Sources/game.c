@@ -33,7 +33,14 @@ static int state;
 
 static int buttonFlag;
 
-static ShipType ships[5];
+static ShipType ships[5] = {
+  {0, 0, VERTICAL, 2},
+  {0, 0, VERTICAL, 3},
+  {0, 0, VERTICAL, 3},
+  {0, 0, VERTICAL, 4},
+  {0, 0, VERTICAL, 5}
+};
+
 static int numShips;
 
 static AttackType enemyAttacks[100];
@@ -45,11 +52,7 @@ static int numPlayerAttacks;
 void incState(void) {
   switch(state) {
     case WELCOME:
-      numShips = 1;
-      ships[0].x = 0;
-      ships[0].y = 0;
-      ships[0].orientation = VERTICAL;
-      ships[0].size = 2;      
+      numShips = 1;    
       state = PLACING_SHIPS;
       break;
   }
@@ -210,7 +213,6 @@ void Game_Down(void) {
 }
 
 void Game_Left(void) {
-  //unsigned static short flagTime = 0;
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
@@ -226,14 +228,18 @@ void Game_Left(void) {
 }
 
 void Game_Right(void) {
-  //unsigned static short flagTime = 0;
+  unsigned int temp;
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
-        if((ships[numShips-1].orientation == VERTICAL && ships[numShips-1].y < 9) ||
-            ships[numShips-1].y + ships[numShips-1].size < 10) {
-          ships[numShips-1].y++;
-          Game_Update();
+        temp = ships[numShips-1].y;  
+        do {
+          ships[numShips-1].y++;  
+        }while(!validShipPos(numShips-1) &&
+              ((ships[numShips-1].orientation == VERTICAL && ships[numShips-1].y < 9) ||
+                ships[numShips-1].y + ships[numShips-1].size < 10));          
+        if(validShipPos(numShips-1)) {
+          Game_Update();            
         }
         buttonFlag = 1;  
         enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
@@ -243,16 +249,10 @@ void Game_Right(void) {
 }
 
 void Game_A(void) {
-  //unsigned static short flagTime = 0;
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
       numShips++;
-      ships[numShips-1].x = 0;
-      ships[numShips-1].y = 0;
-      ships[numShips-1].orientation = VERTICAL;
-      ships[numShips-1].size = 3;      
-      state = PLACING_SHIPS;
       Game_Update(); 
       buttonFlag = 1;
       enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
@@ -262,14 +262,13 @@ void Game_A(void) {
 }
 
 void Game_B(void) {
-  //unsigned static short flagTime = 0;
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
-        if((ships[numShips-1].orientation = VERTICAL && 
-            ships[numShips-1].x + ships[numShips-1].size < 10) ||
-           (ships[numShips-1].orientation = HORIZONTAL && 
-            ships[numShips-1].y + ships[numShips-1].size < 10)) {
+        if((ships[numShips-1].orientation == VERTICAL && 
+            ships[numShips-1].y + ships[numShips-1].size <= 10) ||
+           (ships[numShips-1].orientation == HORIZONTAL && 
+            ships[numShips-1].x + ships[numShips-1].size <= 10)) {
           ships[numShips-1].orientation ^= 1;
           Game_Update();          
         }

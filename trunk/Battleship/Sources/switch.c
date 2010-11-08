@@ -42,32 +42,32 @@ void enableOC6(void (*function) (void), unsigned short delay, unsigned short del
 
 void interrupt 8 IC0Han(void) {
   Game_B();                    
-  TFLG1 = 0x3F;
+  TFLG1 = 0x01;
 }
 
 void interrupt 9 IC1Han(void) {
   Game_A();                    
-  TFLG1 = 0x3F;
+  TFLG1 = 0x02;
 }
 
 void interrupt 10 IC2Han(void) {
   Game_Right();                 
-  TFLG1 = 0x3F;
+  TFLG1 = 0x04;
 }
 
 void interrupt 11 IC3Han(void) {
   Game_Down();                  
-  TFLG1 = 0x3F;
+  TFLG1 = 0x08;
 }
 
 void interrupt 12 IC4Han(void) {
   Game_Left();                  
-  TFLG1 = 0x3F;
+  TFLG1 = 0x10;
 }
 
 void interrupt 13 IC5Han(void){
   Game_Up();                   
-  TFLG1 = 0x3F;
+  TFLG1 = 0x20;
 }
 
 void interrupt 14 OC6Han(void){
