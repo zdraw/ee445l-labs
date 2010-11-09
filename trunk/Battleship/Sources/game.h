@@ -13,13 +13,15 @@
 #define WELCOME       0
 #define PLACING_SHIPS 1
 
+#define UP    0
+#define DOWN  1
+#define LEFT  2
+#define RIGHT 3
+
 void Game_Init(void);
 void Game_Update(void);
 
 
-void Game_Up(void);
-void Game_Down(void);
-void Game_Left(void);
-void Game_Right(void);
+void Game_DPad(unsigned char direction);
 void Game_A(void);
 void Game_B(void);
