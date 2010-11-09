@@ -51,22 +51,22 @@ void interrupt 9 IC1Han(void) {
 }
 
 void interrupt 10 IC2Han(void) {
-  Game_Right();                 
+  Game_DPad(RIGHT);                 
   TFLG1 = 0x04;
 }
 
 void interrupt 11 IC3Han(void) {
-  Game_Down();                  
+  Game_DPad(DOWN);                  
   TFLG1 = 0x08;
 }
 
 void interrupt 12 IC4Han(void) {
-  Game_Left();                  
+  Game_DPad(LEFT);                  
   TFLG1 = 0x10;
 }
 
 void interrupt 13 IC5Han(void){
-  Game_Up();                   
+  Game_DPad(UP);                   
   TFLG1 = 0x20;
 }
 

@@ -131,6 +131,12 @@ int validShipPos(int index) {
   ShipType ship = ships[index];
   int i;
   
+  if(ship.x < 0 || ship.x > 9 || ship.y < 0 || ship.y > 9 ||
+    (ship.orientation == HORIZONTAL && ship.x + ship.size > 9) ||
+    (ship.orientation == VERTICAL && ship.y + ship.size > 9)) {
+      return 0;
+  }
+  
   for(i=0; i<numShips; i++) {
     if(i != index) {
       if(ship.orientation == HORIZONTAL) {
@@ -179,8 +185,47 @@ void flag(void) {
   buttonFlag = 0;
 }
 
-void Game_Up(void) {
-  //unsigned static short flagTime = 0;
+void Game_DPad(unsigned char direction) {
+  unsigned int tempX, tempY;
+  if(!buttonFlag) {
+    switch(state) {
+      case PLACING_SHIPS:
+        tempX = ships[numShips-1].x;
+        tempY = ships[numShips-1].y;  
+        
+        do {
+          switch(direction) {
+            case UP:
+              ships[numShips-1].x--;
+              break;
+            case DOWN:
+              ships[numShips-1].x++;
+              break;
+            case LEFT:
+              ships[numShips-1].y--;
+              break;
+            case RIGHT:
+              ships[numShips-1].y++;
+              break;
+          }
+        }while(!validShipPos(numShips-1));          
+        
+        if(validShipPos(numShips-1)) {
+          Game_Update();            
+        }
+        else {
+          ships[numShips-1].x = tempX;
+          ships[numShips-1].y = tempY;
+        }
+        
+        buttonFlag = 1;  
+        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+        break;
+    }
+  }
+}
+
+/*void Game_Up(void) {
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
@@ -196,7 +241,6 @@ void Game_Up(void) {
 }
 
 void Game_Down(void) {
-  //unsigned static short flagTime = 0;
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
@@ -233,20 +277,24 @@ void Game_Right(void) {
     switch(state) {
       case PLACING_SHIPS:
         temp = ships[numShips-1].y;  
+        
         do {
-          ships[numShips-1].y++;  
-        }while(!validShipPos(numShips-1) &&
-              ((ships[numShips-1].orientation == VERTICAL && ships[numShips-1].y < 9) ||
-                ships[numShips-1].y + ships[numShips-1].size < 10));          
+          ships[numShips-1].y++;
+        }while(!validShipPos(numShips-1));          
+        
         if(validShipPos(numShips-1)) {
           Game_Update();            
         }
+        else {
+          ships[numShips-1].y = temp;  
+        }
+        
         buttonFlag = 1;  
         enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
         break;
     }
   }
-}
+}*/
 
 void Game_A(void) {
   if(!buttonFlag) {
