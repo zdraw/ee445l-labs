@@ -127,15 +127,21 @@ void Game_Update(void) {
   */
 }
 
+int shipInBounds(int index) {
+  ShipType ship = ships[index];
+  
+  if(ship.x < 0 || ship.x > 9 || ship.y < 0 || ship.y > 9 ||
+    (ship.orientation == VERTICAL && ship.x + ship.size > 10) ||
+    (ship.orientation == HORIZONTAL && ship.y + ship.size > 10)) {
+      return 0;
+  } 
+  
+  return 1;
+}
+
 int validShipPos(int index) {
   ShipType ship = ships[index];
   int i;
-  
-  if(ship.x < 0 || ship.x > 9 || ship.y < 0 || ship.y > 9 ||
-    (ship.orientation == HORIZONTAL && ship.x + ship.size > 9) ||
-    (ship.orientation == VERTICAL && ship.y + ship.size > 9)) {
-      return 0;
-  }
   
   for(i=0; i<numShips; i++) {
     if(i != index) {
@@ -149,20 +155,20 @@ int validShipPos(int index) {
           }
         }
         else {
-          if(ship.x > ships[i].x && 
+          if(ship.x >= ships[i].x && 
              ship.x < ships[i].x + ships[i].size &&
-             ships[i].y < ship.y &&
-             ships[i].y > ship.y + ship.size) {
+             ships[i].y >= ship.y &&
+             ships[i].y < ship.y + ship.size) {
             return 0;  
           }
         }
       }
       else {
         if(ships[i].orientation == HORIZONTAL) {
-          if(ship.x > ships[i].x && 
-             ship.x < ships[i].x + ships[i].size &&
-             ships[i].y < ship.y &&
-             ships[i].y > ship.y + ship.size) {
+          if(ship.y >= ships[i].y && 
+             ship.y < ships[i].y + ships[i].size &&
+             ships[i].x >= ship.x &&
+             ships[i].x < ship.x + ship.size) {
             return 0;  
           }
         }
@@ -208,9 +214,9 @@ void Game_DPad(unsigned char direction) {
               ships[numShips-1].y++;
               break;
           }
-        }while(!validShipPos(numShips-1));          
+        }while(!validShipPos(numShips-1) && shipInBounds(numShips-1));          
         
-        if(validShipPos(numShips-1)) {
+        if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
           Game_Update();            
         }
         else {
@@ -224,77 +230,6 @@ void Game_DPad(unsigned char direction) {
     }
   }
 }
-
-/*void Game_Up(void) {
-  if(!buttonFlag) {
-    switch(state) {
-      case PLACING_SHIPS:
-        if(ships[numShips-1].x > 0) {
-          ships[numShips-1].x--;
-          Game_Update();
-        }
-        buttonFlag = 1;
-        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-        break;
-    }
-  }
-}
-
-void Game_Down(void) {
-  if(!buttonFlag) {
-    switch(state) {
-      case PLACING_SHIPS:
-        if((ships[numShips-1].orientation == HORIZONTAL && ships[numShips-1].x < 9) ||
-            ships[numShips-1].x + ships[numShips-1].size < 10) {
-          ships[numShips-1].x++;
-          Game_Update();
-        }
-        buttonFlag = 1;
-        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-        break;
-    }
-  }  
-}
-
-void Game_Left(void) {
-  if(!buttonFlag) {
-    switch(state) {
-      case PLACING_SHIPS:
-        if(ships[numShips-1].y > 0) {
-          ships[numShips-1].y--;
-          Game_Update();
-        }
-        buttonFlag = 1;  
-        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-        break;
-    }
-  }
-}
-
-void Game_Right(void) {
-  unsigned int temp;
-  if(!buttonFlag) {
-    switch(state) {
-      case PLACING_SHIPS:
-        temp = ships[numShips-1].y;  
-        
-        do {
-          ships[numShips-1].y++;
-        }while(!validShipPos(numShips-1));          
-        
-        if(validShipPos(numShips-1)) {
-          Game_Update();            
-        }
-        else {
-          ships[numShips-1].y = temp;  
-        }
-        
-        buttonFlag = 1;  
-        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-        break;
-    }
-  }
-}*/
 
 void Game_A(void) {
   if(!buttonFlag) {
@@ -313,12 +248,12 @@ void Game_B(void) {
   if(!buttonFlag) {
     switch(state) {
       case PLACING_SHIPS:
-        if((ships[numShips-1].orientation == VERTICAL && 
-            ships[numShips-1].y + ships[numShips-1].size <= 10) ||
-           (ships[numShips-1].orientation == HORIZONTAL && 
-            ships[numShips-1].x + ships[numShips-1].size <= 10)) {
-          ships[numShips-1].orientation ^= 1;
+        ships[numShips-1].orientation ^= 1;
+        if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
           Game_Update();          
+        }
+        else {
+          ships[numShips-1].orientation ^= 1;
         }
         buttonFlag = 1;
         enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
