@@ -52,6 +52,21 @@ unsigned long br;
     0   0    SBK, no send break */ 
 }
 
+//-------------------------SCI0_OutChar------------------------
+// Wait for buffer to be empty, output 8-bit to serial port
+// busy-waiting synchronization
+// Input: 8-bit data to be transferred
+// Output: none
+void SCI1_OutChar(char data) {
+  while((SCI0SR1 & TDRE) == 0){};
+  SCI0DRL = data;
+}
+
+//-------------------------SCI0_InChar------------------------
+// Wait for new serial port input, busy-waiting synchronization
+// The input is not echoed
+// Input: none
+// Output: ASCII code for key typed
 unsigned char SCI1_InChar(void) {
   unsigned char data;
   while(!Fifo_Get(&data)){};

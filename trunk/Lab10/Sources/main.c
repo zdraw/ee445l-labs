@@ -20,11 +20,21 @@
 #include "SCI1.h"
 
 void main(void) {
-  PLL_Init(); // 24 MHz
-  SCI1_Init(115200); // SCI output to PC
+  PLL_Init(); // 24 MHz 
   LCD_Open();
+  SCI1_Init(115200); // SCI output to PC
      
   asm cli;
   
-  for(;;){};
+  for(;;) {
+    unsigned char data;
+    
+    data = SCI1_InChar();
+    if(data == 0x0A) {
+      LCD_Clear();      
+    }
+    else {
+      LCD_OutChar(data);  
+    }
+  };
 }

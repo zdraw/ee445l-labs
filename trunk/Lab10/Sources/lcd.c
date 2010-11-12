@@ -41,7 +41,7 @@ static unsigned short OpenFlag=0;
 void static wait(unsigned short delay){ 
 unsigned short startTime;
   startTime = TCNT;
-  while((TCNT-startTime) <= delay/8){}  
+  while((TCNT-startTime) <= delay){}  
 }
 //---------------------1mswait---------------------
 // time delay
@@ -49,7 +49,7 @@ unsigned short startTime;
 // Output: none
 void static wait1ms(unsigned short msec){ 
   for(;msec;msec--){
-    wait(1500);    // 1ms wait
+    wait(188);    // 1ms wait
   }
 }
   
@@ -116,6 +116,8 @@ short LCD_Open(void){
   }
   DDRH |= 0x7F;    // PH6-0 output to LCD
   PTH &= ~0x20;    // PH5=R/W=0 means write
+  TSCR1 = 0x80;
+  TSCR2 = 0x07; 
 /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
     divide  FastMode(24MHz)    Slow Mode (8MHz)
 000   1     42ns  TOF  2.73ms  125ns TOF 8.192ms

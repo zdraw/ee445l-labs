@@ -28,3 +28,7 @@
 // Output: none
 // assumes a module clock frequency of 24 MHz
 void SCI1_Init(unsigned long baudRate);
+
+void SCI1_OutChar(char data);
+
+unsigned char SCI1_InChar(void);
