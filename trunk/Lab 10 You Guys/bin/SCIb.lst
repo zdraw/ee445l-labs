@@ -1,0 +1,830 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename ************** SCIb.C *****************************
+    2:  // Interrupting I/O routines to 9S12DP512 virtual serial port 
+    3:  
+    4:  // 9S12DP512 PT2 is RxD (input to 9S12DP512) 
+    5:  // 9S12DP512 PT3 is TxD (output from 9S12DP512)
+    6:  // 9S12DP512 channel 4 output compare interrupt used 
+    7:  // baud rate can be from 1000 to 50000 bits/sec
+    8:  // 1 start bit, 8 bit data, 1 stop
+    9:  // Jonathan W. Valvano 11/12/09
+   10:  
+   11:  //  This example accompanies the books
+   12:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+   13:  //        Thompson, copyright (c) 2006,
+   14:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+   15:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   16:  
+   17:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   18:  //    You may use, edit, run or distribute this file 
+   19:  //    as long as the above copyright notice remains 
+   20:  
+   21:  #include "derivative.h"      /* derivative-specific definitions */
+   22:  #include "SCIb.h"
+   23:  #include "RxFifob.h"  
+   24:  #include "TxFifob.h" 
+   25:   
+   26:  // Tx interrupt rate at the baud rate
+   27:  // Rx interrupt rate at the baud rate
+   28:  // change the following two defines in order to adjust baud rate
+   29:  unsigned short BitTime;     // 24000000/baudrate
+   30:  unsigned short HalfBitTime; // 24000000/baudrate/2
+   31:  // E.g., for 9600, BitTime=2500 
+   32:  
+   33:  static unsigned short TxCount,TxData; // transmit shift register
+   34:  static unsigned char RxCount,RxData;  // receive shift register
+   35:  unsigned char RxFull,NoStart,NoStop;  // number of receiver errors
+   36:  
+   37:  //-------------------------SCIb_Init------------------------
+   38:  // Initialize virtual Serial port SCI
+   39:  // baudrate can be from 1000 to 50000 bits/sec
+   40:  // 1 start, 8 data, 1 stop bit
+   41:  // Input: none
+   42:  // Output: none
+   43:  // assumes a module clock frequency of 24 MHz
+   44:  void SCIb_Init(unsigned short baudrate){
+*** EVALUATION ***
+
+Function: SCIb_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   45:    RxFifob_Init();
+  0001 160000       [4]     JSR   RxFifob_Init
+   46:    TxFifob_Init();
+  0004 160000       [4]     JSR   TxFifob_Init
+   47:    BitTime = (unsigned short)(24000000L/(unsigned long)baudrate);
+  0007 ec80         [3]     LDD   0,SP
+  0009 3b           [2]     PSHD  
+  000a c7           [1]     CLRB  
+  000b 87           [1]     CLRA  
+  000c 3b           [2]     PSHD  
+  000d 8636         [1]     LDAA  #54
+  000f ce016e       [2]     LDX   #366
+  0012 160000       [4]     JSR   _LDIVU
+  0015 7c0000       [3]     STD   BitTime
+   48:    HalfBitTime = BitTime/2;
+  0018 49           [1]     LSRD  
+  0019 7c0000       [3]     STD   HalfBitTime
+   49:    DDRT |= 0x08;     // PT3 is TxD output
+  001c 1c000008     [4]     BSET  _DDRT,#8
+   50:    DDRT &= ~0x04;    // PT2 RxD input
+  0020 1d000004     [4]     BCLR  _DDRT,#4
+   51:    PERT |= 0x04;     // internal pullup on PT2
+  0024 1c000004     [4]     BSET  _PERT,#4
+   52:    PTT  |= 0x08;     // PT3 high TxD idle
+  0028 1c000008     [4]     BSET  _PTT,#8
+   53:    RxFull = 0; NoStart = 0; NoStop = 0; 
+  002c 790000       [3]     CLR   RxFull
+  002f 790000       [3]     CLR   NoStart
+  0032 790000       [3]     CLR   NoStop
+   54:    RxCount =0;       // means receiver is idle
+  0035 790000       [3]     CLR   RxCount
+   55:    TxCount =0;       // means transmitter is idle
+  0038 c7           [1]     CLRB  
+  0039 87           [1]     CLRA  
+  003a 7c0000       [3]     STD   TxCount
+   56:    TIOS  &= ~0x04;   // activate TC2 as input capture
+  003d 4d0004       [4]     BCLR  _TIOS,#4
+   57:    TIOS  |= 0x18;    // activate TC3,TC4 as output compares
+  0040 4c0018       [4]     BSET  _TIOS,#24
+   58:    TSCR1 = 0x80;     // Enable TCNT, 24MHz 
+  0043 c680         [1]     LDAB  #128
+  0045 5b00         [2]     STAB  _TSCR1
+   59:    TSCR2 = 0x00;     // divide by 1 TCNT prescale, TOI disarm
+  0047 5a00         [2]     STAA  _TSCR2
+   60:    PACTL = 0;        // timer prescale used for TCNT
+  0049 5a00         [2]     STAA  _PACTL
+   61:    TCTL4 = 0x20;     // falling edge IC2
+  004b c620         [1]     LDAB  #32
+  004d 5b00         [2]     STAB  _TCTL4
+   62:    TIE  |= 0x0C;     // arm OC3, IC2
+  004f 4c000c       [4]     BSET  _TIE,#12
+   63:    TC3   = TCNT+50;  // first interrupt right away
+  0052 de00         [3]     LDX   _TCNT
+  0054 1ae032       [2]     LEAX  50,X
+  0057 5e00         [2]     STX   _TC3
+   64:    asm cli   /* enable interrupts */
+  0059 10ef         [1]     CLI   
+   65:  }
+  005b 3a           [3]     PULD  
+  005c 3d           [5]     RTS   
+   66:  
+   67:  //-------------------------SCIb_Clear------------------------
+   68:  // Initialize buffers, halt activity
+   69:  // Input: none
+   70:  // Output: none
+   71:  void SCIb_Clear(void){
+*** EVALUATION ***
+
+Function: SCIb_Clear
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+   72:    RxFifob_Init();
+  0000 160000       [4]     JSR   RxFifob_Init
+   73:    TxFifob_Init();
+  0003 160000       [4]     JSR   TxFifob_Init
+   74:    PTT  |= 0x08;     // PT3 high TxD idle
+  0006 1c000008     [4]     BSET  _PTT,#8
+   75:    RxFull = 0; NoStart = 0; NoStop = 0; 
+  000a 790000       [3]     CLR   RxFull
+  000d 790000       [3]     CLR   NoStart
+  0010 790000       [3]     CLR   NoStop
+   76:    RxCount =0;       // means receiver is idle
+  0013 790000       [3]     CLR   RxCount
+   77:    TxCount =0;       // means transmitter is idle
+  0016 c7           [1]     CLRB  
+  0017 87           [1]     CLRA  
+  0018 7c0000       [3]     STD   TxCount
+   78:  }  
+  001b 3d           [5]     RTS   
+   79:    
+   80:  //-------------------------SCIb_InChar-----------------------
+   81:  // Wait for new serial port input, interrupt synchronization
+   82:  // Input: none
+   83:  // Output: ASCII code for key typed
+   84:  unsigned char SCIb_InChar(void){ 
+*** EVALUATION ***
+
+Function: SCIb_InChar
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+   85:  unsigned char letter;
+   86:    while (RxFifob_Get(&letter) == 0){};
+  0001 b774         [1]     TFR   SP,D
+  0003 160000       [4]     JSR   RxFifob_Get
+  0006 0454f8       [3]     TBEQ  D,*-5 ;abs = 0001
+   87:    return(letter);
+  0009 e680         [3]     LDAB  0,SP
+   88:  }
+  000b 32           [3]     PULA  
+  000c 3d           [5]     RTS   
+   89:  
+   90:  //-------------------------SCIb_InChar2------------------------
+   91:  // Wait for new serial port input, interrupt synchronization
+   92:  // Input: none
+   93:  // Output: ASCII code for key typed
+   94:  // Worst case response time is 20 ms
+   95:  // so it returns with 0xFE if no response in 20 ms
+   96:  unsigned char SCIb_InChar2(void){ 
+*** EVALUATION ***
+
+Function: SCIb_InChar2
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+   97:    unsigned char letter;
+   98:    short TimeLeft,EndT;
+   99:    unsigned short timeOut=2000; // 20ms
+  0000 cc07d0       [2]     LDD   #2000
+  0003 6ca9         [2]     STD   7,-SP
+  100:    while (RxFifob_Get(&letter) == 0){
+  0005 201f         [3]     BRA   *+33 ;abs = 0026
+  101:      EndT = TCNT+240;       // 240 counts (42ns cycles) in 10us 
+  0007 dc00         [3]     LDD   _TCNT
+  0009 c300f0       [2]     ADDD  #240
+  000c 6c83         [2]     STD   3,SP
+  102:      do{
+  103:        TimeLeft = (short)TCNT-EndT;
+  000e dc00         [3]     LDD   _TCNT
+  0010 a383         [3]     SUBD  3,SP
+  0012 6c85         [2]     STD   5,SP
+  104:      }
+  105:      while((TimeLeft<0)||(TimeLeft>100));   // wait 10us
+  0014 2df8         [3/1]   BLT   *-6 ;abs = 000e
+  0016 8c0064       [2]     CPD   #100
+  0019 2ef3         [3/1]   BGT   *-11 ;abs = 000e
+  106:      timeOut--;
+  001b ee80         [3]     LDX   0,SP
+  001d 09           [1]     DEX   
+  001e 6e80         [2]     STX   0,SP
+  107:      if(timeOut == 0){
+  0020 2604         [3/1]   BNE   *+6 ;abs = 0026
+  108:        return(0xFE);
+  0022 c6fe         [1]     LDAB  #254
+  0024 200c         [3]     BRA   *+14 ;abs = 0032
+  0026 1a82         [2]     LEAX  2,SP
+  0028 b754         [1]     TFR   X,D
+  002a 160000       [4]     JSR   RxFifob_Get
+  002d 0454d7       [3]     TBEQ  D,*-38 ;abs = 0007
+  109:      }
+  110:    }
+  111:    return(letter);
+  0030 e682         [3]     LDAB  2,SP
+  112:  }
+  0032 1b87         [2]     LEAS  7,SP
+  0034 3d           [5]     RTS   
+  113:  
+  114:  //-------------------------SCIb_OutChar------------------------
+  115:  // Wait for buffer to be empty, output 8-bit to serial port
+  116:  // interrupt synchronization
+  117:  // Input: 8-bit data to be transferred
+  118:  // Output: none
+  119:  void SCIb_OutChar(unsigned char data){
+*** EVALUATION ***
+
+Function: SCIb_OutChar
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  120:    while (TxFifob_Put(data) == 0){}; // spin if TxFifo is full
+  0001 e680         [3]     LDAB  0,SP
+  0003 160000       [4]     JSR   TxFifob_Put
+  0006 0454f8       [3]     TBEQ  D,*-5 ;abs = 0001
+  121:  }
+  0009 32           [3]     PULA  
+  000a 3d           [5]     RTS   
+  122:      
+  123:  //-------------------------SCIb_InStatus--------------------------
+  124:  // Checks if new input is ready, TRUE if new input is ready
+  125:  // Input: none
+  126:  // Output: TRUE if a call to InChar will return right away with data
+  127:  //         FALSE if a call to InChar will wait for input
+  128:  int SCIb_InStatus(void){  
+*** EVALUATION ***
+
+Function: SCIb_InStatus
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  129:    return(RxFifob_Status());
+  0000 160000       [4]     JSR   RxFifob_Status
+  130:  }
+  0003 3d           [5]     RTS   
+  131:  
+  132:  //-----------------------SCIb_OutStatus----------------------------
+  133:  // Checks if there is room in the FIFO, 
+  134:  // TRUE if a call to OutChar will not spin
+  135:  int SCIb_OutStatus(void){
+*** EVALUATION ***
+
+Function: SCIb_OutStatus
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  136:    return(TxFifob_Status());
+  0000 160000       [4]     JSR   TxFifob_Status
+  137:  }
+  0003 3d           [5]     RTS   
+  138:  
+  139:  /*----------------Input Capture 2 Handler---------------*/
+  140:  // used to detect start bit on RxD input
+  141:  // PT2=RxD input
+  142:  // ______			 ____ ____ ____ ____ ____ ____ ____ ____ ______
+  143:  //       |  S | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  | Stop  
+  144:  //       |____|____|____|____|____|____|____|____|____|
+  145:  // 			
+  146:  // IC2   ^
+  147:  // OC4      ^    ^    ^    ^    ^    ^    ^    ^    ^    ^
+  148:  interrupt 10 void T2Handler(void){
+*** EVALUATION ***
+
+Function: T2Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  149:    TC4 = TC2+HalfBitTime;   // 1/2 bit time later
+  0000 dc00         [3]     LDD   _TC2
+  0002 f30000       [3]     ADDD  HalfBitTime
+  0005 5c00         [2]     STD   _TC4
+  150:    TIE  |= 0x10;            // arm OC4
+  0007 4c0010       [4]     BSET  _TIE,#16
+  151:    TIE  &= ~0x04;           // disarm IC2
+  000a 4d0004       [4]     BCLR  _TIE,#4
+  152:    RxCount = 10;            // 10 bits/frame
+  000d c60a         [1]     LDAB  #10
+  000f 7b0000       [3]     STAB  RxCount
+  153:    TFLG1 = 0x14;            // acknowledge OC4,IC2
+  0012 58           [1]     LSLB  
+  0013 5b00         [2]     STAB  _TFLG1
+  154:  }
+  0015 0b           [8]     RTI   
+  155:  
+  156:  /*----------------Output Compare 3 Handler---------------*/
+  157:  // used to output virtual TxData
+  158:  // PT3=TxD output
+  159:  // ______			 ____ ____ ____ ____ ____ ____ ____ ____ ______
+  160:  //       |  S | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  | Stop  
+  161:  //       |____|____|____|____|____|____|____|____|____|
+  162:  // 			
+  163:  // OC3   ^    ^    ^    ^    ^    ^    ^    ^    ^    ^
+  164:  interrupt 11 void T3Handler(void){  char data;
+*** EVALUATION ***
+
+Function: T3Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+  165:    TFLG1 = 0x08;         // acknowledge OC3
+  0001 c608         [1]     LDAB  #8
+  0003 5b00         [2]     STAB  _TFLG1
+  166:    TC3 = TC3+BitTime;    
+  0005 dc00         [3]     LDD   _TC3
+  0007 f30000       [3]     ADDD  BitTime
+  000a 5c00         [2]     STD   _TC3
+  167:    if(TxCount==0){
+  000c fc0000       [3]     LDD   TxCount
+  000f 261a         [3/1]   BNE   *+28 ;abs = 002b
+  168:      if(TxFifob_Get(&data)){
+  0011 b774         [1]     TFR   SP,D
+  0013 160000       [4]     JSR   TxFifob_Get
+  0016 04442d       [3]     TBEQ  D,*+48 ;abs = 0046
+  169:        TxData = 0x100+(0xFF&data); // one stop bit+data
+  0019 e680         [3]     LDAB  0,SP
+  001b 87           [1]     CLRA  
+  001c c30100       [2]     ADDD  #256
+  001f 7c0000       [3]     STD   TxData
+  170:        PTT &= ~0x08;    // start bit
+  0022 1d000008     [4]     BCLR  _PTT,#8
+  171:        TxCount = 9;
+  0026 c609         [1]     LDAB  #9
+  0028 87           [1]     CLRA  
+  0029 2018         [3]     BRA   *+26 ;abs = 0043
+  172:      }
+  173:    }
+  174:    else {
+  175:      if(TxData&0x0001){
+  002b 1f00000106   [5]     BRCLR TxData:1,#1,*+11 ;abs = 0036
+  176:        PTT |= 0x08;  // data bit high
+  0030 1c000008     [4]     BSET  _PTT,#8
+  177:      } else{
+  0034 2004         [3]     BRA   *+6 ;abs = 003a
+  178:        PTT &= ~0x08; // data bit low
+  0036 1d000008     [4]     BCLR  _PTT,#8
+  179:      }
+  180:      TxData = TxData>>1;
+  003a 740000       [4]     LSR   TxData
+  003d 760000       [4]     ROR   TxData:1
+  181:      TxCount--;
+  0040 830001       [2]     SUBD  #1
+  0043 7c0000       [3]     STD   TxCount
+  182:    }
+  183:  }
+  0046 32           [3]     PULA  
+  0047 0b           [8]     RTI   
+  184:  /*----------------Output Compare 4 Handler---------------*/
+  185:  // used to input virtual RxData
+  186:  interrupt 12 void T4Handler(void){ 
+*** EVALUATION ***
+
+Function: T4Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  187:    TC4 = TC4+BitTime;    
+  0000 dc00         [3]     LDD   _TC4
+  0002 f30000       [3]     ADDD  BitTime
+  0005 5c00         [2]     STD   _TC4
+  188:    RxCount--;
+  0007 730000       [4]     DEC   RxCount
+  189:    if(RxCount==9){       // check start bit
+  000a f60000       [3]     LDAB  RxCount
+  000d c109         [1]     CMPB  #9
+  000f 260a         [3/1]   BNE   *+12 ;abs = 001b
+  190:      if(PTT&0x04){
+  0011 1f00000434   [5]     BRCLR _PTT,#4,*+57 ;abs = 004a
+  191:        NoStart++;        // framing error, no start
+  0016 720000       [4]     INC   NoStart
+  0019 202f         [3]     BRA   *+49 ;abs = 004a
+  192:      }
+  193:    }
+  194:    else{
+  195:      if(RxCount){	 // RxCount is 8,7,6,5,4,3,2,1
+  001b 04410e       [3]     TBEQ  B,*+17 ;abs = 002c
+  196:        RxData = RxData >>1;
+  001e 740000       [4]     LSR   RxData
+  197:        if(PTT&0x04){
+  0021 1f00000424   [5]     BRCLR _PTT,#4,*+41 ;abs = 004a
+  198:          RxData |= 0x80;	 // data bit is high
+  0026 1c000080     [4]     BSET  RxData,#128
+  002a 201e         [3]     BRA   *+32 ;abs = 004a
+  199:        }
+  200:      } 
+  201:      else{				        // RxCount is 0
+  202:        if((PTT&0x04)==0){
+  002c 1e00000403   [5]     BRSET _PTT,#4,*+8 ;abs = 0034
+  203:          NoStop++;       // framing error, no stop
+  0031 720000       [4]     INC   NoStop
+  204:        }
+  205:        if(RxFifob_Put(RxData)==0){
+  0034 f60000       [3]     LDAB  RxData
+  0037 160000       [4]     JSR   RxFifob_Put
+  003a 046407       [3]     TBNE  D,*+10 ;abs = 0044
+  206:          PTT &= ~0x01;   // PT0 LED on means lost data
+  003d 1d000001     [4]     BCLR  _PTT,#1
+  207:          RxFull++;       // RxFifo full
+  0041 720000       [4]     INC   RxFull
+  208:        }
+  209:        TIE  |= 0x04;     // arm IC2
+  0044 4c0004       [4]     BSET  _TIE,#4
+  210:        TIE  &= ~0x10;    // disarm OC4
+  0047 4d0010       [4]     BCLR  _TIE,#16
+  211:  		}
+  212:  	}
+  213:  
+  214:    TFLG1 = 0x14;         // acknowledge IC2,OC4
+  004a c614         [1]     LDAB  #20
+  004c 5b00         [2]     STAB  _TFLG1
+  215:  
+  216:  }
+  004e 0b           [8]     RTI   
+  217:  
+  218:  
+  219:  
+  220:  
+  221:  //-------------------------SCIb_OutString------------------------
+  222:  // Output String (NULL termination), interrupt synchronization
+  223:  // Input: pointer to a NULL-terminated string to be transferred
+  224:  // Output: none
+  225:  void SCIb_OutString(char *pt){
+*** EVALUATION ***
+
+Function: SCIb_OutString
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  226:    while(*pt){
+  0000 b745         [1]     TFR   D,X
+  0002 2006         [3]     BRA   *+8 ;abs = 000a
+  227:      SCIb_OutChar(*pt);
+  0004 34           [2]     PSHX  
+  0005 160000       [4]     JSR   SCIb_OutChar
+  228:      pt++;
+  0008 30           [3]     PULX  
+  0009 08           [1]     INX   
+  000a e600         [3]     LDAB  0,X
+  000c 26f6         [3/1]   BNE   *-8 ;abs = 0004
+  229:    }
+  230:  }
+  000e 3d           [5]     RTS   
+  231:  
+  232:  
+  233:  //----------------------SCIb_InUDec-------------------------------
+  234:  // InUDec accepts ASCII input in unsigned decimal format
+  235:  //     and converts to a 16 bit unsigned number
+  236:  //     valid range is 0 to 65535
+  237:  // Input: none
+  238:  // Output: 16-bit unsigned number
+  239:  // If you enter a number above 65535, it will truncate without an error
+  240:  // Backspace will remove last digit typed
+  241:  unsigned short SCIb_InUDec(void){	
+*** EVALUATION ***
+
+Function: SCIb_InUDec
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 1b9b         [2]     LEAS  -5,SP
+  242:  unsigned short number=0, length=0;
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c83         [2]     STD   3,SP
+  0006 6c81         [2]     STD   1,SP
+  243:  char character;
+  244:    character = SCIb_InChar();	
+  245:    while(character!=CR){ // accepts until carriage return input
+  0008 203b         [3]     BRA   *+61 ;abs = 0045
+  246:  // The next line checks that the input is a digit, 0-9.
+  247:  // If the character is not 0-9, it is ignored and not echoed
+  248:      if((character>='0') && (character<='9')) {
+  000a c030         [1]     SUBB  #48
+  000c c109         [1]     CMPB  #9
+  000e 2218         [3/1]   BHI   *+26 ;abs = 0028
+  249:        number = 10*number+(character-'0');   // this line overflows if above 65535
+  0010 e680         [3]     LDAB  0,SP
+  0012 b714         [1]     SEX   B,D
+  0014 830030       [2]     SUBD  #48
+  0017 b745         [1]     TFR   D,X
+  0019 c60a         [1]     LDAB  #10
+  001b 87           [1]     CLRA  
+  001c ed83         [3]     LDY   3,SP
+  001e 13           [3]     EMUL  
+  001f 1ae6         [2]     LEAX  D,X
+  0021 6e83         [2]     STX   3,SP
+  250:        length++;
+  0023 ee81         [3]     LDX   1,SP
+  0025 08           [1]     INX   
+  251:        SCIb_OutChar(character);
+  252:      } 
+  0026 2016         [3]     BRA   *+24 ;abs = 003e
+  253:  // If the input is a backspace, then the return number is
+  254:  // changed and a backspace is outputted to the screen
+  255:      else if((character==BS) && length){
+  0028 e680         [3]     LDAB  0,SP
+  002a c108         [1]     CMPB  #8
+  002c 2617         [3/1]   BNE   *+25 ;abs = 0045
+  002e ee81         [3]     LDX   1,SP
+  0030 2713         [3/1]   BEQ   *+21 ;abs = 0045
+  256:        number /= 10;
+  0032 ec83         [3]     LDD   3,SP
+  0034 ce000a       [2]     LDX   #10
+  0037 1810         [12]    IDIV  
+  0039 6e83         [2]     STX   3,SP
+  257:        length--;
+  003b ee81         [3]     LDX   1,SP
+  003d 09           [1]     DEX   
+  003e 6e81         [2]     STX   1,SP
+  258:        SCIb_OutChar(character);
+  0040 e680         [3]     LDAB  0,SP
+  0042 160000       [4]     JSR   SCIb_OutChar
+  259:      }
+  260:      character = SCIb_InChar();	
+  0045 160000       [4]     JSR   SCIb_InChar
+  0048 6b80         [2]     STAB  0,SP
+  004a c10d         [1]     CMPB  #13
+  004c 26bc         [3/1]   BNE   *-66 ;abs = 000a
+  261:    }
+  262:    return number;
+  004e ec83         [3]     LDD   3,SP
+  263:  }
+  0050 1b85         [2]     LEAS  5,SP
+  0052 3d           [5]     RTS   
+  264:  
+  265:  
+  266:  
+  267:  //-----------------------SCIb_OutUDec-----------------------
+  268:  // Output a 16-bit number in unsigned decimal format
+  269:  // Input: 16-bit number to be transferred
+  270:  // Output: none
+  271:  // Variable format 1-5 digits with no space before or after
+  272:  void SCIb_OutUDec(unsigned short n){
+*** EVALUATION ***
+
+Function: SCIb_OutUDec
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  273:  // This function uses recursion to convert decimal number
+  274:  //   of unspecified length as an ASCII string 
+  275:    if(n >= 10){
+  0001 8c000a       [2]     CPD   #10
+  0004 2512         [3/1]   BCS   *+20 ;abs = 0018
+  276:      SCIb_OutUDec(n/10);
+  0006 ce000a       [2]     LDX   #10
+  0009 1810         [12]    IDIV  
+  000b b754         [1]     TFR   X,D
+  000d 0700         [4]     BSR   SCIb_OutUDec
+  277:      n = n%10;
+  000f ec80         [3]     LDD   0,SP
+  0011 ce000a       [2]     LDX   #10
+  0014 1810         [12]    IDIV  
+  0016 6c80         [2]     STD   0,SP
+  278:    }
+  279:    SCIb_OutChar(n+'0'); /* n is between 0 and 9 */
+  0018 e681         [3]     LDAB  1,SP
+  001a cb30         [1]     ADDB  #48
+  001c 160000       [4]     JSR   SCIb_OutChar
+  280:  }
+  001f 3a           [3]     PULD  
+  0020 3d           [5]     RTS   
+  281:  
+  282:  
+  283:  
+  284:  //---------------------SCIb_InUHex----------------------------------------
+  285:  // Accepts ASCII input in unsigned hexadecimal (base 16) format
+  286:  // Input: none
+  287:  // Output: 16-bit unsigned number
+  288:  // No '$' or '0x' need be entered, just the 1 to 4 hex digits
+  289:  // It will convert lower case a-f to uppercase A-F
+  290:  //     and converts to a 16 bit unsigned number
+  291:  //     value range is 0 to FFFF
+  292:  // If you enter a number above FFFF, it will truncate without an error
+  293:  // Backspace will remove last digit typed
+  294:  unsigned short SCIb_InUHex(void){	
+*** EVALUATION ***
+
+Function: SCIb_InUHex
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 1b99         [2]     LEAS  -7,SP
+  295:  unsigned short number=0, digit, length=0;
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c83         [2]     STD   3,SP
+  0006 6c85         [2]     STD   5,SP
+  296:  char character;
+  297:    character = SCIb_InChar();
+  298:    while(character!=CR){	
+  0008 2068         [3]     BRA   *+106 ;abs = 0072
+  299:      digit = 0x10; // assume bad
+  000a c610         [1]     LDAB  #16
+  000c 87           [1]     CLRA  
+  000d 6c81         [2]     STD   1,SP
+  300:      if((character>='0') && (character<='9')){
+  000f e680         [3]     LDAB  0,SP
+  0011 c030         [1]     SUBB  #48
+  0013 c109         [1]     CMPB  #9
+  0015 2209         [3/1]   BHI   *+11 ;abs = 0020
+  301:        digit = character-'0';
+  0017 e680         [3]     LDAB  0,SP
+  0019 b715         [1]     SEX   B,X
+  001b 1ae1d0       [2]     LEAX  -48,X
+  302:      }
+  001e 2020         [3]     BRA   *+34 ;abs = 0040
+  303:      else if((character>='A') && (character<='F')){ 
+  0020 e680         [3]     LDAB  0,SP
+  0022 c041         [1]     SUBB  #65
+  0024 c105         [1]     CMPB  #5
+  0026 2209         [3/1]   BHI   *+11 ;abs = 0031
+  304:        digit = (character-'A')+0xA;
+  0028 e680         [3]     LDAB  0,SP
+  002a b715         [1]     SEX   B,X
+  002c 1ae1c9       [2]     LEAX  -55,X
+  305:      }
+  002f 200f         [3]     BRA   *+17 ;abs = 0040
+  306:      else if((character>='a') && (character<='f')){ 
+  0031 e680         [3]     LDAB  0,SP
+  0033 c061         [1]     SUBB  #97
+  0035 c105         [1]     CMPB  #5
+  0037 2209         [3/1]   BHI   *+11 ;abs = 0042
+  307:        digit = (character-'a')+0xA;
+  0039 e680         [3]     LDAB  0,SP
+  003b b715         [1]     SEX   B,X
+  003d 1ae1a9       [2]     LEAX  -87,X
+  0040 6e81         [2]     STX   1,SP
+  308:      }
+  309:  // If the character is not 0-9 or A-F, it is ignored and not echoed
+  310:      if(digit<=0xF ){	
+  0042 ec81         [3]     LDD   1,SP
+  0044 8c000f       [2]     CPD   #15
+  0047 220f         [3/1]   BHI   *+17 ;abs = 0058
+  311:        number = number*0x10+digit;
+  0049 ec83         [3]     LDD   3,SP
+  004b 59           [1]     LSLD  
+  004c 59           [1]     LSLD  
+  004d 59           [1]     LSLD  
+  004e 59           [1]     LSLD  
+  004f e381         [3]     ADDD  1,SP
+  0051 6c83         [2]     STD   3,SP
+  312:        length++;
+  0053 ee85         [3]     LDX   5,SP
+  0055 08           [1]     INX   
+  313:        SCIb_OutChar(character);
+  314:      }
+  0056 2013         [3]     BRA   *+21 ;abs = 006b
+  315:  // Backspace outputted and return value changed if a backspace is inputted
+  316:      else if(character==BS && length){
+  0058 e680         [3]     LDAB  0,SP
+  005a c108         [1]     CMPB  #8
+  005c 2614         [3/1]   BNE   *+22 ;abs = 0072
+  005e ee85         [3]     LDX   5,SP
+  0060 2710         [3/1]   BEQ   *+18 ;abs = 0072
+  317:        number /=0x10;
+  0062 ec83         [3]     LDD   3,SP
+  0064 49           [1]     LSRD  
+  0065 49           [1]     LSRD  
+  0066 49           [1]     LSRD  
+  0067 49           [1]     LSRD  
+  0068 6c83         [2]     STD   3,SP
+  318:        length--;
+  006a 09           [1]     DEX   
+  006b 6e85         [2]     STX   5,SP
+  319:        SCIb_OutChar(character);
+  006d e680         [3]     LDAB  0,SP
+  006f 160000       [4]     JSR   SCIb_OutChar
+  320:      }
+  321:      character = SCIb_InChar();
+  0072 160000       [4]     JSR   SCIb_InChar
+  0075 6b80         [2]     STAB  0,SP
+  0077 c10d         [1]     CMPB  #13
+  0079 268f         [3/1]   BNE   *-111 ;abs = 000a
+  322:    }
+  323:    return number;
+  007b ec83         [3]     LDD   3,SP
+  324:  }
+  007d 1b87         [2]     LEAS  7,SP
+  007f 3d           [5]     RTS   
+  325:  
+  326:  //--------------------------SCIb_OutUHex----------------------------
+  327:  // Output a 16 bit number in unsigned hexadecimal format
+  328:  // Input: 16-bit number to be transferred
+  329:  // Output: none
+  330:  // Variable format 1 to 4 digits with no space before or after
+  331:  void SCIb_OutUHex(unsigned short number){
+*** EVALUATION ***
+
+Function: SCIb_OutUHex
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  332:  // This function uses recursion to convert the number of 
+  333:  //   unspecified length as an ASCII string
+  334:    if(number>=0x10)	{
+  0001 8c0010       [2]     CPD   #16
+  0004 250f         [3/1]   BCS   *+17 ;abs = 0015
+  335:      SCIb_OutUHex(number/0x10);
+  0006 49           [1]     LSRD  
+  0007 49           [1]     LSRD  
+  0008 49           [1]     LSRD  
+  0009 49           [1]     LSRD  
+  000a 0700         [4]     BSR   SCIb_OutUHex
+  336:      SCIb_OutUHex(number%0x10);
+  000c ec80         [3]     LDD   0,SP
+  000e c40f         [1]     ANDB  #15
+  0010 87           [1]     CLRA  
+  0011 0700         [4]     BSR   SCIb_OutUHex
+  337:    }
+  0013 2012         [3]     BRA   *+20 ;abs = 0027
+  338:    else if(number<0xA){
+  0015 8c000a       [2]     CPD   #10
+  0018 2406         [3/1]   BCC   *+8 ;abs = 0020
+  339:      SCIb_OutChar(number+'0');
+  001a e681         [3]     LDAB  1,SP
+  001c cb30         [1]     ADDB  #48
+  340:    }
+  001e 2004         [3]     BRA   *+6 ;abs = 0024
+  341:    else{
+  342:      SCIb_OutChar((number-0x0A)+'A');
+  0020 e681         [3]     LDAB  1,SP
+  0022 cb37         [1]     ADDB  #55
+  0024 160000       [4]     JSR   SCIb_OutChar
+  343:    }
+  344:  }
+  0027 3a           [3]     PULD  
+  0028 3d           [5]     RTS   
+  345:  
+  346:  //------------------------SCIb_InString------------------------
+  347:  // This function accepts ASCII characters from the serial port
+  348:  //    and adds them to a string until a carriage return is inputted 
+  349:  //    or until max length of the string is reached.  
+  350:  // It echoes each character as it is inputted.  
+  351:  // If a backspace is inputted, the string is modified 
+  352:  //    and the backspace is echoed
+  353:  // InString terminates the string with a null character
+  354:  // -- Modified by Agustinus Darmawan + Mingjie Qiu --
+  355:  void SCIb_InString(char *string, unsigned short max) {	
+*** EVALUATION ***
+
+Function: SCIb_InString
+Source  : C:\Users\Raz\Documents\EE 445L\Lab 10\Sources\SCIb.C
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab 10;C:\Users\Raz\Documents\EE 445L\Lab 10\bin;C:\Users\Raz\Documents\EE 445L\Lab 10\prm;C:\Users\Raz\Documents\EE 445L\Lab 10\cmd;C:\Users\Raz\Documents\EE 445L\Lab 10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\SCIb.C.o" -WmsgSd1106
+
+  0000 6cab         [2]     STD   5,-SP
+  356:  int length=0;
+  0002 c7           [1]     CLRB  
+  0003 87           [1]     CLRA  
+  0004 6c82         [2]     STD   2,SP
+  357:  char character;
+  358:    character = SCIb_InChar();
+  359:    while(character!=CR){
+  0006 202b         [3]     BRA   *+45 ;abs = 0033
+  360:      if(character==BS){
+  0008 c108         [1]     CMPB  #8
+  000a 2613         [3/1]   BNE   *+21 ;abs = 001f
+  361:        if(length){
+  000c ee82         [3]     LDX   2,SP
+  000e 2723         [3/1]   BEQ   *+37 ;abs = 0033
+  362:          string--;
+  0010 ed87         [3]     LDY   7,SP
+  0012 03           [1]     DEY   
+  0013 6d87         [2]     STY   7,SP
+  363:          length--;
+  0015 09           [1]     DEX   
+  0016 6e82         [2]     STX   2,SP
+  364:          SCIb_OutChar(BS);
+  0018 c608         [1]     LDAB  #8
+  001a 160000       [4]     JSR   SCIb_OutChar
+  365:        }
+  366:      }
+  001d 2014         [3]     BRA   *+22 ;abs = 0033
+  367:      else if(length<max){
+  001f ee82         [3]     LDX   2,SP
+  0021 ae80         [3]     CPX   0,SP
+  0023 240e         [3/1]   BCC   *+16 ;abs = 0033
+  368:        *string++=character;
+  0025 ee87         [3]     LDX   7,SP
+  0027 6b30         [2]     STAB  1,X+
+  0029 6e87         [2]     STX   7,SP
+  369:        length++; 
+  002b ee82         [3]     LDX   2,SP
+  002d 08           [1]     INX   
+  002e 6e82         [2]     STX   2,SP
+  370:        SCIb_OutChar(character);
+  0030 160000       [4]     JSR   SCIb_OutChar
+  371:      }
+  372:      character = SCIb_InChar();
+  0033 160000       [4]     JSR   SCIb_InChar
+  0036 6b84         [2]     STAB  4,SP
+  0038 c10d         [1]     CMPB  #13
+  003a 26cc         [3/1]   BNE   *-50 ;abs = 0008
+  373:    }
+  374:    *string = 0;
+  003c ee87         [3]     LDX   7,SP
+  003e 6900         [2]     CLR   0,X
+  375:  }
+  0040 1b85         [2]     LEAS  5,SP
+  0042 3d           [5]     RTS   
+  376:  
+  377:  
+  378:  

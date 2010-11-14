@@ -36,7 +36,7 @@ static unsigned short OpenFlag=0;
 
 //---------------------wait---------------------
 // time delay
-// Input: time in 5.33 usec
+// Input: time in 0.667usec
 // Output: none
 void static wait(unsigned short delay){ 
 unsigned short startTime;
@@ -49,7 +49,7 @@ unsigned short startTime;
 // Output: none
 void static wait1ms(unsigned short msec){ 
   for(;msec;msec--){
-    wait(188);    // 1ms wait
+    wait(1500);    // 1ms wait
   }
 }
   
@@ -116,8 +116,9 @@ short LCD_Open(void){
   }
   DDRH |= 0x7F;    // PH6-0 output to LCD
   PTH &= ~0x20;    // PH5=R/W=0 means write
-  TSCR1 = 0x80;
-  TSCR2 = 0x07; 
+  TSCR1 = 0x80;    // Enable TCNT, 24MHz boot mode, 4MHz in run mode
+  TSCR2 = 0x04;    // divide by 16 TCNT prescale, TCNT at 667nsec
+  PACTL = 0;       // timer prescale used for TCNT
 /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
     divide  FastMode(24MHz)    Slow Mode (8MHz)
 000   1     42ns  TOF  2.73ms  125ns TOF 8.192ms
@@ -209,23 +210,43 @@ short LCD_OutString(char *pt){
   return 1;	  // success
 }
 
-//---------------------LCD_GoTo--------------
-// Move the cursor to a particular row and column
-// Input: Parameters (row, column)   First row and and column is 0
-// Output: Sets internal error code if failure occurs
-// Returns: None
-short LCD_GoTo(unsigned char row, unsigned char col){
-  //int i;
-  if(OpenFlag==0 || col > 7 || row > 1){
-    return 0;
+//---------------------LCD_MoveCursor--------------
+// Moves LCD Cursor
+// Input: The hex address we want to move the cursor to 
+// Output: true if successful
+short LCD_MoveCursor(unsigned short address){ 
+  if(OpenFlag==0)
+  {
+    return 0;  // not open
   }
-  if(row) {
-    outCsr(0xC0 + col); // Jump to second 8 characters then to correct column
+  if((0x00<=address && address<=0x07)||(0x40<=address && address<=0x47))
+  {
+    outCsr(0x80+address);
+    return 1;	  // success
   }
-  else {
-    outCsr(0x80 + col); // Jump to correct column
+  return 0;	  // success
+}
+
+//---------------------TERMIO_PutChar---------------------
+// sends one ASCII to the LCD display
+// Input: letter is ASCII code
+// handles at least two special characters, like CR LF or TAB
+// Output: true if successful
+// note:tab only sets the cursor to the 2nd line so mutiple tabs will keep setting the cursor 
+// back to the 2nd line.
+#define CR 13 // \r
+#define TAB 9 // \n
+//#define LF 10 // \b
+short TERMIO_PutChar(unsigned char letter){
+  if(OpenFlag==0){
+    return 0;  // not open
   }
-  return 1;
+if(letter == CR)
+	LCD_Clear();
+else if(letter == TAB)//moves cursor to the second half of the screen
+	LCD_MoveCursor(0x40);
+else
+  return LCD_OutChar(letter);
 }
 
 

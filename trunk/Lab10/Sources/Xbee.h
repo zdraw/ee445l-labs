@@ -1,0 +1,1 @@
+void XBee_Init(void);
