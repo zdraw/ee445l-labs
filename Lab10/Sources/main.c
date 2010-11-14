@@ -18,23 +18,16 @@
 #include <stdio.h>
 
 #include "SCI1.h"
+#include "Xbee.h"
 
 void main(void) {
   PLL_Init(); // 24 MHz 
   LCD_Open();
   SCI1_Init(115200); // SCI output to PC
-     
+  XBee_Init();   
   asm cli;
   
   for(;;) {
-    unsigned char data;
     
-    data = SCI1_InChar();
-    if(data == 0x0A) {
-      LCD_Clear();      
-    }
-    else {
-      LCD_OutChar(data);  
-    }
   };
 }

@@ -1,6 +1,10 @@
+#include <mc9s12dp512.h>     /* derivative information */
+#include "SCI1.h"
+#include "Xbee.h"
+
 //---------------------wait---------------------
 // time delay
-// Input: time in 0.667usec
+// Input: time in 5.33 usec
 // Output: none
 void static wait(unsigned short delay){ 
 unsigned short startTime;
@@ -22,18 +26,19 @@ void sendATCommand(char * command) {
   unsigned char loop = 1;
   while(loop) {
     while(*command) {
-      SCI1_OutChar(*command);  
+      SCI1_OutChar(*command);
+      command++; 
     }
     SCI1_OutChar(0x0D);
     wait1ms(20);
     loop = 0;
-    if(SCI1_InChar != 'O') {
+    if(SCI1_InChar() != 'O') {
       loop = 1;  
     }
-    if(SCI1_InChar != 'K') {
+    if(SCI1_InChar() != 'K') {
       loop = 1;  
     }
-    if(SCI1_InChar != 0x0D) {
+    if(SCI1_InChar() != 0x0D) {
       loop = 1;  
     }
   }
