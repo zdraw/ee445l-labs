@@ -21,6 +21,7 @@ PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 SCI1.c.o                                Model: SMALL,         Lang: ANSI-C
 FIFO.c.o                                Model: SMALL,         Lang: ANSI-C
 Xbee.c.o                                Model: SMALL,         Lang: ANSI-C
+Timer.C.o                               Model: SMALL,         Lang: ANSI-C
 
 *********************************************************************************************
 STARTUP SECTION
@@ -30,7 +31,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x900     30
-  _Copy    *toCopyDownBeg 0xC32A
+  _Copy    *toCopyDownBeg 0xC363
 } _startupData;
 
 *********************************************************************************************
@@ -39,9 +40,9 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
-.rodata1                          33     R     0xC045     0xC065   ROM_C000
-.text                            504     R     0xC066     0xC25D   ROM_C000
-.copy                              2     R     0xC32A     0xC32B   ROM_C000
+.rodata1                          35     R     0xC045     0xC067   ROM_C000
+.text                            559     R     0xC068     0xC296   ROM_C000
+.copy                              2     R     0xC363     0xC364   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -570,11 +571,11 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg524
 .abs_section_ffd4                  2     R     0xFFD4     0xFFD5   .absSeg525
 .bss                              30   R/W      0x900      0x91D   RAM
-RUNTIME                          204     R     0xC25E     0xC329   ROM_C000
+RUNTIME                          204     R     0xC297     0xC362   ROM_C000
 .vectSeg526_vect                   2     R     0xFFFE     0xFFFF   .vectSeg526
 
 Summary of section sizes per section type:
-READ_ONLY (R):         330 (dec:      816)
+READ_ONLY (R):         369 (dec:      873)
 READ_WRITE (R/W):      11E (dec:      286)
 NO_INIT (N/I):         24E (dec:      590)
 
@@ -668,16 +669,16 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PWMSDN                                     C4       1       1       0   .abs_section_c4
      _SCI0CR1                                    CA       1       1       0   .abs_section_ca
      _SCI0CR2                                    CB       1       1       0   .abs_section_cb
-     _SCI0SR1                                    CC       1       1       1   .abs_section_cc
+     _SCI0SR1                                    CC       1       1       0   .abs_section_cc
      _SCI0SR2                                    CD       1       1       0   .abs_section_cd
      _SCI0DRH                                    CE       1       1       0   .abs_section_ce
-     _SCI0DRL                                    CF       1       1       1   .abs_section_cf
+     _SCI0DRL                                    CF       1       1       0   .abs_section_cf
      _SCI1CR1                                    D2       1       1       1   .abs_section_d2
      _SCI1CR2                                    D3       1       1       1   .abs_section_d3
-     _SCI1SR1                                    D4       1       1       1   .abs_section_d4
+     _SCI1SR1                                    D4       1       1       2   .abs_section_d4
      _SCI1SR2                                    D5       1       1       0   .abs_section_d5
      _SCI1DRH                                    D6       1       1       0   .abs_section_d6
-     _SCI1DRL                                    D7       1       1       1   .abs_section_d7
+     _SCI1DRL                                    D7       1       1       2   .abs_section_d7
      _SPI0CR1                                    D8       1       1       0   .abs_section_d8
      _SPI0CR2                                    D9       1       1       0   .abs_section_d9
      _SPI0BR                                     DA       1       1       0   .abs_section_da
@@ -957,7 +958,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PPST                                      245       1       1       0   .abs_section_245
      _PTS                                       248       1       1       0   .abs_section_248
      _PTIS                                      249       1       1       0   .abs_section_249
-     _DDRS                                      24A       1       1       0   .abs_section_24a
+     _DDRS                                      24A       1       1       2   .abs_section_24a
      _RDRS                                      24B       1       1       0   .abs_section_24b
      _PERS                                      24C       1       1       0   .abs_section_24c
      _PPSS                                      24D       1       1       0   .abs_section_24d
@@ -970,9 +971,9 @@ MODULE:                 -- mc9s12dp512.c.o --
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       0   .abs_section_258
+     _PTP                                       258       1       1       2   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       0   .abs_section_25a
+     _DDRP                                      25A       1       1       1   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
@@ -1118,7 +1119,7 @@ MODULE:                 -- mc9s12dp512.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      C066      16      22       1   .text       
+     main                                      C068      1A      26       1   .text       
 - VARIABLES:
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
@@ -1130,65 +1131,72 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                           900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _lDivMod                                  C25E      BE     190       1   RUNTIME     
-     _LDIVU                                    C31C       E      14       1   RUNTIME     
+     _lDivMod                                  C297      BE     190       1   RUNTIME     
+     _LDIVU                                    C355       E      14       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- lcd.c.o --
 - PROCEDURES:
-     wait                                      C07C      11      17       4   .text       
-     wait1ms                                   C08D      10      16       2   .text       
-     outCsrNibble                              C09D      19      25       5   .text       
-     outCsr                                    C0B6      12      18       4   .text       
-     LCD_Open                                  C0C8      57      87       1   .text       
+     wait                                      C082      11      17       4   .text       
+     wait1ms                                   C093      10      16       2   .text       
+     outCsrNibble                              C0A3      19      25       5   .text       
+     outCsr                                    C0BC      12      18       4   .text       
+     LCD_Open                                  C0CE      57      87       1   .text       
 - VARIABLES:
      OpenFlag                                   900       2       2       2   .bss        
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  C11F      15      21       1   .text       
+     PLL_Init                                  C125      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- SCI1.c.o --
 - PROCEDURES:
-     SCI1_Init                                 C134      33      51       1   .text       
-     SCI1_OutChar                              C167       9       9       2   .text       
-     SCI1_InChar                               C170       D      13       3   .text       
-     SCI1Handler                               C17D       A      10       1   .text       
+     SCI1_Init                                 C13A      3B      59       1   .text       
+     SCI1_OutChar                              C175       9       9       4   .text       
+     SCI1_InChar                               C17E       D      13       3   .text       
+     SCI1Handler                               C18B       A      10       1   .text       
+     SCI1_OutString                            C195       E      14       1   .text       
 - VARIABLES:
      _Vector_21                                FFD4       2       2       0   .abs_section_ffd4
 MODULE:                 -- FIFO.c.o --
 - PROCEDURES:
-     Fifo_Put                                  C187      26      38       1   .text       
-     Fifo_Get                                  C1AD      2B      43       1   .text       
+     Fifo_Put                                  C1A3      26      38       1   .text       
+     Fifo_Get                                  C1C9      2B      43       1   .text       
 - VARIABLES:
      PutPt                                      902       2       2       3   .bss        
      GetPt                                      904       2       2       6   .bss        
      Fifo                                       906      18      24       4   .bss        
 MODULE:                 -- Xbee.c.o --
 - PROCEDURES:
-     wait                                      C1D8      11      17       1   .text       
-     wait1ms                                   C1E9      10      16       1   .text       
-     sendATCommand                             C1F9      46      70       6   .text       
-     XBee_Init                                 C23F      1F      31       1   .text       
+     ok                                        C1F4      1B      27       1   .text       
+     sendATCommand                             C20F      19      25       5   .text       
+     XBee_Init                                 C228      3E      62       1   .text       
 - VARIABLES:
-     STRING.X.1                                C045       2       2       1   .rodata1    
-     STRING.ATDL4F.2                           C047       7       7       1   .rodata1    
-     STRING.ATDH0.3                            C04E       6       6       1   .rodata1    
-     STRING.ATMY4E.4                           C054       7       7       1   .rodata1    
-     STRING.ATAP1.5                            C05B       6       6       1   .rodata1    
-     STRING.ATCN.6                             C061       5       5       1   .rodata1    
+     STRING.....1                              C045       4       4       1   .rodata1    
+     STRING.ATDL4F.2                           C049       7       7       1   .rodata1    
+     STRING.ATDH0.3                            C050       6       6       1   .rodata1    
+     STRING.ATMY4E.4                           C056       7       7       1   .rodata1    
+     STRING.ATAP1.5                            C05D       6       6       1   .rodata1    
+     STRING.ATCN.6                             C063       5       5       1   .rodata1    
+MODULE:                 -- Timer.C.o --
+- PROCEDURES:
+     Timer_Wait                                C266      11      17       2   .text       
+     Timer_Wait1ms                             C277      10      16       1   .text       
+     Timer_Wait10ms                            C287      10      16       2   .text       
+- VARIABLES:
 
 *********************************************************************************************
 MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dp512.c.o                            590      0      0
-  main.c.o                                     0     22      0
+  main.c.o                                     0     26      0
   Start12.c.o                                  0     59      0
   rtshc12.c.o (ansisi.lib)                     0    204      0
   lcd.c.o                                      2    163      0
   PLL.c.o                                      0     21      0
-  SCI1.c.o                                     0     83      2
+  SCI1.c.o                                     0    105      2
   FIFO.c.o                                    28     81      0
-  Xbee.c.o                                     0    134     33
+  Xbee.c.o                                     0    114     35
+  Timer.C.o                                    0     49      0
   other                                      256     12      2
 
 *********************************************************************************************
@@ -1196,14 +1204,14 @@ SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
   main wait wait1ms outCsrNibble outCsr LCD_Open PLL_Init SCI1_Init 
-  SCI1_OutChar SCI1_InChar SCI1Handler Fifo_Put Fifo_Get wait wait1ms 
-  sendATCommand XBee_Init 
+  SCI1_OutChar SCI1_InChar SCI1Handler SCI1_OutString Fifo_Put Fifo_Get ok 
+  sendATCommand XBee_Init Timer_Wait Timer_Wait1ms Timer_Wait10ms 
 SECTION: ".bss"
   OpenFlag PutPt GetPt Fifo 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".rodata1"
-  STRING.X.1 STRING.ATDL4F.2 STRING.ATDH0.3 STRING.ATMY4E.4 STRING.ATAP1.5 
+  STRING.....1 STRING.ATDL4F.2 STRING.ATDH0.3 STRING.ATMY4E.4 STRING.ATAP1.5 
   STRING.ATCN.6 
 SECTION: ".abs_section_8"
   _PORTE 
@@ -2385,17 +2393,17 @@ OBJECT LIST SORTED BY ADDRESS
      _SCI0BD                                     C8       2       2       0   .abs_section_c8
      _SCI0CR1                                    CA       1       1       0   .abs_section_ca
      _SCI0CR2                                    CB       1       1       0   .abs_section_cb
-     _SCI0SR1                                    CC       1       1       1   .abs_section_cc
+     _SCI0SR1                                    CC       1       1       0   .abs_section_cc
      _SCI0SR2                                    CD       1       1       0   .abs_section_cd
      _SCI0DRH                                    CE       1       1       0   .abs_section_ce
-     _SCI0DRL                                    CF       1       1       1   .abs_section_cf
+     _SCI0DRL                                    CF       1       1       0   .abs_section_cf
      _SCI1BD                                     D0       2       2       2   .abs_section_d0
      _SCI1CR1                                    D2       1       1       1   .abs_section_d2
      _SCI1CR2                                    D3       1       1       1   .abs_section_d3
-     _SCI1SR1                                    D4       1       1       1   .abs_section_d4
+     _SCI1SR1                                    D4       1       1       2   .abs_section_d4
      _SCI1SR2                                    D5       1       1       0   .abs_section_d5
      _SCI1DRH                                    D6       1       1       0   .abs_section_d6
-     _SCI1DRL                                    D7       1       1       1   .abs_section_d7
+     _SCI1DRL                                    D7       1       1       2   .abs_section_d7
      _SPI0CR1                                    D8       1       1       0   .abs_section_d8
      _SPI0CR2                                    D9       1       1       0   .abs_section_d9
      _SPI0BR                                     DA       1       1       0   .abs_section_da
@@ -2693,7 +2701,7 @@ OBJECT LIST SORTED BY ADDRESS
      _PPST                                      245       1       1       0   .abs_section_245
      _PTS                                       248       1       1       0   .abs_section_248
      _PTIS                                      249       1       1       0   .abs_section_249
-     _DDRS                                      24A       1       1       0   .abs_section_24a
+     _DDRS                                      24A       1       1       2   .abs_section_24a
      _RDRS                                      24B       1       1       0   .abs_section_24b
      _PERS                                      24C       1       1       0   .abs_section_24c
      _PPSS                                      24D       1       1       0   .abs_section_24d
@@ -2706,9 +2714,9 @@ OBJECT LIST SORTED BY ADDRESS
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
      _MODRR                                     257       1       1       0   .abs_section_257
-     _PTP                                       258       1       1       0   .abs_section_258
+     _PTP                                       258       1       1       2   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       0   .abs_section_25a
+     _DDRP                                      25A       1       1       1   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
@@ -2795,31 +2803,34 @@ OBJECT LIST SORTED BY ADDRESS
      Fifo                                       906      18      24       4   .bss        
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029      12      18       0   .init       
-     STRING.X.1                                C045       2       2       1   .rodata1    
-     STRING.ATDL4F.2                           C047       7       7       1   .rodata1    
-     STRING.ATDH0.3                            C04E       6       6       1   .rodata1    
-     STRING.ATMY4E.4                           C054       7       7       1   .rodata1    
-     STRING.ATAP1.5                            C05B       6       6       1   .rodata1    
-     STRING.ATCN.6                             C061       5       5       1   .rodata1    
-     main                                      C066      16      22       1   .text       
-     wait                                      C07C      11      17       4   .text       
-     wait1ms                                   C08D      10      16       2   .text       
-     outCsrNibble                              C09D      19      25       5   .text       
-     outCsr                                    C0B6      12      18       4   .text       
-     LCD_Open                                  C0C8      57      87       1   .text       
-     PLL_Init                                  C11F      15      21       1   .text       
-     SCI1_Init                                 C134      33      51       1   .text       
-     SCI1_OutChar                              C167       9       9       2   .text       
-     SCI1_InChar                               C170       D      13       3   .text       
-     SCI1Handler                               C17D       A      10       1   .text       
-     Fifo_Put                                  C187      26      38       1   .text       
-     Fifo_Get                                  C1AD      2B      43       1   .text       
-     wait                                      C1D8      11      17       1   .text       
-     wait1ms                                   C1E9      10      16       1   .text       
-     sendATCommand                             C1F9      46      70       6   .text       
-     XBee_Init                                 C23F      1F      31       1   .text       
-     _lDivMod                                  C25E      BE     190       1   RUNTIME     
-     _LDIVU                                    C31C       E      14       1   RUNTIME     
+     STRING.....1                              C045       4       4       1   .rodata1    
+     STRING.ATDL4F.2                           C049       7       7       1   .rodata1    
+     STRING.ATDH0.3                            C050       6       6       1   .rodata1    
+     STRING.ATMY4E.4                           C056       7       7       1   .rodata1    
+     STRING.ATAP1.5                            C05D       6       6       1   .rodata1    
+     STRING.ATCN.6                             C063       5       5       1   .rodata1    
+     main                                      C068      1A      26       1   .text       
+     wait                                      C082      11      17       4   .text       
+     wait1ms                                   C093      10      16       2   .text       
+     outCsrNibble                              C0A3      19      25       5   .text       
+     outCsr                                    C0BC      12      18       4   .text       
+     LCD_Open                                  C0CE      57      87       1   .text       
+     PLL_Init                                  C125      15      21       1   .text       
+     SCI1_Init                                 C13A      3B      59       1   .text       
+     SCI1_OutChar                              C175       9       9       4   .text       
+     SCI1_InChar                               C17E       D      13       3   .text       
+     SCI1Handler                               C18B       A      10       1   .text       
+     SCI1_OutString                            C195       E      14       1   .text       
+     Fifo_Put                                  C1A3      26      38       1   .text       
+     Fifo_Get                                  C1C9      2B      43       1   .text       
+     ok                                        C1F4      1B      27       1   .text       
+     sendATCommand                             C20F      19      25       5   .text       
+     XBee_Init                                 C228      3E      62       1   .text       
+     Timer_Wait                                C266      11      17       2   .text       
+     Timer_Wait1ms                             C277      10      16       1   .text       
+     Timer_Wait10ms                            C287      10      16       2   .text       
+     _lDivMod                                  C297      BE     190       1   RUNTIME     
+     _LDIVU                                    C355       E      14       1   RUNTIME     
      _Vector_21                                FFD4       2       2       0   .abs_section_ffd4
 
 *********************************************************************************************
@@ -2836,14 +2847,22 @@ lcd.c.o:
   LCD_Clear LCD_OutChar LCD_OutString LCD_GoTo 
 FIFO.c.o:
   Fifo_Init Fifo_Status 
+Xbee.c.o:
+  XBee_RecieveTxFrame 
+Timer.C.o:
+  Timer_Init 
 NOT USED VARIABLES
+main.c.o:
+  whee 
 rtshc12.c.o (ansisi.lib):
   _PowOfTwo_8 _PowOfTwo_16 _PowOfTwo_32 errno 
+Xbee.c.o:
+  FrameID.7 
 
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC32A ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC363 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -2852,7 +2871,7 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-main                      USES PLL_Init LCD_Open SCI1_Init XBee_Init 
+main                      USES _DDRP PLL_Init LCD_Open SCI1_Init XBee_Init 
 wait                      USES _TCNT 
 wait1ms                   USES wait 
 outCsrNibble              USES _PTH 
@@ -2860,17 +2879,21 @@ outCsr                    USES outCsrNibble wait
 LCD_Open                  USES OpenFlag _DDRH _PTH _TSCR1 _TSCR2 wait1ms 
                                 outCsrNibble wait outCsr 
 PLL_Init                  USES _SYNR _REFDV _CLKSEL _PLLCTL _CRGFLG 
-SCI1_Init                 USES _SCI1BD _LDIVU _SCI1CR1 _SCI1CR2 
-SCI1_OutChar              USES _SCI0SR1 _SCI0DRL 
+SCI1_Init                 USES _DDRS _SCI1BD _LDIVU _SCI1CR1 _SCI1CR2 
+SCI1_OutChar              USES _SCI1SR1 _SCI1DRL 
 SCI1_InChar               USES Fifo_Get 
 SCI1Handler               USES _SCI1SR1 _SCI1DRL Fifo_Put 
+SCI1_OutString            USES SCI1_OutChar 
 Fifo_Put                  USES PutPt Fifo GetPt 
 Fifo_Get                  USES PutPt GetPt Fifo 
-wait                      USES _TCNT 
-wait1ms                   USES wait 
-sendATCommand             USES SCI1_OutChar wait1ms SCI1_InChar 
-XBee_Init                 USES STRING.X.1 sendATCommand STRING.ATDL4F.2 
-                                STRING.ATDH0.3 STRING.ATMY4E.4 STRING.ATAP1.5 STRING.ATCN.6 
+ok                        USES SCI1_InChar 
+sendATCommand             USES SCI1_OutChar Timer_Wait1ms 
+XBee_Init                 USES SCI1_OutChar Timer_Wait10ms STRING.....1 
+                                SCI1_OutString STRING.ATDL4F.2 sendATCommand STRING.ATDH0.3 
+                                STRING.ATMY4E.4 STRING.ATAP1.5 STRING.ATCN.6 _PTP ok 
+Timer_Wait                USES _TCNT 
+Timer_Wait1ms             USES Timer_Wait 
+Timer_Wait10ms            USES Timer_Wait 
 _LDIVU                    USES _lDivMod 
 _Vector_21                USES SCI1Handler 
 
@@ -2907,14 +2930,26 @@ DEPENDENCY TREE
  |  |          
  |  +- XBee_Init           
  |     | 
+ |     +- SCI1_OutChar        
+ |     |    
+ |     +- Timer_Wait10ms      
+ |     |  | 
+ |     |  +- Timer_Wait          
+ |     |       
+ |     +- SCI1_OutString      
+ |     |  | 
+ |     |  +- SCI1_OutChar         (see above)
+ |     |     
  |     +- sendATCommand       
+ |     |  | 
+ |     |  +- SCI1_OutChar         (see above)
+ |     |  |  
+ |     |  +- Timer_Wait1ms       
+ |     |     | 
+ |     |     +- Timer_Wait           (see above)
+ |     |        
+ |     +- ok                  
  |        | 
- |        +- SCI1_OutChar        
- |        |    
- |        +- wait1ms             
- |        |  | 
- |        |  +- wait                
- |        |       
  |        +- SCI1_InChar         
  |           | 
  |           +- Fifo_Get            
@@ -2937,6 +2972,6 @@ STATISTIC SECTION
 
 ExeFile:
 --------
-Number of blocks to be downloaded: 6
-Total size of all blocks to be downloaded: 816
+Number of blocks to be downloaded: 7
+Total size of all blocks to be downloaded: 873
 

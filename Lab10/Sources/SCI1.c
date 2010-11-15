@@ -27,6 +27,8 @@
 // assumes a module clock frequency of 24 MHz
 void SCI1_Init(unsigned long baudRate){
 unsigned long br;
+  DDRS |= 0x08;
+  DDRS &= ~0x04;
   SCI1BDH = 0;   
   br=(1500000+baudRate/2)/baudRate; // MCLK/(16*baudRate) 
   SCI1BDL= (unsigned char) br; 
@@ -52,17 +54,17 @@ unsigned long br;
     0   0    SBK, no send break */ 
 }
 
-//-------------------------SCI0_OutChar------------------------
+//-------------------------SCI1_OutChar------------------------
 // Wait for buffer to be empty, output 8-bit to serial port
 // busy-waiting synchronization
 // Input: 8-bit data to be transferred
 // Output: none
 void SCI1_OutChar(char data) {
-  while((SCI0SR1 & TDRE) == 0){};
-  SCI0DRL = data;
+  while((SCI1SR1 & TDRE) == 0){};
+  SCI1DRL = data;
 }
 
-//-------------------------SCI0_InChar------------------------
+//-------------------------SCI1_InChar------------------------
 // Wait for new serial port input, busy-waiting synchronization
 // The input is not echoed
 // Input: none
@@ -77,6 +79,13 @@ interrupt 21 void SCI1Handler(void) {
   if(SCI1SR1 & RDRF){ 
     Fifo_Put(SCI1DRL); // clears RDRF
   }    
+}
+
+void SCI1_OutString(char *pt) {
+  while(*pt){
+    SCI1_OutChar(*pt);
+    pt++;
+  }
 }
 
 

@@ -20,14 +20,19 @@
 #include "SCI1.h"
 #include "Xbee.h"
 
+volatile char whee;
+
 void main(void) {
+  DDRP |= 0x80;
   PLL_Init(); // 24 MHz 
   LCD_Open();
-  SCI1_Init(115200); // SCI output to PC
-  XBee_Init();   
+  SCI1_Init(9600); // SCI output to PC
+     
   asm cli;
   
+  XBee_Init();
+  
   for(;;) {
-    
-  };
+  
+  }
 }

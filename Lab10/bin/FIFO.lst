@@ -1,0 +1,170 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename *************Fifo.c********
+    2:  // Two implementations of a FIFO
+    3:  // Jonathan W. Valvano 10/1/07
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //        Thompson, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Microcomputer Systems: 
+    9:  //    Motorola 6811 and 6812 Simulation", Brooks-Cole, copyright (c) 2002
+   10:  
+   11:  // Copyright 2007 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  
+   15:  #include "Fifo.h"
+   16:  
+   17:  /* Number of characters in the Fifo
+   18:       the FIFO is full when it has FifoSize-1 characters */
+   19:  unsigned char static volatile *PutPt;    /* Pointer of where to put next */
+   20:  unsigned char static volatile *GetPt;    /* Pointer of where to get next */
+   21:                    /* FIFO is empty if PutPt=GetPt */
+   22:                    /* FIFO is full  if PutPt+1=GetPt */
+   23:  unsigned char static Fifo[FIFOSIZE];     /* The statically allocated fifo data */
+   24:  
+   25:  /*-----------------------Fifo_Init----------------------------
+   26:    Initialize fifo to be empty
+   27:    Inputs: none
+   28:    Outputs: none */
+   29:  void Fifo_Init(void){
+*** EVALUATION ***
+
+Function: Fifo_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\FIFO.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\FIFO.c.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+   30:    unsigned char SaveCCR;
+   31:    asm  tpa  
+  0001 b720         [1]     TPA   
+   32:    asm  staa SaveCCR 
+  0003 6a80         [2]     STAA  0,SP
+   33:    asm  sei          // make atomic 
+  0005 1410         [1]     SEI   
+   34:    PutPt=GetPt=&Fifo[0];   // Empty when PutPt=GetPt 
+  0007 180300000000 [5]     MOVW  #Fifo,GetPt
+  000d fc0000       [3]     LDD   GetPt
+  0010 7c0000       [3]     STD   PutPt
+   35:    asm  ldaa SaveCCR
+  0013 a680         [3]     LDAA  0,SP
+   36:    asm  tap          // end critical section 
+  0015 b702         [1]     TAP   
+   37:  }
+  0017 32           [3]     PULA  
+  0018 3d           [5]     RTS   
+   38:  
+   39:  /*-----------------------Fifo_Put----------------------------
+   40:    Enter one character into the fifo
+   41:    Inputs: 8-bit data
+   42:    Outputs: true if data is properly saved,
+   43:             false if data not saved because it was previously full*/
+   44:  int Fifo_Put(unsigned char data){
+*** EVALUATION ***
+
+Function: Fifo_Put
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\FIFO.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\FIFO.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   45:  unsigned char volatile *tempPt;
+   46:    tempPt = PutPt;
+   47:    *(tempPt) = data;      // try to Put data into fifo 
+  0001 fe0000       [3]     LDX   PutPt
+  0004 6b30         [2]     STAB  1,X+
+   48:    tempPt++;              
+  0006 6e80         [2]     STX   0,SP
+   49:    if(tempPt == &Fifo[FIFOSIZE]){ // need to wrap?
+  0008 8e0000       [2]     CPX   #Fifo:24
+  000b 2605         [3/1]   BNE   *+7 ;abs = 0012
+   50:      tempPt = &Fifo[0];
+  000d cc0000       [2]     LDD   #Fifo
+  0010 6c80         [2]     STD   0,SP
+   51:    }
+   52:    if(tempPt == GetPt){
+  0012 fc0000       [3]     LDD   GetPt
+  0015 ac80         [3]     CPD   0,SP
+  0017 2603         [3/1]   BNE   *+5 ;abs = 001c
+   53:      return(0);        // Failed, fifo was previously full
+  0019 c7           [1]     CLRB  
+  001a 2007         [3]     BRA   *+9 ;abs = 0023
+   54:    }     
+   55:    else{
+   56:      PutPt = tempPt;  // Success, so update pointer 
+  001c ec80         [3]     LDD   0,SP
+  001e 7c0000       [3]     STD   PutPt
+   57:      return(1);
+  0021 c601         [1]     LDAB  #1
+  0023 87           [1]     CLRA  
+   58:    }
+   59:  }
+  0024 30           [3]     PULX  
+  0025 3d           [5]     RTS   
+   60:  
+   61:  /*-----------------------Fifo_Get----------------------------
+   62:    Remove one character from the fifo
+   63:    Inputs: pointer to place to return 8-bit data
+   64:    Outputs: true if data is valid, 
+   65:             false if fifo was empty at the time of the call*/
+   66:  int Fifo_Get(unsigned char *datapt){ 
+*** EVALUATION ***
+
+Function: Fifo_Get
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\FIFO.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\FIFO.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   67:    if(PutPt == GetPt){
+  0001 fc0000       [3]     LDD   PutPt
+  0004 bc0000       [3]     CPD   GetPt
+  0007 2603         [3/1]   BNE   *+5 ;abs = 000c
+   68:      return(0);     // Empty if PutPt=GetPt 
+  0009 c7           [1]     CLRB  
+  000a 201c         [3]     BRA   *+30 ;abs = 0028
+   69:    }
+   70:    else{
+   71:      *datapt = *(GetPt);  // return by reference
+  000c ee80         [3]     LDX   0,SP
+  000e e6fb0000     [6]     LDAB  [GetPt,PCR]
+  0012 6b00         [2]     STAB  0,X
+   72:      GetPt++;             // removes data from fifo
+  0014 fe0000       [3]     LDX   GetPt
+  0017 08           [1]     INX   
+  0018 7e0000       [3]     STX   GetPt
+   73:      if(GetPt == &Fifo[FIFOSIZE]){ 
+  001b 8e0000       [2]     CPX   #Fifo:24
+  001e 2606         [3/1]   BNE   *+8 ;abs = 0026
+   74:        GetPt = &Fifo[0];  // wrap
+  0020 180300000000 [5]     MOVW  #Fifo,GetPt
+   75:      }
+   76:      return(1); 
+  0026 c601         [1]     LDAB  #1
+  0028 87           [1]     CLRA  
+   77:    }
+   78:  }
+  0029 30           [3]     PULX  
+  002a 3d           [5]     RTS   
+   79:  
+   80:  /*-----------------------Fifo_Status----------------------------
+   81:    Check the status of the fifo
+   82:    Inputs: none
+   83:    Outputs: true if there is any data in the fifo */
+   84:  int Fifo_Status(void){ 
+*** EVALUATION ***
+
+Function: Fifo_Status
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\FIFO.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\FIFO.c.o" -WmsgSd1106
+
+   85:    return (PutPt != GetPt);
+  0000 fc0000       [3]     LDD   PutPt
+  0003 bc0000       [3]     CPD   GetPt
+  0006 2602         [3/1]   BNE   *+4 ;abs = 000a
+  0008 c7           [1]     CLRB  
+  0009 8f           [2]     SKIP2 
+  000a c601         [1]     LDAB  #1
+  000c 87           [1]     CLRA  
+   86:  }
+  000d 3d           [5]     RTS   

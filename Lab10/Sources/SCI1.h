@@ -32,3 +32,5 @@ void SCI1_Init(unsigned long baudRate);
 void SCI1_OutChar(char data);
 
 unsigned char SCI1_InChar(void);
+
+void SCI1_OutString(char *pt);
