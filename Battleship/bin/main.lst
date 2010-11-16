@@ -1,0 +1,44 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  #include <hidef.h>      /* common defines and macros */
+    2:  #include <mc9s12dp512.h>     /* derivative information */
+    3:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+    4:  
+    5:  #include "PLL.h"
+    6:  #include "LCDG.h"
+    7:  #include "Timer.h"
+    8:  #include "Game.h"
+    9:  #include "switch.h"
+   10:  
+   11:  void main(void) {  
+*** EVALUATION ***
+
+Function: main
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+
+   12:    PLL_Init();
+  0000 160000       [4]     JSR   PLL_Init
+   13:    LCD_Init();   // TCNT at 1.5 MHz
+  0003 160000       [4]     JSR   LCD_Init
+   14:    DDRP |= 0xA0; // heartbeats, PP7 every 3000, PP5 at sampling rate
+  0006 1c0000a0     [4]     BSET  _DDRP,#160
+   15:    PTP |= 0x80;
+  000a 1c000080     [4]     BSET  _PTP,#128
+   16:    EnableInterrupts; 
+  000e 10ef         [1]     CLI   
+   17:    Key_Init();
+  0010 160000       [4]     JSR   Key_Init
+   18:    Game_Init();
+  0013 160000       [4]     JSR   Game_Init
+   19:    
+   20:    
+   21:    //enableOC6(&whee, 60000, 25, 5);
+   22:    
+   23:    for(;;) {
+  0016 20fe         [3]     BRA   *+0 ;abs = 0016
+   24:        
+   25:    } 
+   26:  }
+   27:  

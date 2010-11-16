@@ -1,3 +1,5 @@
+#ifndef LCDG_H
+#define LCDG_H
 //*****************LCDG.h***************************************
 // implementation of the driver for the AGM1264F MODULE
 // Jonathan W. Valvano 11/21/09
@@ -103,3 +105,5 @@ void LCD_OutChar(unsigned char letter);
 void LCD_OutString(char *pt);
 
 void LCD_DrawGrid(unsigned char field[10][10]);
+
+#endif

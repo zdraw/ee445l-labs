@@ -18,7 +18,7 @@
 #include <mc9s12dp512.h>     /* derivative information */
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
-#define FIFOSIZE 24
+#define FIFOSIZE 100
 /* Number of characters in the Fifo
      the FIFO is full when it has FifoSize-1 characters */
 void Fifo_Init(void);

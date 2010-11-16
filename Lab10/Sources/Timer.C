@@ -25,6 +25,7 @@ void Timer_Init(void){
   TSCR1 = 0x80;   // Enable TCNT, 24MHz E clock
   TSCR2 = 0x07;   // divide by 16 TCNT prescale, TOI disarm
   PACTL = 0;      // timer prescale used for TCNT
+  asm cli
 /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
     divide  FastMode(24MHz)    Slow Mode (4MHz)
 000   1     42ns  TOF  2.73ms  250ns TOF 16.384ms

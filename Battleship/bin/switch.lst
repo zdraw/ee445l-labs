@@ -1,0 +1,221 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  
+    2:  #include <mc9s12dp512.h>     /* derivative information */
+    3:  #include "game.h"
+    4:  
+    5:  #define DEBOUNCE_DELAY 10
+    6:  
+    7:  // UP     PT5
+    8:  // DOWN   PT4
+    9:  // LEFT   PT3
+   10:  // RIGHT  PT2
+   11:  // A      PT1
+   12:  // B      PT0
+   13:  
+   14:  static void (*OC6Func) (void);
+   15:  unsigned static short OC6Delay;
+   16:  unsigned static short OC6DelayCount1;
+   17:  unsigned static short OC6DelayCount2;
+   18:  unsigned static short OC6Count;
+   19:  
+   20:  void Key_Init(void){  
+*** EVALUATION ***
+
+Function: Key_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   21:  asm sei           // make atomic
+  0000 1410         [1]     SEI   
+   22:    DDRT &= ~0x3F;    // PT7,PT6 all rows are output
+  0002 1d00003f     [4]     BCLR  _DDRT,#63
+   23:    PERT  =  0x3F;    // internal pullup on PT3,PT2
+  0006 cc053f       [2]     LDD   #1343
+  0009 7b0000       [3]     STAB  _PERT
+   24:    TCTL3 =  0x05;
+  000c 5a00         [2]     STAA  _TCTL3
+   25:    TCTL4 =  0x55;   // falling edges IC3,IC2
+  000e c655         [1]     LDAB  #85
+  0010 5b00         [2]     STAB  _TCTL4
+   26:    TIOS  =  0xC0;
+  0012 c6c0         [1]     LDAB  #192
+  0014 5b00         [2]     STAB  _TIOS
+   27:    TIE   =  0x3F;     // Arm only IC3,IC2
+  0016 51           [1]     COMB  
+  0017 5b00         [2]     STAB  _TIE
+   28:  asm cli    
+  0019 10ef         [1]     CLI   
+   29:  }
+  001b 3d           [5]     RTS   
+   30:  
+   31:  void enableOC6(void (*function) (void), unsigned short delay, unsigned short delayCount, unsigned short count) {
+*** EVALUATION ***
+
+Function: enableOC6
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   32:    asm sei
+  0001 1410         [1]     SEI   
+   33:    TIE |= 0x40;    
+  0003 4c0040       [4]     BSET  _TIE,#64
+   34:    OC6Func = function;
+  0006 ec88         [3]     LDD   8,SP
+  0008 7c0000       [3]     STD   OC6Func
+   35:    OC6Delay = delay;
+  000b ec86         [3]     LDD   6,SP
+  000d 7c0000       [3]     STD   OC6Delay
+   36:    OC6DelayCount1 = delayCount;
+  0010 ee84         [3]     LDX   4,SP
+  0012 7e0000       [3]     STX   OC6DelayCount1
+   37:    OC6DelayCount2 = delayCount;
+  0015 7e0000       [3]     STX   OC6DelayCount2
+   38:    OC6Count = count;
+  0018 30           [3]     PULX  
+  0019 7e0000       [3]     STX   OC6Count
+   39:    TC6 = TCNT + OC6Delay;
+  001c d300         [3]     ADDD  _TCNT
+  001e 5c00         [2]     STD   _TC6
+   40:    asm cli
+  0020 10ef         [1]     CLI   
+   41:  }
+  0022 3d           [5]     RTS   
+   42:  
+   43:  void interrupt 8 IC0Han(void) {
+*** EVALUATION ***
+
+Function: IC0Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   44:    Game_B();                    
+  0000 160000       [4]     JSR   Game_B
+   45:    TFLG1 = 0x01;
+  0003 c601         [1]     LDAB  #1
+  0005 5b00         [2]     STAB  _TFLG1
+   46:  }
+  0007 0b           [8]     RTI   
+   47:  
+   48:  void interrupt 9 IC1Han(void) {
+*** EVALUATION ***
+
+Function: IC1Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   49:    Game_A();                    
+  0000 160000       [4]     JSR   Game_A
+   50:    TFLG1 = 0x02;
+  0003 c602         [1]     LDAB  #2
+  0005 5b00         [2]     STAB  _TFLG1
+   51:  }
+  0007 0b           [8]     RTI   
+   52:  
+   53:  void interrupt 10 IC2Han(void) {
+*** EVALUATION ***
+
+Function: IC2Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   54:    Game_DPad(RIGHT);                 
+  0000 c603         [1]     LDAB  #3
+  0002 160000       [4]     JSR   Game_DPad
+   55:    TFLG1 = 0x04;
+  0005 c604         [1]     LDAB  #4
+  0007 5b00         [2]     STAB  _TFLG1
+   56:  }
+  0009 0b           [8]     RTI   
+   57:  
+   58:  void interrupt 11 IC3Han(void) {
+*** EVALUATION ***
+
+Function: IC3Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   59:    Game_DPad(DOWN);                  
+  0000 c601         [1]     LDAB  #1
+  0002 160000       [4]     JSR   Game_DPad
+   60:    TFLG1 = 0x08;
+  0005 c608         [1]     LDAB  #8
+  0007 5b00         [2]     STAB  _TFLG1
+   61:  }
+  0009 0b           [8]     RTI   
+   62:  
+   63:  void interrupt 12 IC4Han(void) {
+*** EVALUATION ***
+
+Function: IC4Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   64:    Game_DPad(LEFT);                  
+  0000 c602         [1]     LDAB  #2
+  0002 160000       [4]     JSR   Game_DPad
+   65:    TFLG1 = 0x10;
+  0005 c610         [1]     LDAB  #16
+  0007 5b00         [2]     STAB  _TFLG1
+   66:  }
+  0009 0b           [8]     RTI   
+   67:  
+   68:  void interrupt 13 IC5Han(void){
+*** EVALUATION ***
+
+Function: IC5Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   69:    Game_DPad(UP);                   
+  0000 c7           [1]     CLRB  
+  0001 160000       [4]     JSR   Game_DPad
+   70:    TFLG1 = 0x20;
+  0004 c620         [1]     LDAB  #32
+  0006 5b00         [2]     STAB  _TFLG1
+   71:  }
+  0008 0b           [8]     RTI   
+   72:  
+   73:  void interrupt 14 OC6Han(void){
+*** EVALUATION ***
+
+Function: OC6Han
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\switch.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\switch.c.o" -WmsgSd1106
+
+   74:    TFLG1 = 0x40;
+  0000 c640         [1]     LDAB  #64
+  0002 5b00         [2]     STAB  _TFLG1
+   75:    if(!OC6DelayCount2) {
+  0004 fe0000       [3]     LDX   OC6DelayCount2
+  0007 2618         [3/1]   BNE   *+26 ;abs = 0021
+   76:      OC6DelayCount2 = OC6DelayCount1;
+  0009 fc0000       [3]     LDD   OC6DelayCount1
+  000c 7c0000       [3]     STD   OC6DelayCount2
+   77:      (*OC6Func)();
+  000f 15fb0000     [7]     JSR   [OC6Func,PCR]
+   78:      OC6Count--;
+  0013 fe0000       [3]     LDX   OC6Count
+  0016 09           [1]     DEX   
+  0017 7e0000       [3]     STX   OC6Count
+   79:      if(!OC6Count) {
+  001a 2609         [3/1]   BNE   *+11 ;abs = 0025
+   80:        TIE &= ~0x40;  
+  001c 4d0040       [4]     BCLR  _TIE,#64
+  001f 2004         [3]     BRA   *+6 ;abs = 0025
+   81:      }
+   82:    }
+   83:    else {
+   84:      OC6DelayCount2--;  
+  0021 09           [1]     DEX   
+  0022 7e0000       [3]     STX   OC6DelayCount2
+   85:    }
+   86:    
+   87:    TC6 = TCNT + OC6Delay;
+  0025 dc00         [3]     LDD   _TCNT
+  0027 f30000       [3]     ADDD  OC6Delay
+  002a 5c00         [2]     STD   _TC6
+   88:  }
+  002c 0b           [8]     RTI   

@@ -1,3 +1,5 @@
+#ifndef PLL_H
+#define PLL_H
 /*************************PLL.h***************************
 *   boosts the CPU clock to 24 MHz                       *
 *                                                        *
@@ -17,3 +19,5 @@
 // Outputs: none
 // Errors: will hang if PLL does not stabilize 
 void PLL_Init(void);
+
+#endif

@@ -48,30 +48,35 @@ Function: sendATCommand
 Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\Xbee.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\Xbee.c.o" -WmsgSd1106
 
+  0000 3b           [2]     PSHD  
    22:    char * temp;
-   23:    //do {
+   23:    do {
    24:      temp = command;
-   25:      while(!(*temp)) { 
-  0000 b745         [1]     TFR   D,X
-  0002 2006         [3]     BRA   *+8 ;abs = 000a
+  0001 ee80         [3]     LDX   0,SP
+   25:      while(*temp) { 
+  0003 2006         [3]     BRA   *+8 ;abs = 000b
    26:        SCI1_OutChar(*temp); 
-  0004 34           [2]     PSHX  
-  0005 160000       [4]     JSR   SCI1_OutChar
+  0005 34           [2]     PSHX  
+  0006 160000       [4]     JSR   SCI1_OutChar
    27:        temp++; 
-  0008 30           [3]     PULX  
-  0009 08           [1]     INX   
-  000a e600         [3]     LDAB  0,X
-  000c 27f6         [3/1]   BEQ   *-8 ;abs = 0004
+  0009 30           [3]     PULX  
+  000a 08           [1]     INX   
+  000b e600         [3]     LDAB  0,X
+  000d 26f6         [3/1]   BNE   *-8 ;abs = 0005
    28:      }
    29:      SCI1_OutChar(0x0D);
-  000e c60d         [1]     LDAB  #13
-  0010 160000       [4]     JSR   SCI1_OutChar
+  000f c60d         [1]     LDAB  #13
+  0011 160000       [4]     JSR   SCI1_OutChar
    30:      Timer_Wait1ms(20);
-  0013 c614         [1]     LDAB  #20
-  0015 87           [1]     CLRA  
-  0016 060000       [3]     JMP   Timer_Wait1ms
-   31:    //} while(!ok());
+  0014 c614         [1]     LDAB  #20
+  0016 87           [1]     CLRA  
+  0017 160000       [4]     JSR   Timer_Wait1ms
+   31:    } while(!ok());
+  001a 0700         [4]     BSR   ok
+  001c 0454e2       [3]     TBEQ  D,*-27 ;abs = 0001
    32:  }
+  001f 3a           [3]     PULD  
+  0020 3d           [5]     RTS   
    33:  
    34:  /*-----------------------XBee_Init----------------------------
    35:    Initialize XBee
@@ -84,128 +89,121 @@ Function: XBee_Init
 Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\Xbee.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\Xbee.c.o" -WmsgSd1106
 
-   39:    do {
-   40:      SCI1_OutChar('X');
+   39:      SCI1_OutChar('X');
   0000 c658         [1]     LDAB  #88
   0002 160000       [4]     JSR   SCI1_OutChar
-   41:      Timer_Wait10ms(110);
+   40:      Timer_Wait10ms(110);
   0005 c66e         [1]     LDAB  #110
   0007 87           [1]     CLRA  
   0008 160000       [4]     JSR   Timer_Wait10ms
-   42:      
-   43:      
-   44:      SCI1_OutString("+++"); 
+   41:      
+   42:      SCI1_OutString("+++"); 
   000b cc0000       [2]     LDD   #"+++"
   000e 160000       [4]     JSR   SCI1_OutString
-   45:      Timer_Wait10ms(110);   
+   43:      Timer_Wait10ms(110);   
   0011 c66e         [1]     LDAB  #110
   0013 87           [1]     CLRA  
   0014 160000       [4]     JSR   Timer_Wait10ms
-   46:      
-   47:      sendATCommand("ATDL4F");
+   44:      
+   45:      sendATCommand("ATDL4F");
   0017 cc0000       [2]     LDD   #"ATDL4F"
   001a 0700         [4]     BSR   sendATCommand
-   48:      sendATCommand("ATDH0");
+   46:      sendATCommand("ATDH0");
   001c cc0000       [2]     LDD   #"ATDH0"
   001f 0700         [4]     BSR   sendATCommand
-   49:      sendATCommand("ATMY4E");
+   47:      sendATCommand("ATMY4E");
   0021 cc0000       [2]     LDD   #"ATMY4E"
   0024 0700         [4]     BSR   sendATCommand
-   50:      sendATCommand("ATAP1");
+   48:      sendATCommand("ATAP1");
   0026 cc0000       [2]     LDD   #"ATAP1"
   0029 0700         [4]     BSR   sendATCommand
-   51:      sendATCommand("ATCN");
+   49:      sendATCommand("ATCN");
   002b cc0000       [2]     LDD   #"ATCN"
   002e 0700         [4]     BSR   sendATCommand
-   52:      PTP ^= 0x80; 
+   50:      PTP ^= 0x80; 
   0030 f60000       [3]     LDAB  _PTP
   0033 c880         [1]     EORB  #128
   0035 7b0000       [3]     STAB  _PTP
-   53:    } while(!ok());
-  0038 0700         [4]     BSR   ok
-  003a 0454c3       [3]     TBEQ  D,*-58 ;abs = 0000
-   54:  }
-  003d 3d           [5]     RTS   
-   55:  
-   56:  /*-----------------------XBee_RecieveTxFrame-------------------
-   57:    Receives a frame from data in
-   58:    Inputs: None
-   59:    Outputs: Input Frame */
-   60:  FrameType XBee_RecieveTxFrame(void)
-   61:  {
+   51:  }
+  0038 3d           [5]     RTS   
+   52:  
+   53:  /*-----------------------XBee_RecieveTxFrame-------------------
+   54:    Receives a frame from data in
+   55:    Inputs: None
+   56:    Outputs: Input Frame */
+   57:  int XBee_RecieveTxFrame(FrameType * frame)
+   58:  {
 *** EVALUATION ***
 
 Function: XBee_RecieveTxFrame
 Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\Xbee.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\Xbee.c.o" -WmsgSd1106
 
-  0000 1b97         [2]     LEAS  -9,SP
-  0002 3b           [2]     PSHD  
-   62:    short i;  
-   63:    FrameType frame;
-   64:    static short FrameID = 1;
-   65:    
-   66:    if(SCI1_InChar() != 0x7E)
-  0003 160000       [4]     JSR   SCI1_InChar
-  0006 c17e         [1]     CMPB  #126
-  0008 2650         [3/1]   BNE   *+82 ;abs = 005a
-   67:    {
-   68:  	  return;
-   69:    }
+  0000 6cac         [2]     STD   4,-SP
+   59:    short i;
+   60:    static short FrameID = 1;
+   61:         
+   62:    if(SCI1_InChar() != 0x7E)
+  0002 160000       [4]     JSR   SCI1_InChar
+  0005 c17e         [1]     CMPB  #126
+  0007 2703         [3/1]   BEQ   *+5 ;abs = 000c
+   63:    {
+   64:  	  return 0;
+  0009 c7           [1]     CLRB  
+  000a 204a         [3]     BRA   *+76 ;abs = 0056
+   65:    }  
+   66:    
+   67:    frame->length = SCI1_InChar();
+  000c 160000       [4]     JSR   SCI1_InChar
+  000f ee80         [3]     LDX   0,SP
+  0011 87           [1]     CLRA  
+  0012 6c00         [2]     STD   0,X
+   68:    frame->length <<= 8;
+  0014 e601         [3]     LDAB  1,X
+  0016 6b00         [2]     STAB  0,X
+  0018 6a01         [2]     STAA  1,X
+   69:    frame->length += SCI1_InChar();
+  001a 34           [2]     PSHX  
+  001b 160000       [4]     JSR   SCI1_InChar
+  001e 87           [1]     CLRA  
+  001f 30           [3]     PULX  
+  0020 e300         [3]     ADDD  0,X
+  0022 6c00         [2]     STD   0,X
    70:    
-   71:    frame.length = SCI1_InChar();
-  000a 160000       [4]     JSR   SCI1_InChar
-  000d 87           [1]     CLRA  
-  000e 6c82         [2]     STD   2,SP
-   72:    frame.length <<= 8;
-  0010 e683         [3]     LDAB  3,SP
-  0012 6b82         [2]     STAB  2,SP
-  0014 6a83         [2]     STAA  3,SP
-   73:    frame.length += SCI1_InChar();
-  0016 160000       [4]     JSR   SCI1_InChar
-  0019 87           [1]     CLRA  
-  001a e382         [3]     ADDD  2,SP
-  001c 6c82         [2]     STD   2,SP
-   74:    
-   75:    for(i = 0; i < frame.length; i++)
-  001e c7           [1]     CLRB  
-  001f 87           [1]     CLRA  
-  0020 6c89         [2]     STD   9,SP
-  0022 2010         [3]     BRA   *+18 ;abs = 0034
-   76:    {
-   77:  	  frame.data[i] = SCI1_InChar();
-  0024 ec84         [3]     LDD   4,SP
-  0026 e389         [3]     ADDD  9,SP
-  0028 3b           [2]     PSHD  
-  0029 160000       [4]     JSR   SCI1_InChar
-  002c 30           [3]     PULX  
-  002d 6b00         [2]     STAB  0,X
-  002f ee89         [3]     LDX   9,SP
-  0031 08           [1]     INX   
-  0032 6e89         [2]     STX   9,SP
-  0034 ec89         [3]     LDD   9,SP
-  0036 ac82         [3]     CPD   2,SP
-  0038 2dea         [3/1]   BLT   *-20 ;abs = 0024
-   78:    }
-   79:    
-   80:    frame.checkSum = SCI1_InChar();
-  003a 160000       [4]     JSR   SCI1_InChar
-  003d 6b86         [2]     STAB  6,SP
-   81:    frame.frameID = FrameID++;
-  003f fe0000       [3]     LDX   FrameID
-  0042 6e87         [2]     STX   7,SP
-  0044 08           [1]     INX   
-  0045 7e0000       [3]     STX   FrameID
-   82:    return frame;
-  0048 ee80         [3]     LDX   0,SP
-  004a e682         [3]     LDAB  2,SP
-  004c 6b00         [2]     STAB  0,X
-  004e ec83         [3]     LDD   3,SP
-  0050 6c01         [2]     STD   1,X
-  0052 ec85         [3]     LDD   5,SP
-  0054 6c03         [2]     STD   3,X
-  0056 ec87         [3]     LDD   7,SP
-  0058 6c05         [2]     STD   5,X
-   83:  }
-  005a 1b8b         [2]     LEAS  11,SP
-  005c 3d           [5]     RTS   
+   71:    for(i = 0; i < frame->length; i++)
+  0024 c7           [1]     CLRB  
+  0025 87           [1]     CLRA  
+  0026 6c82         [2]     STD   2,SP
+  0028 2010         [3]     BRA   *+18 ;abs = 003a
+   72:    {
+   73:  	  frame->data[i] = SCI1_InChar();
+  002a ec80         [3]     LDD   0,SP
+  002c e382         [3]     ADDD  2,SP
+  002e 3b           [2]     PSHD  
+  002f 160000       [4]     JSR   SCI1_InChar
+  0032 30           [3]     PULX  
+  0033 6b02         [2]     STAB  2,X
+  0035 ee82         [3]     LDX   2,SP
+  0037 08           [1]     INX   
+  0038 6e82         [2]     STX   2,SP
+  003a ee80         [3]     LDX   0,SP
+  003c ec82         [3]     LDD   2,SP
+  003e ac00         [3]     CPD   0,X
+  0040 2de8         [3/1]   BLT   *-22 ;abs = 002a
+   74:    }
+   75:    
+   76:    frame->checkSum = SCI1_InChar();
+  0042 160000       [4]     JSR   SCI1_InChar
+  0045 ee80         [3]     LDX   0,SP
+  0047 6be020       [3]     STAB  32,X
+   77:    frame->frameID = FrameID++;
+  004a fd0000       [3]     LDY   FrameID
+  004d 6de021       [3]     STY   33,X
+  0050 02           [1]     INY   
+  0051 7d0000       [3]     STY   FrameID
+   78:    return 1;
+  0054 c601         [1]     LDAB  #1
+  0056 87           [1]     CLRA  
+   79:  }
+  0057 1b84         [2]     LEAS  4,SP
+  0059 3d           [5]     RTS   

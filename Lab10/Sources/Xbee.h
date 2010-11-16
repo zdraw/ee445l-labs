@@ -1,7 +1,7 @@
 typedef struct
 {
 	short length; // Length of data
-	char *data;
+	char data[30];
 	char checkSum;
 	short frameID;
 } FrameType;
@@ -18,4 +18,4 @@ void XBee_Init(void);
   Receives a frame from data in
   Inputs: None
   Outputs: Input Frame */
-FrameType XBee_RecieveTxFrame(void);
+int XBee_RecieveTxFrame(FrameType * frame);
