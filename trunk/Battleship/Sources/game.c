@@ -5,8 +5,9 @@
 
 #define DEBOUNCE_DELAY 30000
 
-#define SINGLE_PLAYER 0
-#define MULTI_PLAYER 1  
+#define SINGLE       0
+#define MULTI_XBEE   1
+#define MULTI_SERIAL 2 
 
 #define VERTICAL 0
 #define HORIZONTAL 1
@@ -29,6 +30,7 @@ struct {
   unsigned int y:4;  
 } cursor;
 
+static int mode;
 static int state;
 
 static int buttonFlag;
@@ -41,6 +43,8 @@ static ShipType ships[5] = {
   {0, 0, VERTICAL, 5}
 };
 
+static unsigned char field[10][10];
+
 static int numShips;
 
 static AttackType enemyAttacks[100];
@@ -51,10 +55,13 @@ static int numPlayerAttacks;
 
 void incState(void) {
   switch(state) {
-    case WELCOME:
-      numShips = 1;    
-      state = PLACING_SHIPS;
+    case WELCOME:  
+      state = PICKING_MODE;
       break;
+    case PICKING_MODE:
+      numShips = 1;
+      state = PLACING_SHIPS;
+      break;  
   }
   Game_Update();
 }
@@ -72,48 +79,59 @@ void Game_Init(void) {
 void Game_Update(void) { 
   int i, j;
   
-  if(state == WELCOME) {
-  
-    LCD_Clear(0);
-    LCD_GoTo(4, 1);
-    LCD_OutString("Welcome to Battleship");
-    
-    enableOC6(&incState, 62500, 9, 1);
-  }
-  else if (state == PLACING_SHIPS) {
-    static unsigned  char field[10][10]; 
-    LCD_Clear(0);
-    
-    for(i=0; i<10; i++) {
-      for(j=0; j<10; j++) {
-        field[i][j] = EMPTY;      
-      }
-    }
-    
-    for(i=0; i<numShips; i++) {
-      ShipType ship = ships[i];
-      if(ship.orientation == HORIZONTAL) {
-        field[ship.x][ship.y] = SHIPEND_LEFT;
-        for(j=1; j<ship.size-1; j++) {
-          field[ship.x][ship.y+j] = SHIP_HORIZ;    
-        }
-        field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
-      }
-      else {
-        field[ship.x][ship.y] = SHIPEND_UP;
-        for(j=1; j<ship.size-1; j++) {
-          field[ship.x+j][ship.y] = SHIP_VERT;    
-        }
-        field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
-      }
-    }
-    
-    for(i=0; i<numEnemyAttacks; i++) {
-      AttackType attack = enemyAttacks[i];
-      field[attack.x][attack.y] = attack.type;  
-    }
+  switch(state) {
+    case WELCOME:
+      LCD_Clear(0);
+      LCD_GoTo(4, 1);
+      LCD_OutString("Welcome to Battleship");
       
-    LCD_DrawGrid(field);
+      enableOC6(&incState, 62500, 72, 1);
+      break;
+    case PICKING_MODE:
+      LCD_Clear(0);
+      LCD_GoTo(2, 3);
+      LCD_OutString("Single Player");
+      LCD_GoTo(4, 3);
+      LCD_OutString("Multiplayer XBee");
+      LCD_GoTo(6, 3);
+      LCD_OutString("Multiplayer Wired");
+      LCD_GoTo((cursor.x+1)*2,1);
+      LCD_OutChar(127);
+      break;
+    case PLACING_SHIPS:
+      LCD_Clear(0);
+      
+      for(i=0; i<10; i++) {
+        for(j=0; j<10; j++) {
+          field[i][j] = EMPTY;      
+        }
+      }
+      
+      for(i=0; i<numShips; i++) {
+        ShipType ship = ships[i];
+        if(ship.orientation == HORIZONTAL) {
+          field[ship.x][ship.y] = SHIPEND_LEFT;
+          for(j=1; j<ship.size-1; j++) {
+            field[ship.x][ship.y+j] = SHIP_HORIZ;    
+          }
+          field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
+        }
+        else {
+          field[ship.x][ship.y] = SHIPEND_UP;
+          for(j=1; j<ship.size-1; j++) {
+            field[ship.x+j][ship.y] = SHIP_VERT;    
+          }
+          field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
+        }
+      }
+      
+      for(i=0; i<numEnemyAttacks; i++) {
+        AttackType attack = enemyAttacks[i];
+        field[attack.x][attack.y] = attack.type;  
+      }
+        
+      LCD_DrawGrid(field);
+      break;
   }
   
   /*
@@ -195,6 +213,16 @@ void Game_DPad(unsigned char direction) {
   unsigned int tempX, tempY;
   if(!buttonFlag) {
     switch(state) {
+      case PICKING_MODE:
+        if(direction == UP) {
+          cursor.x--;
+        }
+        else if (direction == DOWN) {
+          cursor.x++;  
+        }
+        cursor.x %= 3;
+        Game_Update();
+        break;
       case PLACING_SHIPS:
         tempX = ships[numShips-1].x;
         tempY = ships[numShips-1].y;  
@@ -223,25 +251,30 @@ void Game_DPad(unsigned char direction) {
           ships[numShips-1].x = tempX;
           ships[numShips-1].y = tempY;
         }
-        
-        buttonFlag = 1;  
-        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
         break;
     }
+    
+    buttonFlag = 1;  
+    enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
   }
 }
 
 void Game_A(void) {
   if(!buttonFlag) {
     switch(state) {
+      case PICKING_MODE:
+        mode = cursor.x;
+        incState();
+        break;        
       case PLACING_SHIPS:
-      numShips++;
-      Game_Update(); 
-      buttonFlag = 1;
-      enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-      break;
+        numShips++;
+        Game_Update(); 
+        break;
     }
+    buttonFlag = 1;
+    enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
   } 
+  
 }
 
 void Game_B(void) {

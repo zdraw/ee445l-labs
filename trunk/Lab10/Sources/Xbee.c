@@ -20,15 +20,15 @@ int ok(void) {
 
 void sendATCommand(char * command) {
   char * temp;
-  //do {
+  do {
     temp = command;
-    while(!(*temp)) { 
+    while(*temp) { 
       SCI1_OutChar(*temp); 
       temp++; 
     }
     SCI1_OutChar(0x0D);
     Timer_Wait1ms(20);
-  //} while(!ok());
+  } while(!ok());
 }
 
 /*-----------------------XBee_Init----------------------------
@@ -36,10 +36,8 @@ void sendATCommand(char * command) {
   Inputs: none
   Outputs: none */
 void XBee_Init(void) {
-  do {
     SCI1_OutChar('X');
     Timer_Wait10ms(110);
-    
     
     SCI1_OutString("+++"); 
     Timer_Wait10ms(110);   
@@ -50,34 +48,32 @@ void XBee_Init(void) {
     sendATCommand("ATAP1");
     sendATCommand("ATCN");
     PTP ^= 0x80; 
-  } while(!ok());
 }
 
 /*-----------------------XBee_RecieveTxFrame-------------------
   Receives a frame from data in
   Inputs: None
   Outputs: Input Frame */
-FrameType XBee_RecieveTxFrame(void)
+int XBee_RecieveTxFrame(FrameType * frame)
 {
-  short i;  
-  FrameType frame;
+  short i;
   static short FrameID = 1;
-  
+       
   if(SCI1_InChar() != 0x7E)
   {
-	  return;
-  }
+	  return 0;
+  }  
   
-  frame.length = SCI1_InChar();
-  frame.length <<= 8;
-  frame.length += SCI1_InChar();
+  frame->length = SCI1_InChar();
+  frame->length <<= 8;
+  frame->length += SCI1_InChar();
   
-  for(i = 0; i < frame.length; i++)
+  for(i = 0; i < frame->length; i++)
   {
-	  frame.data[i] = SCI1_InChar();
+	  frame->data[i] = SCI1_InChar();
   }
   
-  frame.checkSum = SCI1_InChar();
-  frame.frameID = FrameID++;
-  return frame;
+  frame->checkSum = SCI1_InChar();
+  frame->frameID = FrameID++;
+  return 1;
 }

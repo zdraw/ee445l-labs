@@ -1,3 +1,6 @@
+#ifndef TIMER_H
+#define TIMER_H
+
 // File **********Timer.h***********
 // Timer wait routine, 9S12DP512
 // assumes PLL is active and E clock is 24 MHz
@@ -42,3 +45,5 @@ void Timer_Wait1ms(unsigned short delay);
 // outputs: none
 // 15000 cycles equals 10ms
 void Timer_Wait10ms(unsigned short delay);
+
+#endif

@@ -39,25 +39,27 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0007 5a00         [2]     STAA  _TSCR2
    27:    PACTL = 0;      // timer prescale used for TCNT
   0009 790000       [3]     CLR   _PACTL
-   28:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
-   29:      divide  FastMode(24MHz)    Slow Mode (4MHz)
-   30:  000   1     42ns  TOF  2.73ms  250ns TOF 16.384ms
-   31:  001   2     84ns  TOF  5.46ms  500ns TOF 32.768ms 
-   32:  010   4    167ns  TOF  10.9ms    1us TOF 65.536ms   
-   33:  011   8    333ns  TOF  21.8ms 	 2us TOF 131.072ms
-   34:  100  16    667ns  TOF  43.7ms 	 4us TOF 262.144ns
-   35:  101  32   1.33us  TOF  87.4ms		 8us TOF 524.288ms
-   36:  110  64   2.67us  TOF 174.8ms   16us TOF 1.048576s
-   37:  111 128   5.33us  TOF 349.5ms   32us TOF 2.097152s */ 
-   38:  }
-  000c 3d           [5]     RTS   
-   39:  
+   28:    asm cli
+  000c 10ef         [1]     CLI   
+   29:  /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
+   30:      divide  FastMode(24MHz)    Slow Mode (4MHz)
+   31:  000   1     42ns  TOF  2.73ms  250ns TOF 16.384ms
+   32:  001   2     84ns  TOF  5.46ms  500ns TOF 32.768ms 
+   33:  010   4    167ns  TOF  10.9ms    1us TOF 65.536ms   
+   34:  011   8    333ns  TOF  21.8ms 	 2us TOF 131.072ms
+   35:  100  16    667ns  TOF  43.7ms 	 4us TOF 262.144ns
+   36:  101  32   1.33us  TOF  87.4ms		 8us TOF 524.288ms
+   37:  110  64   2.67us  TOF 174.8ms   16us TOF 1.048576s
+   38:  111 128   5.33us  TOF 349.5ms   32us TOF 2.097152s */ 
+   39:  }
+  000e 3d           [5]     RTS   
    40:  
-   41:  //---------Timer_Wait------------------
-   42:  // fixed time delay
-   43:  // inputs: time to wait in 667ns cycles
-   44:  // outputs: none
-   45:  void Timer_Wait(unsigned short delay){ 
+   41:  
+   42:  //---------Timer_Wait------------------
+   43:  // fixed time delay
+   44:  // inputs: time to wait in 667ns cycles
+   45:  // outputs: none
+   46:  void Timer_Wait(unsigned short delay){ 
 *** EVALUATION ***
 
 Function: Timer_Wait
@@ -65,35 +67,35 @@ Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\Timer.C
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\Timer.C.o" -WmsgSd1106
 
   0000 6cac         [2]     STD   4,-SP
-   46:  unsigned short startTime;
-   47:    startTime = TCNT;
+   47:  unsigned short startTime;
+   48:    startTime = TCNT;
   0002 dc00         [3]     LDD   _TCNT
   0004 6c82         [2]     STD   2,SP
-   48:    while((TCNT-startTime) <= delay){} 
+   49:    while((TCNT-startTime) <= delay){} 
   0006 dc00         [3]     LDD   _TCNT
   0008 a382         [3]     SUBD  2,SP
   000a ac80         [3]     CPD   0,SP
   000c 23f8         [3/1]   BLS   *-6 ;abs = 0006
-   49:  }
+   50:  }
   000e 1b84         [2]     LEAS  4,SP
   0010 3d           [5]     RTS   
-   50:  
-   51:  //---------Timer_Wait1ms------------------
-   52:  // fixed time delay
-   53:  // inputs: time to wait in ms
-   54:  // outputs: none
-   55:  // 1500 cycles equals 1ms
-   56:  void Timer_Wait1ms(unsigned short delay){ 
+   51:  
+   52:  //---------Timer_Wait1ms------------------
+   53:  // fixed time delay
+   54:  // inputs: time to wait in ms
+   55:  // outputs: none
+   56:  // 1500 cycles equals 1ms
+   57:  void Timer_Wait1ms(unsigned short delay){ 
 *** EVALUATION ***
 
 Function: Timer_Wait1ms
 Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\Timer.C
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\Timer.C.o" -WmsgSd1106
 
-   57:    for(;delay>0;delay--){
+   58:    for(;delay>0;delay--){
   0000 b745         [1]     TFR   D,X
   0002 2008         [3]     BRA   *+10 ;abs = 000c
-   58:      Timer_Wait(188);
+   59:      Timer_Wait(188);
   0004 c6bc         [1]     LDAB  #188
   0006 87           [1]     CLRA  
   0007 34           [2]     PSHX  
@@ -101,32 +103,32 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   000a 30           [3]     PULX  
   000b 09           [1]     DEX   
   000c 0475f5       [3]     TBNE  X,*-8 ;abs = 0004
-   59:    }
-   60:  }
+   60:    }
+   61:  }
   000f 3d           [5]     RTS   
-   61:  
-   62:  //---------Timer_Wait10ms------------------
-   63:  // fixed time delay
-   64:  // inputs: time to wait in 10ms
-   65:  // outputs: none
-   66:  // 15000 cycles equals 10ms
-   67:  void Timer_Wait10ms(unsigned short delay){
+   62:  
+   63:  //---------Timer_Wait10ms------------------
+   64:  // fixed time delay
+   65:  // inputs: time to wait in 10ms
+   66:  // outputs: none
+   67:  // 15000 cycles equals 10ms
+   68:  void Timer_Wait10ms(unsigned short delay){
 *** EVALUATION ***
 
 Function: Timer_Wait10ms
 Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\Timer.C
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\Timer.C.o" -WmsgSd1106
 
-   68:    for(;delay>0;delay--){
+   69:    for(;delay>0;delay--){
   0000 b745         [1]     TFR   D,X
   0002 2008         [3]     BRA   *+10 ;abs = 000c
-   69:      Timer_Wait(1875);
+   70:      Timer_Wait(1875);
   0004 cc0753       [2]     LDD   #1875
   0007 34           [2]     PSHX  
   0008 0700         [4]     BSR   Timer_Wait
   000a 30           [3]     PULX  
   000b 09           [1]     DEX   
   000c 0475f5       [3]     TBNE  X,*-8 ;abs = 0004
-   70:    }
-   71:  }
+   71:    }
+   72:  }
   000f 3d           [5]     RTS   

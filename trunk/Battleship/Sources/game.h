@@ -1,4 +1,5 @@
-
+#ifndef GAME_H
+#define GAME_H
 
 #define EMPTY         0
 #define SHIPEND_UP    1
@@ -11,7 +12,8 @@
 #define MISS          8
 
 #define WELCOME       0
-#define PLACING_SHIPS 1
+#define PICKING_MODE  1
+#define PLACING_SHIPS 2
 
 #define UP    0
 #define DOWN  1
@@ -25,3 +27,5 @@ void Game_Update(void);
 void Game_DPad(unsigned char direction);
 void Game_A(void);
 void Game_B(void);
+
+#endif

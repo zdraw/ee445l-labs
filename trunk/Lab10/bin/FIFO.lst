@@ -77,7 +77,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
    48:    tempPt++;              
   0006 6e80         [2]     STX   0,SP
    49:    if(tempPt == &Fifo[FIFOSIZE]){ // need to wrap?
-  0008 8e0000       [2]     CPX   #Fifo:24
+  0008 8e0000       [2]     CPX   #Fifo:100
   000b 2605         [3/1]   BNE   *+7 ;abs = 0012
    50:      tempPt = &Fifo[0];
   000d cc0000       [2]     LDD   #Fifo
@@ -134,7 +134,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0017 08           [1]     INX   
   0018 7e0000       [3]     STX   GetPt
    73:      if(GetPt == &Fifo[FIFOSIZE]){ 
-  001b 8e0000       [2]     CPX   #Fifo:24
+  001b 8e0000       [2]     CPX   #Fifo:100
   001e 2606         [3/1]   BNE   *+8 ;abs = 0026
    74:        GetPt = &Fifo[0];  // wrap
   0020 180300000000 [5]     MOVW  #Fifo,GetPt

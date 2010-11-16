@@ -1,0 +1,522 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // ****************fixed.c********
+    2:  // Implementation of fixed point routines
+    3:  // Jonathan W. Valvano 1/27/09
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //         Engineering, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Microcomputer Systems: 
+    9:  //    Motorola 6811 and 6812 Simulation", Thomson, copyright (c) 2002
+   10:  
+   11:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  
+   15:  
+   16:  
+   17:  //**********Sqrt**********
+   18:  // sqrt for 16-bit integers
+   19:  // input: 16-bit unsigned number
+   20:  // output: sqrt(input)
+   21:  // e.g., sqrt(1600) = 40
+   22:  // no overflow error possible
+   23:  unsigned short Sqrt(unsigned short s){ 
+*** EVALUATION ***
+
+Function: Sqrt
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 6ca8         [2]     STD   8,-SP
+   24:    unsigned t,oldt;
+   25:    unsigned short count=20;  
+  0002 c614         [1]     LDAB  #20
+  0004 87           [1]     CLRA  
+  0005 6c84         [2]     STD   4,SP
+   26:    t = 0;       // secant method
+  0007 c7           [1]     CLRB  
+  0008 6c82         [2]     STD   2,SP
+   27:    if(s>0){
+  000a ee80         [3]     LDX   0,SP
+  000c 272c         [3/1]   BEQ   *+46 ;abs = 003a
+   28:       t = 100;   // initial guess 100
+  000e c664         [1]     LDAB  #100
+  0010 6c82         [2]     STD   2,SP
+   29:       do{
+   30:         if((--count) == 0) return (unsigned short) t;
+  0012 ee84         [3]     LDX   4,SP
+  0014 09           [1]     DEX   
+  0015 6e84         [2]     STX   4,SP
+  0017 2721         [3/1]   BEQ   *+35 ;abs = 003a
+   31:         oldt = t;  // from the last 
+  0019 ec82         [3]     LDD   2,SP
+  001b 6c86         [2]     STD   6,SP
+   32:  //       t = ((t*t+s)/t)/2;
+   33:    asm ldd  t
+  001d ec82         [3]     LDD   2,SP
+   34:    asm tfr  d,y
+  001f b746         [1]     TFR   D,Y
+   35:    asm emul        //32-bit Y:D is t*t
+  0021 13           [3]     EMUL  
+   36:    asm addd s
+  0022 e380         [3]     ADDD  0,SP
+   37:    asm exg d,y
+  0024 b7c6         [1]     EXG   D,Y
+   38:    asm adcb #0
+  0026 c900         [1]     ADCB  #0
+   39:    asm adca #0    // carry from lsw
+  0028 8900         [1]     ADCA  #0
+   40:    asm exg d,y
+  002a b7c6         [1]     EXG   D,Y
+   41:    asm ldx t
+  002c ee82         [3]     LDX   2,SP
+   42:    asm ediv
+  002e 11           [11]    EDIV  
+   43:    asm tfr y,d
+  002f b764         [1]     TFR   Y,D
+   44:    asm lsrd
+  0031 49           [1]     LSRD  
+   45:    asm std t
+  0032 6c82         [2]     STD   2,SP
+   46:       } 
+   47:       while(t != oldt);
+  0034 ec82         [3]     LDD   2,SP
+  0036 ac86         [3]     CPD   6,SP
+  0038 26d8         [3/1]   BNE   *-38 ;abs = 0012
+   48:    }     
+   49:    return (unsigned short) t;
+  003a ec82         [3]     LDD   2,SP
+   50:  }
+  003c 1b88         [2]     LEAS  8,SP
+  003e 3d           [5]     RTS   
+   51:  
+   52:  //**********Fixed_uMult2**********
+   53:  // multiply for decimal fixed-point numbers with 0.01 resolution
+   54:  // inputs: two integer parts of unsigned fixed-point numbers
+   55:  // output: integer part of the product of the two inputs
+   56:  //         result =(n1*n2)/100
+   57:  // e.g., mult(16.00*2.50) = 40.00, 1600,250 -> 4000
+   58:  // if overflow 65535 is returned 
+   59:  unsigned short Fixed_uMult2(unsigned short n1, unsigned short n2){ 
+*** EVALUATION ***
+
+Function: Fixed_uMult2
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 6cac         [2]     STD   4,-SP
+   60:  unsigned short result;
+   61:    asm ldd  n1
+  0002 ec86         [3]     LDD   6,SP
+   62:    asm ldy  n2
+  0004 ed80         [3]     LDY   0,SP
+   63:    asm emul        //32-bit Y:D is n1*n2
+  0006 13           [3]     EMUL  
+   64:    asm ldx #100
+  0007 ce0064       [2]     LDX   #100
+   65:    asm ediv
+  000a 11           [11]    EDIV  
+   66:    asm bvc *+5
+  000b 2803         [3/1]   BVC   *+5 ;abs = 0010
+   67:    asm ldy #65535 // overflow
+  000d cdffff       [2]     LDY   #65535
+   68:    asm sty result
+  0010 6d82         [2]     STY   2,SP
+   69:    return result;
+  0012 ec82         [3]     LDD   2,SP
+   70:  } 
+  0014 1b84         [2]     LEAS  4,SP
+  0016 3d           [5]     RTS   
+   71:  
+   72:  //**********Fixed_uMult3**********
+   73:  // multiply for decimal fixed-point numbers with 0.001 resolution
+   74:  // inputs: two integer parts of unsigned fixed-point numbers
+   75:  // output: integer part of the product of the two inputs
+   76:  //         result =(n1*n2)/1000
+   77:  // e.g., mult(16.000*2.500) = 40.000, 16000,2500 -> 40000
+   78:  // if overflow 65535 is returned 
+   79:  unsigned short Fixed_uMult3(unsigned short n1, unsigned short n2){ 
+*** EVALUATION ***
+
+Function: Fixed_uMult3
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 6cac         [2]     STD   4,-SP
+   80:  unsigned short result;
+   81:    asm ldd  n1
+  0002 ec86         [3]     LDD   6,SP
+   82:    asm ldy  n2
+  0004 ed80         [3]     LDY   0,SP
+   83:    asm emul        //32-bit Y:D is n1*n2
+  0006 13           [3]     EMUL  
+   84:    asm ldx #1000
+  0007 ce03e8       [2]     LDX   #1000
+   85:    asm ediv
+  000a 11           [11]    EDIV  
+   86:    asm bvc *+5
+  000b 2803         [3/1]   BVC   *+5 ;abs = 0010
+   87:    asm ldy #65535 // overflow
+  000d cdffff       [2]     LDY   #65535
+   88:    asm sty result
+  0010 6d82         [2]     STY   2,SP
+   89:    return result;
+  0012 ec82         [3]     LDD   2,SP
+   90:  } 
+  0014 1b84         [2]     LEAS  4,SP
+  0016 3d           [5]     RTS   
+   91:  
+   92:  //**********Fixed_sMult2**********
+   93:  // multiply for decimal fixed-point numbers with 0.01 resolution
+   94:  // inputs: two integer parts of signed fixed-point numbers
+   95:  // output: integer part of the product of the two inputs
+   96:  //         result =(n1*n2)/100
+   97:  // e.g., mult(1.60*-2.50) = -4.00, 160,-250 -> -400
+   98:  // if overflow -32768 is returned 
+   99:  unsigned short Fixed_sMult2(short n1, short n2){ 
+*** EVALUATION ***
+
+Function: Fixed_sMult2
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 6cac         [2]     STD   4,-SP
+  100:  unsigned short result;
+  101:    asm ldd  n1
+  0002 ec86         [3]     LDD   6,SP
+  102:    asm ldy  n2
+  0004 ed80         [3]     LDY   0,SP
+  103:    asm emuls        //32-bit Y:D is n1*n2
+  0006 1813         [3]     EMULS 
+  104:    asm ldx #100
+  0008 ce0064       [2]     LDX   #100
+  105:    asm edivs
+  000b 1814         [12]    EDIVS 
+  106:    asm bvc *+5
+  000d 2803         [3/1]   BVC   *+5 ;abs = 0012
+  107:    asm ldy #32768 // overflow
+  000f cd8000       [2]     LDY   #32768
+  108:    asm sty result
+  0012 6d82         [2]     STY   2,SP
+  109:    return result;
+  0014 ec82         [3]     LDD   2,SP
+  110:  } 
+  0016 1b84         [2]     LEAS  4,SP
+  0018 3d           [5]     RTS   
+  111:  
+  112:  //**********Fixed_sMult3**********
+  113:  // multiply for decimal fixed-point numbers with 0.001 resolution
+  114:  // inputs: two integer parts of signed fixed-point numbers
+  115:  // output: integer part of the product of the two inputs
+  116:  //         result =(n1*n2)/1000
+  117:  // e.g., mult(1.600*-2.500) = -4.000, 1600,-2500 -> -4000
+  118:  // if overflow -32768 is returned 
+  119:  unsigned short Fixed_sMult3(short n1, short n2){ 
+*** EVALUATION ***
+
+Function: Fixed_sMult3
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 6cac         [2]     STD   4,-SP
+  120:  unsigned short result;
+  121:    asm ldd  n1
+  0002 ec86         [3]     LDD   6,SP
+  122:    asm ldy  n2
+  0004 ed80         [3]     LDY   0,SP
+  123:    asm emuls        //32-bit Y:D is n1*n2
+  0006 1813         [3]     EMULS 
+  124:    asm ldx #1000
+  0008 ce03e8       [2]     LDX   #1000
+  125:    asm edivs
+  000b 1814         [12]    EDIVS 
+  126:    asm bvc *+5
+  000d 2803         [3/1]   BVC   *+5 ;abs = 0012
+  127:    asm ldy #32768 // overflow
+  000f cd8000       [2]     LDY   #32768
+  128:    asm sty result
+  0012 6d82         [2]     STY   2,SP
+  129:    return result;
+  0014 ec82         [3]     LDD   2,SP
+  130:  } 
+  0016 1b84         [2]     LEAS  4,SP
+  0018 3d           [5]     RTS   
+  131:  //**********Fixed_Sqrt2**********
+  132:  // sqrt for decimal fixed-point numbers with 0.01 resolution
+  133:  // input: integer part of an unsigned fixed-point number
+  134:  // output: integer part of sqrt(input)
+  135:  // e.g., sqrt(16.00) = 4.00, 1600 -> 400
+  136:  // no overflow error possible
+  137:  unsigned short Fixed_Sqrt2(unsigned short s){ 
+*** EVALUATION ***
+
+Function: Fixed_Sqrt2
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 1b96         [2]     LEAS  -10,SP
+  0002 3b           [2]     PSHD  
+  138:  unsigned short t,oldt,msw,lsw;
+  139:    unsigned short count=20;  
+  0003 c614         [1]     LDAB  #20
+  0005 87           [1]     CLRA  
+  0006 6c84         [2]     STD   4,SP
+  140:    t = 0;       // secant method
+  0008 c7           [1]     CLRB  
+  0009 6c82         [2]     STD   2,SP
+  141:    if(s>0){
+  000b ee80         [3]     LDX   0,SP
+  000d 2738         [3/1]   BEQ   *+58 ;abs = 0047
+  142:       t = 200;   // initial guess 2.0
+  000f c6c8         [1]     LDAB  #200
+  0011 6c82         [2]     STD   2,SP
+  143:       do{
+  144:         if((--count) == 0) return (unsigned short) t;
+  0013 ee84         [3]     LDX   4,SP
+  0015 09           [1]     DEX   
+  0016 6e84         [2]     STX   4,SP
+  0018 272d         [3/1]   BEQ   *+47 ;abs = 0047
+  145:         oldt = t;  // from the last 
+  001a ec82         [3]     LDD   2,SP
+  001c 6c8a         [2]     STD   10,SP
+  146:       //  t = ((t*t+100*s)/t)/2;
+  147:    asm ldd  s
+  001e ec80         [3]     LDD   0,SP
+  148:    asm ldy  #100
+  0020 cd0064       [2]     LDY   #100
+  149:    asm emul        //32-bit Y:D is 100*s
+  0023 13           [3]     EMUL  
+  150:    asm sty msw
+  0024 6d88         [2]     STY   8,SP
+  151:    asm std lsw
+  0026 6c86         [2]     STD   6,SP
+  152:    asm ldd  t
+  0028 ec82         [3]     LDD   2,SP
+  153:    asm tfr  d,y
+  002a b746         [1]     TFR   D,Y
+  154:    asm emul        //32-bit Y:D is t*t
+  002c 13           [3]     EMUL  
+  155:    asm addd lsw
+  002d e386         [3]     ADDD  6,SP
+  156:    asm exg d,y
+  002f b7c6         [1]     EXG   D,Y
+  157:    asm adcb #0
+  0031 c900         [1]     ADCB  #0
+  158:    asm adca #0    // carry from lsw
+  0033 8900         [1]     ADCA  #0
+  159:    asm addd msw
+  0035 e388         [3]     ADDD  8,SP
+  160:    asm exg d,y
+  0037 b7c6         [1]     EXG   D,Y
+  161:    asm ldx t
+  0039 ee82         [3]     LDX   2,SP
+  162:    asm ediv
+  003b 11           [11]    EDIV  
+  163:    asm tfr y,d
+  003c b764         [1]     TFR   Y,D
+  164:    asm lsrd
+  003e 49           [1]     LSRD  
+  165:    asm std t
+  003f 6c82         [2]     STD   2,SP
+  166:       } 
+  167:       while(t!=oldt);
+  0041 ec82         [3]     LDD   2,SP
+  0043 ac8a         [3]     CPD   10,SP
+  0045 26cc         [3/1]   BNE   *-50 ;abs = 0013
+  168:    }     
+  169:    return t;
+  0047 ec82         [3]     LDD   2,SP
+  170:  } 
+  0049 1b8c         [2]     LEAS  12,SP
+  004b 3d           [5]     RTS   
+  171:   
+  172:  //**********Fixed_Sqrt3**********
+  173:  // sqrt for decimal fixed-point numbers with 0.001 resolution
+  174:  // input: integer part of an unsigned fixed-point number
+  175:  // output: integer part of sqrt(input)
+  176:  // e.g., sqrt(16.000) = 4.000, 16000 -> 4000
+  177:  // no overflow error possible
+  178:  unsigned short Fixed_Sqrt3(unsigned short s){ 
+*** EVALUATION ***
+
+Function: Fixed_Sqrt3
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\fixed.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\fixed.c.o"
+
+  0000 1b96         [2]     LEAS  -10,SP
+  0002 3b           [2]     PSHD  
+  179:  unsigned short t,oldt,msw,lsw;
+  180:    unsigned short count=20;  
+  0003 c614         [1]     LDAB  #20
+  0005 87           [1]     CLRA  
+  0006 6c84         [2]     STD   4,SP
+  181:    t = 0;       // secant method
+  0008 c7           [1]     CLRB  
+  0009 6c82         [2]     STD   2,SP
+  182:    if(s>0){
+  000b ee80         [3]     LDX   0,SP
+  000d 2739         [3/1]   BEQ   *+59 ;abs = 0048
+  183:       t = 2000;   // initial guess 2.0
+  000f ce07d0       [2]     LDX   #2000
+  0012 6e82         [2]     STX   2,SP
+  184:       do{
+  185:         if((--count) == 0) return (unsigned short) t;
+  0014 ee84         [3]     LDX   4,SP
+  0016 09           [1]     DEX   
+  0017 6e84         [2]     STX   4,SP
+  0019 272d         [3/1]   BEQ   *+47 ;abs = 0048
+  186:         oldt = t;  // from the last 
+  001b ec82         [3]     LDD   2,SP
+  001d 6c8a         [2]     STD   10,SP
+  187:       //  t = ((t*t+1000*s)/t)/2;
+  188:    asm ldd  s
+  001f ec80         [3]     LDD   0,SP
+  189:    asm ldy  #1000
+  0021 cd03e8       [2]     LDY   #1000
+  190:    asm emul        //32-bit Y:D is 1000*s
+  0024 13           [3]     EMUL  
+  191:    asm sty msw
+  0025 6d88         [2]     STY   8,SP
+  192:    asm std lsw
+  0027 6c86         [2]     STD   6,SP
+  193:    asm ldd  t
+  0029 ec82         [3]     LDD   2,SP
+  194:    asm tfr  d,y
+  002b b746         [1]     TFR   D,Y
+  195:    asm emul        //32-bit Y:D is t*t
+  002d 13           [3]     EMUL  
+  196:    asm addd lsw
+  002e e386         [3]     ADDD  6,SP
+  197:    asm exg d,y
+  0030 b7c6         [1]     EXG   D,Y
+  198:    asm adcb #0
+  0032 c900         [1]     ADCB  #0
+  199:    asm adca #0    // carry from lsw
+  0034 8900         [1]     ADCA  #0
+  200:    asm addd msw
+  0036 e388         [3]     ADDD  8,SP
+  201:    asm exg d,y
+  0038 b7c6         [1]     EXG   D,Y
+  202:    asm ldx t
+  003a ee82         [3]     LDX   2,SP
+  203:    asm ediv
+  003c 11           [11]    EDIV  
+  204:    asm tfr y,d
+  003d b764         [1]     TFR   Y,D
+  205:    asm lsrd
+  003f 49           [1]     LSRD  
+  206:    asm std t
+  0040 6c82         [2]     STD   2,SP
+  207:       } 
+  208:       while(t!=oldt);
+  0042 ec82         [3]     LDD   2,SP
+  0044 ac8a         [3]     CPD   10,SP
+  0046 26cc         [3/1]   BNE   *-50 ;abs = 0014
+  209:    }     
+  210:    return t;
+  0048 ec82         [3]     LDD   2,SP
+  211:  } 
+  004a 1b8c         [2]     LEAS  12,SP
+  004c 3d           [5]     RTS   
+  212:  
+  213:  /*
+  214:  void doesItCrash(void){
+  215:  unsigned short i,ans;
+  216:  for(i=0; i<65535; i++){
+  217:    ans = Sqrt(i);
+  218:    ans = Fixed_Sqrt3(i);
+  219:  }
+  220:  asm stop
+  221:  }
+  222:  
+  223:  
+  224:  unsigned short results[20];
+  225:  void sqrttest(void){
+  226:  unsigned short i,ans,last;
+  227:  last = 0;
+  228:  for(i=0;i<65535;i++){
+  229:    ans = Fixed_Sqrt2(i);
+  230:    if(ans<last) asm stop
+  231:    last = ans;
+  232:  }
+  233:  last = 0;
+  234:  for(i=0; i<65535; i++){
+  235:    ans = Sqrt(i);
+  236:    if(ans<last) asm stop     // should be monotonic
+  237:    last = ans;
+  238:  }
+  239:  last = 0;
+  240:  for(i=0;i<65535;i++){
+  241:    ans = Fixed_Sqrt3(i);
+  242:    if(ans<last) asm stop
+  243:    last = ans;
+  244:  }
+  245:    results[0] = Fixed_Sqrt2(0);
+  246:    results[1] = Fixed_Sqrt2(1);
+  247:    results[2] = Fixed_Sqrt2(25);
+  248:    results[3] = Fixed_Sqrt2(100);
+  249:    results[4] = Fixed_Sqrt2(200);
+  250:    results[5] = Fixed_Sqrt2(1600);
+  251:    results[6] = Fixed_Sqrt2(2500);
+  252:    results[7] = Fixed_Sqrt2(4900);
+  253:    results[8] = Fixed_Sqrt2(6395);
+  254:    results[9] = Fixed_Sqrt2(6399);
+  255:    results[10] = Fixed_Sqrt2(6400);
+  256:    results[11] = Fixed_Sqrt2(6401);
+  257:    results[12] = Fixed_Sqrt2(6405);
+  258:    results[13] = Fixed_Sqrt2(14400);
+  259:    results[14] = Fixed_Sqrt2(25600);
+  260:    results[15] = Fixed_Sqrt2(40000);
+  261:    results[16] = Fixed_Sqrt2(62500);
+  262:    results[17] = Fixed_Sqrt2(62501);
+  263:    results[18] = Fixed_Sqrt2(62502);
+  264:    results[19] = Fixed_Sqrt2(65535);
+  265:    asm bra *
+  266:  
+  267:    results[0] = Sqrt(0);
+  268:    results[1] = Sqrt(1);
+  269:    results[2] = Sqrt(40);
+  270:    results[3] = Sqrt(250);
+  271:    results[4] = Sqrt(500);
+  272:    results[5] = Sqrt(1000);
+  273:    results[6] = Sqrt(2000);
+  274:    results[7] = Sqrt(4000);
+  275:    results[8] = Sqrt(8995);
+  276:    results[9] = Sqrt(8999);
+  277:    results[10] = Sqrt(9000);
+  278:    results[11] = Sqrt(9001);
+  279:    results[12] = Sqrt(9005);
+  280:    results[13] = Sqrt(16000);
+  281:    results[14] = Sqrt(25000);
+  282:    results[15] = Sqrt(49000);
+  283:    results[16] = Sqrt(64000);
+  284:    results[17] = Sqrt(64001);
+  285:    results[18] = Sqrt(64002);
+  286:    results[19] = Sqrt(65535);
+  287:   // asm bra *
+  288:    results[0] = Fixed_Sqrt3(0);
+  289:    results[1] = Fixed_Sqrt3(1);
+  290:    results[2] = Fixed_Sqrt3(40);
+  291:    results[3] = Fixed_Sqrt3(250);
+  292:    results[4] = Fixed_Sqrt3(500);
+  293:    results[5] = Fixed_Sqrt3(1000);
+  294:    results[6] = Fixed_Sqrt3(2000);
+  295:    results[7] = Fixed_Sqrt3(4000);
+  296:    results[8] = Fixed_Sqrt3(8995);
+  297:    results[9] = Fixed_Sqrt3(8999);
+  298:    results[10] = Fixed_Sqrt3(9000);
+  299:    results[11] = Fixed_Sqrt3(9001);
+  300:    results[12] = Fixed_Sqrt3(9005);
+  301:    results[13] = Fixed_Sqrt3(16000);
+  302:    results[14] = Fixed_Sqrt3(25000);
+  303:    results[15] = Fixed_Sqrt3(49000);
+  304:    results[16] = Fixed_Sqrt3(64000);
+  305:    results[17] = Fixed_Sqrt3(64001);
+  306:    results[18] = Fixed_Sqrt3(64002);
+  307:    results[19] = Fixed_Sqrt3(65535);
+  308:    asm bra *
+  309:    }
+  310:    */
