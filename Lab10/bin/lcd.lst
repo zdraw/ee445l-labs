@@ -45,8 +45,8 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
 *** EVALUATION ***
 
 Function: wait
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   0000 6cac         [2]     STD   4,-SP
    42:  unsigned short startTime;
@@ -69,8 +69,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: wait1ms
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
    51:    for(;msec;msec--){
   0000 b745         [1]     TFR   D,X
@@ -95,8 +95,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: outCsrNibble
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
    61:    PTH = (PTH&0x80)+(command&0x0F);    // nibble, E=0, RS=0
@@ -125,8 +125,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: outCsr
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
    73:    outCsrNibble(command>>4);   // ms nibble, E=0, RS=0
@@ -154,8 +154,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: LCD_Clear
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
    83:    if(OpenFlag==0){
   0000 fc0000       [3]     LDD   OpenFlag
@@ -205,8 +205,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: LCD_Open
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   114:    if(OpenFlag){
   0000 fc0000       [3]     LDD   OpenFlag
@@ -318,8 +318,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: LCD_OutChar
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
   178:    if(OpenFlag==0){
@@ -381,8 +381,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: LCD_OutString
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
   200:    if(OpenFlag==0){
@@ -423,12 +423,12 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 *** EVALUATION ***
 
 Function: LCD_GoTo
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\lcd.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\lcd.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\lcd.c.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
   218:    //int i;
-  219:    if(OpenFlag==0 || col > 7 || row > 1){
+  219:    if(OpenFlag==0 || col > 7 || row > 1) {
   0001 fc0000       [3]     LDD   OpenFlag
   0004 270c         [3/1]   BEQ   *+14 ;abs = 0012
   0006 e680         [3]     LDAB  0,SP
