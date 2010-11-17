@@ -50,13 +50,11 @@
 #include "LCDG.h"
 #include "Timer.h"
 #include "game.h"
-          
-#define CTRLDR DDRP
+
 #define E PTP_PTP3
 #define DI PTP_PTP2
 #define CS2 PTP_PTP1
 #define CS1 PTP_PTP0
-#define DATADR DDRH
 #define DATA PTH
 
 // assuming TCNT is 1.5 MHz
@@ -210,8 +208,8 @@ void lcdData(unsigned char data){
 // does not clear the display
 void LCD_Init(void){
   Timer_Init();   // TCNT at 1.5 MHz
-  DATADR = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
-  CTRLDR |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
+  DDRH = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
+  DDRP |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
   CS2 = 1;         // talk to both LCD controllers
   CS1 = 1;
   DI = 1;          // default mode is data 

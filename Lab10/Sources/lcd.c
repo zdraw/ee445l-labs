@@ -216,7 +216,7 @@ short LCD_OutString(char *pt){
 // Returns: None
 short LCD_GoTo(unsigned char row, unsigned char col){
   //int i;
-  if(OpenFlag==0 || col > 7 || row > 1){
+  if(OpenFlag==0 || col > 7 || row > 1) {
     return 0;
   }
   if(row) {
