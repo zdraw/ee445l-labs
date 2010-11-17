@@ -31,8 +31,8 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
 *** EVALUATION ***
 
 Function: main
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\main.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
 
   0000 1bf1db       [2]     LEAS  -37,SP
    28:    int i;
@@ -80,27 +80,37 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   003a c605         [1]     LDAB  #5
   003c 87           [1]     CLRA  
   003d 6c80         [2]     STD   0,SP
-  003f 2012         [3]     BRA   *+20 ;abs = 0053
-   50:        LCD_OutChar(frame.data[i]);    
-  0041 1a84         [2]     LEAX  4,SP
-  0043 b754         [1]     TFR   X,D
-  0045 e380         [3]     ADDD  0,SP
-  0047 b745         [1]     TFR   D,X
-  0049 e600         [3]     LDAB  0,X
-  004b 160000       [4]     JSR   LCD_OutChar
-  004e ee80         [3]     LDX   0,SP
-  0050 08           [1]     INX   
-  0051 6e80         [2]     STX   0,SP
-  0053 ec80         [3]     LDD   0,SP
-  0055 ac82         [3]     CPD   2,SP
-  0057 2de8         [3/1]   BLT   *-22 ;abs = 0041
-   51:      }
-   52:      Fifo_Init();
-  0059 160000       [4]     JSR   Fifo_Init
-   53:      PTP ^= 0x80;
-  005c f60000       [3]     LDAB  _PTP
-  005f c880         [1]     EORB  #128
-  0061 7b0000       [3]     STAB  _PTP
-  0064 20c4         [3]     BRA   *-58 ;abs = 002a
-   54:    }
-   55:  }
+  003f 2020         [3]     BRA   *+34 ;abs = 0061
+   50:        if(i == 13) {
+  0041 8c000d       [2]     CPD   #13
+  0044 2609         [3/1]   BNE   *+11 ;abs = 004f
+   51:          LCD_GoTo(1,0);  
+  0046 c601         [1]     LDAB  #1
+  0048 37           [2]     PSHB  
+  0049 c7           [1]     CLRB  
+  004a 160000       [4]     JSR   LCD_GoTo
+  004d 1b81         [2]     LEAS  1,SP
+   52:        }
+   53:        LCD_OutChar(frame.data[i]);  
+  004f 1a84         [2]     LEAX  4,SP
+  0051 b754         [1]     TFR   X,D
+  0053 e380         [3]     ADDD  0,SP
+  0055 b745         [1]     TFR   D,X
+  0057 e600         [3]     LDAB  0,X
+  0059 160000       [4]     JSR   LCD_OutChar
+  005c ee80         [3]     LDX   0,SP
+  005e 08           [1]     INX   
+  005f 6e80         [2]     STX   0,SP
+  0061 ec80         [3]     LDD   0,SP
+  0063 ac82         [3]     CPD   2,SP
+  0065 2dda         [3/1]   BLT   *-36 ;abs = 0041
+   54:      }
+   55:      Fifo_Init();
+  0067 160000       [4]     JSR   Fifo_Init
+   56:      PTP ^= 0x80;
+  006a f60000       [3]     LDAB  _PTP
+  006d c880         [1]     EORB  #128
+  006f 7b0000       [3]     STAB  _PTP
+  0072 20b6         [3]     BRA   *-72 ;abs = 002a
+   57:    }
+   58:  }
