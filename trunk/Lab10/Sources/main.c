@@ -47,7 +47,10 @@ void main(void) {
     
     LCD_Clear();
     for(i=5; i<frame.length; i++) {
-      LCD_OutChar(frame.data[i]);    
+      if(i == 13) {
+        LCD_GoTo(1,0);  
+      }
+      LCD_OutChar(frame.data[i]);  
     }
     Fifo_Init();
     PTP ^= 0x80;

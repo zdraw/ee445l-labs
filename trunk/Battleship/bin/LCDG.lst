@@ -53,130 +53,132 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
    50:  #include "LCDG.h"
    51:  #include "Timer.h"
    52:  #include "game.h"
-   53:  
-   54:  #define E PTP_PTP3
-   55:  #define DI PTP_PTP2
-   56:  #define CS2 PTP_PTP1
-   57:  #define CS1 PTP_PTP0
-   58:  #define DATA PTH
-   59:  
-   60:  // assuming TCNT is 1.5 MHz
-   61:  #define T1usec 2
-   62:  #define T4usec 6
-   63:  
-   64:  static unsigned short OpenFlag=0;// 5 wide by 7 tall font
+   53:            
+   54:  #define CTRLDR DDRP
+   55:  #define E PTP_PTP3
+   56:  #define DI PTP_PTP2
+   57:  #define CS2 PTP_PTP1
+   58:  #define CS1 PTP_PTP0
+   59:  #define DATADR DDRH
+   60:  #define DATA PTH
+   61:  
+   62:  // assuming TCNT is 1.5 MHz
+   63:  #define T1usec 2
+   64:  #define T4usec 6
    65:  
-   66:  unsigned char Column1; // column position
-   67:  unsigned char bLeft1;  // to be placed into CS1, in LCD_OutChar
-   68:  unsigned char bRight1; // to be placed into CS2, in LCD_OutChar
-   69:  unsigned char Page;
-   70:  unsigned char bDown;    // true if want font shifted down
-   71:  
-   72:  const unsigned char Font[96*5]={   // no numbers with bit7=1
-   73:    0,0,0,0,0,           // 32  space
-   74:    0,0,95,0,0,          // 33  !
-   75:    0,7,0,7,0,           // 34  "
-   76:    20,127,20,127,20,    // 35  #
-   77:    36,42,127,42,18,     // 36  $
-   78:    35,19,8,100,98,      // 37  %
-   79:    54,73,85,34,80,      // 38  &
-   80:    0,5,3,0,0,           // 39  quote
-   81:    0,28,34,65,0,        // 40  (
-   82:    0,65,34,28,0,        // 41  )
-   83:    20,8,62,8,20,        // 42  *
-   84:    8,8,62,8,8,          // 43  plus
-   85:    0,80,48,0,0,         // 44  ,
-   86:    8,8,8,8,8,           // 45  minus
-   87:    0,112,112,112,0,     // 46  .
-   88:    32,16,8,4,2,         // 47  /
-   89:    62,81,73,69,62,      // 48  0
-   90:    0,66,127,64,0,       // 49  1
-   91:    66,97,81,73,70,      // 50  2
-   92:    33,65,69,75,49,      // 51  3
-   93:    24,20,18,127,16,     // 52  4
-   94:    39,69,69,69,57,      // 53  5
-   95:    60,74,73,73,48,      // 54  6
-   96:    3,1,113,9,7,         // 55  7
-   97:    54,73,73,73,54,      // 56  8
-   98:    6,73,73,41,30,       // 57  9
-   99:    0,54,54,0,0,         // 58  :
-  100:    0,86,54,0,0,         // 59  ;
-  101:    8,20,34,65,0,        // 60  <
-  102:    20,20,20,20,20,      // 61  equals
-  103:    65,34,20,8,0,        // 62  >
-  104:    2,1,81,9,6,          // 63  ?
-  105:    50,73,121,65,62,     // 64  @
-  106:    126,17,17,17,126,    // 65  A
-  107:    127,73,73,73,54,     // 66  B
-  108:    62,65,65,65,34,      // 67  C
-  109:    127,65,65,65,62,     // 68  D
-  110:    127,73,73,73,65,     // 69  E
-  111:    127,9,9,9,1,         // 70  F
-  112:    62,65,73,73,122,     // 71  G
-  113:    127,8,8,8,127,       // 72  H
-  114:    65,65,127,65,65,     // 73  I
-  115:    32,64,65,63,1,       // 74  J
-  116:    127,8,20,34,65,      // 75  K
-  117:    127,64,64,64,64,     // 76  L
-  118:    127,2,12,2,127,      // 77  M
-  119:    127,6,24,96,127,     // 78  N
-  120:    62,65,65,65,62,      // 79  O
-  121:    127,9,9,9,6,         // 80  P
-  122:    62,65,81,33,94,      // 81  Q
-  123:    127,9,25,41,70,      // 82  R
-  124:    70,73,73,73,49,      // 83  S
-  125:    1,1,127,1,1,         // 84  T
-  126:    63,64,64,64,63,      // 85  U
-  127:    31,32,64,32,31,      // 86  V
-  128:    63,64,56,64,63,      // 87  W
-  129:    99,20,8,20,99,       // 88  X
-  130:    7,8,112,8,7,         // 89  Y
-  131:    97,81,73,69,67,      // 90  Z
-  132:    0,127,65,65,0,       // 91  [
-  133:    2,4,8,16,32,         // 92  back slash
-  134:    0,65,65,127,0,       // 93  ]
-  135:    4,2,1,2,4,           // 94  ^
-  136:    64,64,64,64,64,      // 95  _
-  137:    0,1,2,4,0,           // 96  quote
-  138:    32,84,84,84,120,     // 97  a
-  139:    127,72,68,68,56,     // 98  b
-  140:    56,68,68,68,32,      // 99  c
-  141:    56,68,68,72,127,     // 100  d
-  142:    56,84,84,84,24,      // 101  e
-  143:    8,126,9,1,2,         // 102  f
-  144:    8,84,84,84,60,       // 103  g   
-  145:    127,8,4,4,120,       // 104  h
-  146:    0,72,125,64,0,       // 105  i
-  147:    32,64,68,61,0,       // 106  j  
-  148:    127,16,40,68,0,      // 107  k
-  149:    0,65,127,64,0,       // 108  l
-  150:    124,4,24,4,120,      // 109  m
-  151:    124,8,4,4,120,       // 110  n
-  152:    56,68,68,68,56,      // 111  o
-  153:    124,20,20,20,8,      // 112  p      
-  154:    12,18,18,20,126,     // 113  q   
-  155:    124,8,4,4,8,         // 114  r
-  156:    72,84,84,84,36,      // 115  s
-  157:    4,63,68,64,32,       // 116  t
-  158:    60,64,64,32,124,     // 117  u
-  159:    28,32,64,32,28,      // 118  v
-  160:    60,64,48,64,60,      // 119  w
-  161:    68,40,16,40,68,      // 120  x
-  162:    12,80,80,80,60,      // 121  y    
-  163:    68,100,84,76,68,     // 122  z
-  164:    0,65,54,8,0,         // 123  }
-  165:    0,0,127,0,0,         // 124  |
-  166:    0,8,54,65,0,         // 125  {
-  167:    8,4,8,16,8,          // 126  ~
-  168:    31,36,124,36,31      // 127  UT sign
-  169:  };
-  170:  
-  171:  
-  172:  // ********* lcdCmd***********
-  173:  // Output command to AGM1264F 128-bit by 64-bit graphics display
-  174:  // Inputs: 8-bit instruction
-  175:  // Outputs: none
-  176:  void lcdCmd(unsigned char instruction){
+   66:  static unsigned short OpenFlag=0;// 5 wide by 7 tall font
+   67:  
+   68:  unsigned char Column1; // column position
+   69:  unsigned char bLeft1;  // to be placed into CS1, in LCD_OutChar
+   70:  unsigned char bRight1; // to be placed into CS2, in LCD_OutChar
+   71:  unsigned char Page;
+   72:  unsigned char bDown;    // true if want font shifted down
+   73:  
+   74:  const unsigned char Font[96*5]={   // no numbers with bit7=1
+   75:    0,0,0,0,0,           // 32  space
+   76:    0,0,95,0,0,          // 33  !
+   77:    0,7,0,7,0,           // 34  "
+   78:    20,127,20,127,20,    // 35  #
+   79:    36,42,127,42,18,     // 36  $
+   80:    35,19,8,100,98,      // 37  %
+   81:    54,73,85,34,80,      // 38  &
+   82:    0,5,3,0,0,           // 39  quote
+   83:    0,28,34,65,0,        // 40  (
+   84:    0,65,34,28,0,        // 41  )
+   85:    20,8,62,8,20,        // 42  *
+   86:    8,8,62,8,8,          // 43  plus
+   87:    0,80,48,0,0,         // 44  ,
+   88:    8,8,8,8,8,           // 45  minus
+   89:    0,112,112,112,0,     // 46  .
+   90:    32,16,8,4,2,         // 47  /
+   91:    62,81,73,69,62,      // 48  0
+   92:    0,66,127,64,0,       // 49  1
+   93:    66,97,81,73,70,      // 50  2
+   94:    33,65,69,75,49,      // 51  3
+   95:    24,20,18,127,16,     // 52  4
+   96:    39,69,69,69,57,      // 53  5
+   97:    60,74,73,73,48,      // 54  6
+   98:    3,1,113,9,7,         // 55  7
+   99:    54,73,73,73,54,      // 56  8
+  100:    6,73,73,41,30,       // 57  9
+  101:    0,54,54,0,0,         // 58  :
+  102:    0,86,54,0,0,         // 59  ;
+  103:    8,20,34,65,0,        // 60  <
+  104:    20,20,20,20,20,      // 61  equals
+  105:    65,34,20,8,0,        // 62  >
+  106:    2,1,81,9,6,          // 63  ?
+  107:    50,73,121,65,62,     // 64  @
+  108:    126,17,17,17,126,    // 65  A
+  109:    127,73,73,73,54,     // 66  B
+  110:    62,65,65,65,34,      // 67  C
+  111:    127,65,65,65,62,     // 68  D
+  112:    127,73,73,73,65,     // 69  E
+  113:    127,9,9,9,1,         // 70  F
+  114:    62,65,73,73,122,     // 71  G
+  115:    127,8,8,8,127,       // 72  H
+  116:    65,65,127,65,65,     // 73  I
+  117:    32,64,65,63,1,       // 74  J
+  118:    127,8,20,34,65,      // 75  K
+  119:    127,64,64,64,64,     // 76  L
+  120:    127,2,12,2,127,      // 77  M
+  121:    127,6,24,96,127,     // 78  N
+  122:    62,65,65,65,62,      // 79  O
+  123:    127,9,9,9,6,         // 80  P
+  124:    62,65,81,33,94,      // 81  Q
+  125:    127,9,25,41,70,      // 82  R
+  126:    70,73,73,73,49,      // 83  S
+  127:    1,1,127,1,1,         // 84  T
+  128:    63,64,64,64,63,      // 85  U
+  129:    31,32,64,32,31,      // 86  V
+  130:    63,64,56,64,63,      // 87  W
+  131:    99,20,8,20,99,       // 88  X
+  132:    7,8,112,8,7,         // 89  Y
+  133:    97,81,73,69,67,      // 90  Z
+  134:    0,127,65,65,0,       // 91  [
+  135:    2,4,8,16,32,         // 92  back slash
+  136:    0,65,65,127,0,       // 93  ]
+  137:    4,2,1,2,4,           // 94  ^
+  138:    64,64,64,64,64,      // 95  _
+  139:    0,1,2,4,0,           // 96  quote
+  140:    32,84,84,84,120,     // 97  a
+  141:    127,72,68,68,56,     // 98  b
+  142:    56,68,68,68,32,      // 99  c
+  143:    56,68,68,72,127,     // 100  d
+  144:    56,84,84,84,24,      // 101  e
+  145:    8,126,9,1,2,         // 102  f
+  146:    8,84,84,84,60,       // 103  g   
+  147:    127,8,4,4,120,       // 104  h
+  148:    0,72,125,64,0,       // 105  i
+  149:    32,64,68,61,0,       // 106  j  
+  150:    127,16,40,68,0,      // 107  k
+  151:    0,65,127,64,0,       // 108  l
+  152:    124,4,24,4,120,      // 109  m
+  153:    124,8,4,4,120,       // 110  n
+  154:    56,68,68,68,56,      // 111  o
+  155:    124,20,20,20,8,      // 112  p      
+  156:    12,18,18,20,126,     // 113  q   
+  157:    124,8,4,4,8,         // 114  r
+  158:    72,84,84,84,36,      // 115  s
+  159:    4,63,68,64,32,       // 116  t
+  160:    60,64,64,32,124,     // 117  u
+  161:    28,32,64,32,28,      // 118  v
+  162:    60,64,48,64,60,      // 119  w
+  163:    68,40,16,40,68,      // 120  x
+  164:    12,80,80,80,60,      // 121  y    
+  165:    68,100,84,76,68,     // 122  z
+  166:    0,65,54,8,0,         // 123  }
+  167:    0,0,127,0,0,         // 124  |
+  168:    0,8,54,65,0,         // 125  {
+  169:    8,4,8,16,8,          // 126  ~
+  170:    31,36,124,36,31      // 127  UT sign
+  171:  };
+  172:  
+  173:  
+  174:  // ********* lcdCmd***********
+  175:  // Output command to AGM1264F 128-bit by 64-bit graphics display
+  176:  // Inputs: 8-bit instruction
+  177:  // Outputs: none
+  178:  void lcdCmd(unsigned char instruction){
 *** EVALUATION ***
 
 Function: lcdCmd
@@ -184,137 +186,137 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
-  177:    // R/W=0, write mode  default, R/W=0 always
-  178:    // normally D/I will be left at D/I=1 for data
-  179:    DI = 0;        // D/I=0, COMMAND WRITE
+  179:    // R/W=0, write mode  default, R/W=0 always
+  180:    // normally D/I will be left at D/I=1 for data
+  181:    DI = 0;        // D/I=0, COMMAND WRITE
   0001 1d000004     [4]     BCLR  _PTP,#4
-  180:    Timer_Wait(T1usec);
+  182:    Timer_Wait(T1usec);
   0005 c602         [1]     LDAB  #2
   0007 87           [1]     CLRA  
   0008 160000       [4]     JSR   Timer_Wait
-  181:    E = 1;         // E pulse width > 450ns
+  183:    E = 1;         // E pulse width > 450ns
   000b 1c000008     [4]     BSET  _PTP,#8
-  182:    DATA = instruction;
+  184:    DATA = instruction;
   000f e680         [3]     LDAB  0,SP
   0011 7b0000       [3]     STAB  _PTH
-  183:    Timer_Wait(T1usec);
+  185:    Timer_Wait(T1usec);
   0014 c602         [1]     LDAB  #2
   0016 87           [1]     CLRA  
   0017 160000       [4]     JSR   Timer_Wait
-  184:    E = 0;         // falling edge latch, setup time 200ns
+  186:    E = 0;         // falling edge latch, setup time 200ns
   001a 1d000008     [4]     BCLR  _PTP,#8
-  185:    DI = 1;        // D/I=1 default state is data
+  187:    DI = 1;        // D/I=1 default state is data
   001e 1c000004     [4]     BSET  _PTP,#4
-  186:    Timer_Wait(T4usec);
+  188:    Timer_Wait(T4usec);
   0022 c606         [1]     LDAB  #6
   0024 87           [1]     CLRA  
   0025 160000       [4]     JSR   Timer_Wait
-  187:  } 
+  189:  } 
   0028 32           [3]     PULA  
   0029 3d           [5]     RTS   
-  188:  
-  189:  // ********* lcdData***********
-  190:  // Output data to AGM1264F 128-bit by 64-bit graphics display
-  191:  // Inputs: 8-bit data
-  192:  // Outputs: none
-  193:  void lcdData(unsigned char data){
+  190:  
+  191:  // ********* lcdData***********
+  192:  // Output data to AGM1264F 128-bit by 64-bit graphics display
+  193:  // Inputs: 8-bit data
+  194:  // Outputs: none
+  195:  void lcdData(unsigned char data){
 *** EVALUATION ***
 
 Function: lcdData
 Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
-  194:    // R/W=0, write mode  default, R/W=0 always
-  195:    // normally D/I will be left at D/I=1 for data
-  196:    E = 1;         // E pulse width > 450ns
+  196:    // R/W=0, write mode  default, R/W=0 always
+  197:    // normally D/I will be left at D/I=1 for data
+  198:    E = 1;         // E pulse width > 450ns
   0000 1c000008     [4]     BSET  _PTP,#8
-  197:    DATA = data;
+  199:    DATA = data;
   0004 7b0000       [3]     STAB  _PTH
-  198:    Timer_Wait(T1usec);
+  200:    Timer_Wait(T1usec);
   0007 c602         [1]     LDAB  #2
   0009 87           [1]     CLRA  
   000a 160000       [4]     JSR   Timer_Wait
-  199:    E = 0;         // falling edge latch, setup time 200ns
+  201:    E = 0;         // falling edge latch, setup time 200ns
   000d 1d000008     [4]     BCLR  _PTP,#8
-  200:    Timer_Wait(T4usec);
+  202:    Timer_Wait(T4usec);
   0011 c606         [1]     LDAB  #6
   0013 87           [1]     CLRA  
   0014 060000       [3]     JMP   Timer_Wait
-  201:  }    
-  202:  
-  203:  // ********* LCD_Init***********
-  204:  // Initialize AGM1264F 128-bit by 64-bit graphics display
-  205:  // activates TCNT at 1.5 MHz, assumes PLL active
-  206:  // Input: none                                      
-  207:  // Output: none
-  208:  // does not clear the display
-  209:  void LCD_Init(void){
+  203:  }    
+  204:  
+  205:  // ********* LCD_Init***********
+  206:  // Initialize AGM1264F 128-bit by 64-bit graphics display
+  207:  // activates TCNT at 1.5 MHz, assumes PLL active
+  208:  // Input: none                                      
+  209:  // Output: none
+  210:  // does not clear the display
+  211:  void LCD_Init(void){
 *** EVALUATION ***
 
 Function: LCD_Init
 Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
-  210:    Timer_Init();   // TCNT at 1.5 MHz
+  212:    Timer_Init();   // TCNT at 1.5 MHz
   0000 160000       [4]     JSR   Timer_Init
-  211:    DDRH = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
+  213:    DATADR = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
   0003 c6ff         [1]     LDAB  #255
   0005 7b0000       [3]     STAB  _DDRH
-  212:    DDRP |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
+  214:    CTRLDR |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
   0008 1c00000f     [4]     BSET  _DDRP,#15
-  213:    CS2 = 1;         // talk to both LCD controllers
+  215:    CS2 = 1;         // talk to both LCD controllers
   000c 1c000002     [4]     BSET  _PTP,#2
-  214:    CS1 = 1;
+  216:    CS1 = 1;
   0010 1c000001     [4]     BSET  _PTP,#1
-  215:    DI = 1;          // default mode is data 
+  217:    DI = 1;          // default mode is data 
   0014 1c000004     [4]     BSET  _PTP,#4
-  216:    E = 0;           // inactive
+  218:    E = 0;           // inactive
   0018 1d000008     [4]     BCLR  _PTP,#8
-  217:    Timer_Wait1ms(100); // let it warm up
+  219:    Timer_Wait1ms(100); // let it warm up
   001c c664         [1]     LDAB  #100
   001e 87           [1]     CLRA  
   001f 160000       [4]     JSR   Timer_Wait1ms
-  218:    lcdCmd(0x3F);    // display=ON
+  220:    lcdCmd(0x3F);    // display=ON
   0022 c63f         [1]     LDAB  #63
   0024 0700         [4]     BSR   lcdCmd
-  219:    lcdCmd(0xB8);    // Page address (0 to 7) is 0
+  221:    lcdCmd(0xB8);    // Page address (0 to 7) is 0
   0026 c6b8         [1]     LDAB  #184
   0028 0700         [4]     BSR   lcdCmd
-  220:    lcdCmd(0x40);    // Column address (0 to 63) is 0
+  222:    lcdCmd(0x40);    // Column address (0 to 63) is 0
   002a c640         [1]     LDAB  #64
   002c 0700         [4]     BSR   lcdCmd
-  221:    lcdCmd(0xC0);    // Y=0 is at top
+  223:    lcdCmd(0xC0);    // Y=0 is at top
   002e c6c0         [1]     LDAB  #192
   0030 0700         [4]     BSR   lcdCmd
-  222:    OpenFlag = 1;    // device openopen
+  224:    OpenFlag = 1;    // device openopen
   0032 c601         [1]     LDAB  #1
   0034 87           [1]     CLRA  
   0035 7c0000       [3]     STD   OpenFlag
-  223:    Column1 = 0x41;  // column position
+  225:    Column1 = 0x41;  // column position
   0038 c641         [1]     LDAB  #65
   003a 7b0000       [3]     STAB  Column1
-  224:    bLeft1 = 1;
+  226:    bLeft1 = 1;
   003d 42           [1]     INCA  
   003e 7a0000       [3]     STAA  bLeft1
-  225:    bRight1 = 0;
+  227:    bRight1 = 0;
   0041 790000       [3]     CLR   bRight1
-  226:    Page = 0xB8;
+  228:    Page = 0xB8;
   0044 c6b8         [1]     LDAB  #184
   0046 7b0000       [3]     STAB  Page
-  227:    bDown = 0;    // true if want font shifted down
+  229:    bDown = 0;    // true if want font shifted down
   0049 790000       [3]     CLR   bDown
-  228:  
-  229:  }
-  004c 3d           [5]     RTS   
   230:  
-  231:  
-  232:  // ********* LCD_Clear***********
-  233:  // Clear the entire 1024 byte (8192 bit) image on the
-  234:  //    AGM1264F 128-bit by 64-bit graphics display
-  235:  // Input: value to write into all bytes of display RAM
-  236:  // Output: none
-  237:  // e.g., LCD_Clear(0);  // makes all pixels off
-  238:  void LCD_Clear(unsigned char data){
+  231:  }
+  004c 3d           [5]     RTS   
+  232:  
+  233:  
+  234:  // ********* LCD_Clear***********
+  235:  // Clear the entire 1024 byte (8192 bit) image on the
+  236:  //    AGM1264F 128-bit by 64-bit graphics display
+  237:  // Input: value to write into all bytes of display RAM
+  238:  // Output: none
+  239:  // e.g., LCD_Clear(0);  // makes all pixels off
+  240:  void LCD_Clear(unsigned char data){
 *** EVALUATION ***
 
 Function: LCD_Clear
@@ -322,44 +324,44 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 6bae         [2]     STAB  2,-SP
-  239:  unsigned char page;
-  240:    int i;
-  241:    if(OpenFlag == 0) return;
+  241:  unsigned char page;
+  242:    int i;
+  243:    if(OpenFlag == 0) return;
   0002 fc0000       [3]     LDD   OpenFlag
   0005 2728         [3/1]   BEQ   *+42 ;abs = 002f
-  242:    for(page = 0xB8; page< 0xB8+8; page++){ // pages 0 to 7
+  244:    for(page = 0xB8; page< 0xB8+8; page++){ // pages 0 to 7
   0007 c6b8         [1]     LDAB  #184
   0009 6b81         [2]     STAB  1,SP
-  243:      CS2 = 1;          // right enable
+  245:      CS2 = 1;          // right enable
   000b 1c000002     [4]     BSET  _PTP,#2
-  244:      CS1 = 0;         
+  246:      CS1 = 0;         
   000f 1d000001     [4]     BCLR  _PTP,#1
-  245:      lcdCmd(page);    // Page address (0 to 7) 
+  247:      lcdCmd(page);    // Page address (0 to 7) 
   0013 071c         [4]     BSR   *+30 ;abs = 0031
-  246:      lcdCmd(0x40);    // Column = 0
-  247:      for(i=64; i>0; i--){
-  248:        lcdData(data);   // copy one byte to right side
+  248:      lcdCmd(0x40);    // Column = 0
+  249:      for(i=64; i>0; i--){
+  250:        lcdData(data);   // copy one byte to right side
   0015 0728         [4]     BSR   *+42 ;abs = 003f
   0017 2efc         [3/1]   BGT   *-2 ;abs = 0015
-  249:      }
-  250:      CS2 = 0;          
+  251:      }
+  252:      CS2 = 0;          
   0019 1d000002     [4]     BCLR  _PTP,#2
-  251:      CS1 = 1;         // left enable
+  253:      CS1 = 1;         // left enable
   001d 1c000001     [4]     BSET  _PTP,#1
-  252:      lcdCmd(page);    // Page address (0 to 7) 
+  254:      lcdCmd(page);    // Page address (0 to 7) 
   0021 070e         [4]     BSR   *+16 ;abs = 0031
-  253:      lcdCmd(0x40);    // Column = 0
-  254:      for(i=64; i>0; i--){
-  255:        lcdData(data);   // copy one byte to left side
+  255:      lcdCmd(0x40);    // Column = 0
+  256:      for(i=64; i>0; i--){
+  257:        lcdData(data);   // copy one byte to left side
   0023 071a         [4]     BSR   *+28 ;abs = 003f
   0025 2efc         [3/1]   BGT   *-2 ;abs = 0023
   0027 6281         [3]     INC   1,SP
   0029 e681         [3]     LDAB  1,SP
   002b c1c0         [1]     CMPB  #192
   002d 25dc         [3/1]   BCS   *-34 ;abs = 000b
-  256:      }
-  257:    }
-  258:  }
+  258:      }
+  259:    }
+  260:  }
   002f 3a           [3]     PULD  
   0030 3d           [5]     RTS   
   0031 e683         [3]     LDAB  3,SP
@@ -375,10 +377,10 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0046 09           [1]     DEX   
   0047 8e0000       [2]     CPX   #0
   004a 3d           [5]     RTS   
-  259:  
-  260:  // page   is 0xB8 to 0xBF for pages 0 to 7
-  261:  // column is 0x40 to 0x7F for columns 0 to 63
-  262:  void OutByte(unsigned char page, unsigned char column,unsigned char data){
+  261:  
+  262:  // page   is 0xB8 to 0xBF for pages 0 to 7
+  263:  // column is 0x40 to 0x7F for columns 0 to 63
+  264:  void OutByte(unsigned char page, unsigned char column,unsigned char data){
 *** EVALUATION ***
 
 Function: OutByte
@@ -386,20 +388,20 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 37           [2]     PSHB  
-  263:    lcdCmd(page);    // Page address (0 to 7) 
+  265:    lcdCmd(page);    // Page address (0 to 7) 
   0001 e684         [3]     LDAB  4,SP
   0003 160000       [4]     JSR   lcdCmd
-  264:    lcdCmd(column);  // Column = 0 to 63
+  266:    lcdCmd(column);  // Column = 0 to 63
   0006 e683         [3]     LDAB  3,SP
   0008 160000       [4]     JSR   lcdCmd
-  265:    lcdData(data);   // data
+  267:    lcdData(data);   // data
   000b e680         [3]     LDAB  0,SP
   000d 160000       [4]     JSR   lcdData
-  266:  }
+  268:  }
   0010 32           [3]     PULA  
   0011 3d           [5]     RTS   
-  267:  
-  268:  int pixelOn(int type, int x, int y) {
+  269:  
+  270:  int pixelOn(int type, int x, int y) {
 *** EVALUATION ***
 
 Function: pixelOn
@@ -407,7 +409,7 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
-  269:    switch(type) {
+  271:    switch(type) {
   0001 ec86         [3]     LDD   6,SP
   0003 830001       [2]     SUBD  #1
   0006 160000       [4]     JSR   _CASE_CHECKED
@@ -421,515 +423,515 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0017 0000         DC.W  pixelOn:0x0253
   0019 0000         DC.W  pixelOn:0x02eb
   001b 0000         DC.W  pixelOn:0x035e
-  270:      case SHIPEND_UP:
-  271:        if((x == 2 && y == 3) ||
+  272:      case SHIPEND_UP:
+  273:        if((x == 2 && y == 3) ||
   001d 160000       [4]     JSR   pixelOn:0x03b9
   0020 2605         [3/1]   BNE   *+7 ;abs = 0027
   0022 160000       [4]     JSR   pixelOn:0x03b3
   0025 2708         [3/1]   BEQ   *+10 ;abs = 002f
-  272:           (x == 3 && y == 2) ||
+  274:           (x == 3 && y == 2) ||
   0027 160000       [4]     JSR   pixelOn:0x03ad
   002a 2605         [3/1]   BNE   *+7 ;abs = 0031
   002c 160000       [4]     JSR   pixelOn:0x03bf
   002f 2708         [3/1]   BEQ   *+10 ;abs = 0039
-  273:           (x == 3 && y == 3) ||
+  275:           (x == 3 && y == 3) ||
   0031 160000       [4]     JSR   pixelOn:0x03ad
   0034 2605         [3/1]   BNE   *+7 ;abs = 003b
   0036 160000       [4]     JSR   pixelOn:0x03b3
   0039 2708         [3/1]   BEQ   *+10 ;abs = 0043
-  274:           (x == 3 && y == 4) ||
+  276:           (x == 3 && y == 4) ||
   003b 160000       [4]     JSR   pixelOn:0x03ad
   003e 2605         [3/1]   BNE   *+7 ;abs = 0045
   0040 160000       [4]     JSR   pixelOn:0x03c5
   0043 2708         [3/1]   BEQ   *+10 ;abs = 004d
-  275:           (x == 4 && y == 2) ||
+  277:           (x == 4 && y == 2) ||
   0045 160000       [4]     JSR   pixelOn:0x03cb
   0048 2605         [3/1]   BNE   *+7 ;abs = 004f
   004a 160000       [4]     JSR   pixelOn:0x03bf
   004d 2708         [3/1]   BEQ   *+10 ;abs = 0057
-  276:           (x == 4 && y == 3) ||
+  278:           (x == 4 && y == 3) ||
   004f 160000       [4]     JSR   pixelOn:0x03cb
   0052 2605         [3/1]   BNE   *+7 ;abs = 0059
   0054 160000       [4]     JSR   pixelOn:0x03b3
   0057 2708         [3/1]   BEQ   *+10 ;abs = 0061
-  277:           (x == 4 && y == 4) ||
+  279:           (x == 4 && y == 4) ||
   0059 160000       [4]     JSR   pixelOn:0x03cb
   005c 2605         [3/1]   BNE   *+7 ;abs = 0063
   005e 160000       [4]     JSR   pixelOn:0x03c5
   0061 2708         [3/1]   BEQ   *+10 ;abs = 006b
-  278:           (x == 5 && y == 2) ||
+  280:           (x == 5 && y == 2) ||
   0063 160000       [4]     JSR   pixelOn:0x03d1
   0066 2605         [3/1]   BNE   *+7 ;abs = 006d
   0068 160000       [4]     JSR   pixelOn:0x03bf
   006b 2708         [3/1]   BEQ   *+10 ;abs = 0075
-  279:           (x == 5 && y == 3) ||
+  281:           (x == 5 && y == 3) ||
   006d 160000       [4]     JSR   pixelOn:0x03d1
   0070 2605         [3/1]   BNE   *+7 ;abs = 0077
   0072 160000       [4]     JSR   pixelOn:0x03b3
   0075 270c         [3/1]   BEQ   *+14 ;abs = 0083
-  280:           (x == 5 && y == 4)) {
+  282:           (x == 5 && y == 4)) {
   0077 160000       [4]     JSR   pixelOn:0x03d1
   007a 2603         [3/1]   BNE   *+5 ;abs = 007f
   007c 160000       [4]     JSR   pixelOn:0x03c5
   007f 18260326     [4/3]   LBNE  *+810 ;abs = 03a9
-  281:                        
-  282:          return 1;
+  283:                        
+  284:          return 1;
   0083 060000       [3]     JMP   pixelOn:0x03a6
-  283:        }
-  284:        break;
-  285:      case SHIPEND_DOWN:
-  286:        if((x == 1 && y == 2) ||
+  285:        }
+  286:        break;
+  287:      case SHIPEND_DOWN:
+  288:        if((x == 1 && y == 2) ||
   0086 160000       [4]     JSR   pixelOn:0x03d7
   0089 2605         [3/1]   BNE   *+7 ;abs = 0090
   008b 160000       [4]     JSR   pixelOn:0x03bf
   008e 2708         [3/1]   BEQ   *+10 ;abs = 0098
-  287:           (x == 1 && y == 3) ||
+  289:           (x == 1 && y == 3) ||
   0090 160000       [4]     JSR   pixelOn:0x03d7
   0093 2605         [3/1]   BNE   *+7 ;abs = 009a
   0095 160000       [4]     JSR   pixelOn:0x03b3
   0098 2708         [3/1]   BEQ   *+10 ;abs = 00a2
-  288:           (x == 1 && y == 4) ||
+  290:           (x == 1 && y == 4) ||
   009a 160000       [4]     JSR   pixelOn:0x03d7
   009d 2605         [3/1]   BNE   *+7 ;abs = 00a4
   009f 160000       [4]     JSR   pixelOn:0x03c5
   00a2 2708         [3/1]   BEQ   *+10 ;abs = 00ac
-  289:           (x == 2 && y == 2) ||
+  291:           (x == 2 && y == 2) ||
   00a4 160000       [4]     JSR   pixelOn:0x03b9
   00a7 2605         [3/1]   BNE   *+7 ;abs = 00ae
   00a9 160000       [4]     JSR   pixelOn:0x03bf
   00ac 2708         [3/1]   BEQ   *+10 ;abs = 00b6
-  290:           (x == 2 && y == 3) ||
+  292:           (x == 2 && y == 3) ||
   00ae 160000       [4]     JSR   pixelOn:0x03b9
   00b1 2605         [3/1]   BNE   *+7 ;abs = 00b8
   00b3 160000       [4]     JSR   pixelOn:0x03b3
   00b6 2708         [3/1]   BEQ   *+10 ;abs = 00c0
-  291:           (x == 2 && y == 4) ||
+  293:           (x == 2 && y == 4) ||
   00b8 160000       [4]     JSR   pixelOn:0x03b9
   00bb 2605         [3/1]   BNE   *+7 ;abs = 00c2
   00bd 160000       [4]     JSR   pixelOn:0x03c5
   00c0 2708         [3/1]   BEQ   *+10 ;abs = 00ca
-  292:           (x == 3 && y == 2) ||
+  294:           (x == 3 && y == 2) ||
   00c2 160000       [4]     JSR   pixelOn:0x03ad
   00c5 2605         [3/1]   BNE   *+7 ;abs = 00cc
   00c7 160000       [4]     JSR   pixelOn:0x03bf
   00ca 2708         [3/1]   BEQ   *+10 ;abs = 00d4
-  293:           (x == 3 && y == 3) ||
+  295:           (x == 3 && y == 3) ||
   00cc 160000       [4]     JSR   pixelOn:0x03ad
   00cf 2605         [3/1]   BNE   *+7 ;abs = 00d6
   00d1 160000       [4]     JSR   pixelOn:0x03b3
   00d4 2708         [3/1]   BEQ   *+10 ;abs = 00de
-  294:           (x == 3 && y == 4) ||
+  296:           (x == 3 && y == 4) ||
   00d6 160000       [4]     JSR   pixelOn:0x03ad
   00d9 2605         [3/1]   BNE   *+7 ;abs = 00e0
   00db 160000       [4]     JSR   pixelOn:0x03c5
   00de 27a3         [3/1]   BEQ   *-91 ;abs = 0083
-  295:           (x == 4 && y == 3)) {
+  297:           (x == 4 && y == 3)) {
   00e0 160000       [4]     JSR   pixelOn:0x03cb
   00e3 2603         [3/1]   BNE   *+5 ;abs = 00e8
   00e5 160000       [4]     JSR   pixelOn:0x03b3
   00e8 2695         [3/1]   BNE   *-105 ;abs = 007f
-  296:                        
-  297:          return 1;
+  298:                        
+  299:          return 1;
   00ea 2097         [3]     BRA   *-103 ;abs = 0083
-  298:        } 
-  299:        break;
-  300:      case SHIPEND_LEFT:
-  301:        if((x == 2 && y == 3) ||
+  300:        } 
+  301:        break;
+  302:      case SHIPEND_LEFT:
+  303:        if((x == 2 && y == 3) ||
   00ec 160000       [4]     JSR   pixelOn:0x03b9
   00ef 2605         [3/1]   BNE   *+7 ;abs = 00f6
   00f1 160000       [4]     JSR   pixelOn:0x03b3
   00f4 2708         [3/1]   BEQ   *+10 ;abs = 00fe
-  302:           (x == 2 && y == 4) ||
+  304:           (x == 2 && y == 4) ||
   00f6 160000       [4]     JSR   pixelOn:0x03b9
   00f9 2605         [3/1]   BNE   *+7 ;abs = 0100
   00fb 160000       [4]     JSR   pixelOn:0x03c5
   00fe 2708         [3/1]   BEQ   *+10 ;abs = 0108
-  303:           (x == 2 && y == 5) ||
+  305:           (x == 2 && y == 5) ||
   0100 160000       [4]     JSR   pixelOn:0x03b9
   0103 2605         [3/1]   BNE   *+7 ;abs = 010a
   0105 160000       [4]     JSR   pixelOn:0x03dd
   0108 2708         [3/1]   BEQ   *+10 ;abs = 0112
-  304:           (x == 3 && y == 2) ||
+  306:           (x == 3 && y == 2) ||
   010a 160000       [4]     JSR   pixelOn:0x03ad
   010d 2605         [3/1]   BNE   *+7 ;abs = 0114
   010f 160000       [4]     JSR   pixelOn:0x03bf
   0112 2708         [3/1]   BEQ   *+10 ;abs = 011c
-  305:           (x == 3 && y == 3) ||
+  307:           (x == 3 && y == 3) ||
   0114 160000       [4]     JSR   pixelOn:0x03ad
   0117 2605         [3/1]   BNE   *+7 ;abs = 011e
   0119 160000       [4]     JSR   pixelOn:0x03b3
   011c 2708         [3/1]   BEQ   *+10 ;abs = 0126
-  306:           (x == 3 && y == 4) ||
+  308:           (x == 3 && y == 4) ||
   011e 160000       [4]     JSR   pixelOn:0x03ad
   0121 2605         [3/1]   BNE   *+7 ;abs = 0128
   0123 160000       [4]     JSR   pixelOn:0x03c5
   0126 2708         [3/1]   BEQ   *+10 ;abs = 0130
-  307:           (x == 3 && y == 5) ||
+  309:           (x == 3 && y == 5) ||
   0128 160000       [4]     JSR   pixelOn:0x03ad
   012b 2605         [3/1]   BNE   *+7 ;abs = 0132
   012d 160000       [4]     JSR   pixelOn:0x03dd
   0130 2708         [3/1]   BEQ   *+10 ;abs = 013a
-  308:           (x == 4 && y == 3) ||
+  310:           (x == 4 && y == 3) ||
   0132 160000       [4]     JSR   pixelOn:0x03cb
   0135 2605         [3/1]   BNE   *+7 ;abs = 013c
   0137 160000       [4]     JSR   pixelOn:0x03b3
   013a 2708         [3/1]   BEQ   *+10 ;abs = 0144
-  309:           (x == 4 && y == 4) ||
+  311:           (x == 4 && y == 4) ||
   013c 160000       [4]     JSR   pixelOn:0x03cb
   013f 2605         [3/1]   BNE   *+7 ;abs = 0146
   0141 160000       [4]     JSR   pixelOn:0x03c5
   0144 27a4         [3/1]   BEQ   *-90 ;abs = 00ea
-  310:           (x == 4 && y == 5)) {
+  312:           (x == 4 && y == 5)) {
   0146 160000       [4]     JSR   pixelOn:0x03cb
   0149 2603         [3/1]   BNE   *+5 ;abs = 014e
   014b 160000       [4]     JSR   pixelOn:0x03dd
   014e 2698         [3/1]   BNE   *-102 ;abs = 00e8
-  311:                        
-  312:          return 1;
+  313:                        
+  314:          return 1;
   0150 2098         [3]     BRA   *-102 ;abs = 00ea
-  313:        }
-  314:        break;
-  315:      case SHIPEND_RIGHT:
-  316:        if((x == 2 && y == 1) ||
+  315:        }
+  316:        break;
+  317:      case SHIPEND_RIGHT:
+  318:        if((x == 2 && y == 1) ||
   0152 160000       [4]     JSR   pixelOn:0x03b9
   0155 2605         [3/1]   BNE   *+7 ;abs = 015c
   0157 160000       [4]     JSR   pixelOn:0x03e3
   015a 2708         [3/1]   BEQ   *+10 ;abs = 0164
-  317:           (x == 2 && y == 2) ||
+  319:           (x == 2 && y == 2) ||
   015c 160000       [4]     JSR   pixelOn:0x03b9
   015f 2605         [3/1]   BNE   *+7 ;abs = 0166
   0161 160000       [4]     JSR   pixelOn:0x03bf
   0164 2708         [3/1]   BEQ   *+10 ;abs = 016e
-  318:           (x == 2 && y == 3) ||
+  320:           (x == 2 && y == 3) ||
   0166 160000       [4]     JSR   pixelOn:0x03b9
   0169 2605         [3/1]   BNE   *+7 ;abs = 0170
   016b 160000       [4]     JSR   pixelOn:0x03b3
   016e 2708         [3/1]   BEQ   *+10 ;abs = 0178
-  319:           (x == 3 && y == 1) ||
+  321:           (x == 3 && y == 1) ||
   0170 160000       [4]     JSR   pixelOn:0x03ad
   0173 2605         [3/1]   BNE   *+7 ;abs = 017a
   0175 160000       [4]     JSR   pixelOn:0x03e3
   0178 2708         [3/1]   BEQ   *+10 ;abs = 0182
-  320:           (x == 3 && y == 2) ||
+  322:           (x == 3 && y == 2) ||
   017a 160000       [4]     JSR   pixelOn:0x03ad
   017d 2605         [3/1]   BNE   *+7 ;abs = 0184
   017f 160000       [4]     JSR   pixelOn:0x03bf
   0182 2708         [3/1]   BEQ   *+10 ;abs = 018c
-  321:           (x == 3 && y == 3) ||
+  323:           (x == 3 && y == 3) ||
   0184 160000       [4]     JSR   pixelOn:0x03ad
   0187 2605         [3/1]   BNE   *+7 ;abs = 018e
   0189 160000       [4]     JSR   pixelOn:0x03b3
   018c 2708         [3/1]   BEQ   *+10 ;abs = 0196
-  322:           (x == 3 && y == 4) ||
+  324:           (x == 3 && y == 4) ||
   018e 160000       [4]     JSR   pixelOn:0x03ad
   0191 2605         [3/1]   BNE   *+7 ;abs = 0198
   0193 160000       [4]     JSR   pixelOn:0x03c5
   0196 2708         [3/1]   BEQ   *+10 ;abs = 01a0
-  323:           (x == 4 && y == 1) ||
+  325:           (x == 4 && y == 1) ||
   0198 160000       [4]     JSR   pixelOn:0x03cb
   019b 2605         [3/1]   BNE   *+7 ;abs = 01a2
   019d 160000       [4]     JSR   pixelOn:0x03e3
   01a0 2708         [3/1]   BEQ   *+10 ;abs = 01aa
-  324:           (x == 4 && y == 2) ||
+  326:           (x == 4 && y == 2) ||
   01a2 160000       [4]     JSR   pixelOn:0x03cb
   01a5 2605         [3/1]   BNE   *+7 ;abs = 01ac
   01a7 160000       [4]     JSR   pixelOn:0x03bf
   01aa 27a4         [3/1]   BEQ   *-90 ;abs = 0150
-  325:           (x == 4 && y == 3)) {
+  327:           (x == 4 && y == 3)) {
   01ac 160000       [4]     JSR   pixelOn:0x03cb
   01af 2603         [3/1]   BNE   *+5 ;abs = 01b4
   01b1 160000       [4]     JSR   pixelOn:0x03b3
   01b4 2698         [3/1]   BNE   *-102 ;abs = 014e
-  326:                        
-  327:          return 1;
+  328:                        
+  329:          return 1;
   01b6 2098         [3]     BRA   *-102 ;abs = 0150
-  328:        }
-  329:        break;
-  330:      case SHIP_VERT:
-  331:        if((x == 1 && y == 2) ||
+  330:        }
+  331:        break;
+  332:      case SHIP_VERT:
+  333:        if((x == 1 && y == 2) ||
   01b8 160000       [4]     JSR   pixelOn:0x03d7
   01bb 2605         [3/1]   BNE   *+7 ;abs = 01c2
   01bd 160000       [4]     JSR   pixelOn:0x03bf
   01c0 2708         [3/1]   BEQ   *+10 ;abs = 01ca
-  332:           (x == 1 && y == 3) ||
+  334:           (x == 1 && y == 3) ||
   01c2 160000       [4]     JSR   pixelOn:0x03d7
   01c5 2605         [3/1]   BNE   *+7 ;abs = 01cc
   01c7 160000       [4]     JSR   pixelOn:0x03b3
   01ca 2708         [3/1]   BEQ   *+10 ;abs = 01d4
-  333:           (x == 1 && y == 4) ||
+  335:           (x == 1 && y == 4) ||
   01cc 160000       [4]     JSR   pixelOn:0x03d7
   01cf 2605         [3/1]   BNE   *+7 ;abs = 01d6
   01d1 160000       [4]     JSR   pixelOn:0x03c5
   01d4 2708         [3/1]   BEQ   *+10 ;abs = 01de
-  334:           (x == 2 && y == 2) ||
+  336:           (x == 2 && y == 2) ||
   01d6 160000       [4]     JSR   pixelOn:0x03b9
   01d9 2605         [3/1]   BNE   *+7 ;abs = 01e0
   01db 160000       [4]     JSR   pixelOn:0x03bf
   01de 2708         [3/1]   BEQ   *+10 ;abs = 01e8
-  335:           (x == 2 && y == 3) ||
+  337:           (x == 2 && y == 3) ||
   01e0 160000       [4]     JSR   pixelOn:0x03b9
   01e3 2605         [3/1]   BNE   *+7 ;abs = 01ea
   01e5 160000       [4]     JSR   pixelOn:0x03b3
   01e8 2708         [3/1]   BEQ   *+10 ;abs = 01f2
-  336:           (x == 2 && y == 4) ||
+  338:           (x == 2 && y == 4) ||
   01ea 160000       [4]     JSR   pixelOn:0x03b9
   01ed 2605         [3/1]   BNE   *+7 ;abs = 01f4
   01ef 160000       [4]     JSR   pixelOn:0x03c5
   01f2 2708         [3/1]   BEQ   *+10 ;abs = 01fc
-  337:           (x == 3 && y == 2) ||
+  339:           (x == 3 && y == 2) ||
   01f4 160000       [4]     JSR   pixelOn:0x03ad
   01f7 2605         [3/1]   BNE   *+7 ;abs = 01fe
   01f9 160000       [4]     JSR   pixelOn:0x03bf
   01fc 2708         [3/1]   BEQ   *+10 ;abs = 0206
-  338:           (x == 3 && y == 3) ||
+  340:           (x == 3 && y == 3) ||
   01fe 160000       [4]     JSR   pixelOn:0x03ad
   0201 2605         [3/1]   BNE   *+7 ;abs = 0208
   0203 160000       [4]     JSR   pixelOn:0x03b3
   0206 2708         [3/1]   BEQ   *+10 ;abs = 0210
-  339:           (x == 3 && y == 4) ||
+  341:           (x == 3 && y == 4) ||
   0208 160000       [4]     JSR   pixelOn:0x03ad
   020b 2605         [3/1]   BNE   *+7 ;abs = 0212
   020d 160000       [4]     JSR   pixelOn:0x03c5
   0210 2708         [3/1]   BEQ   *+10 ;abs = 021a
-  340:           (x == 4 && y == 2) ||
+  342:           (x == 4 && y == 2) ||
   0212 160000       [4]     JSR   pixelOn:0x03cb
   0215 2605         [3/1]   BNE   *+7 ;abs = 021c
   0217 160000       [4]     JSR   pixelOn:0x03bf
   021a 2708         [3/1]   BEQ   *+10 ;abs = 0224
-  341:           (x == 4 && y == 3) ||
+  343:           (x == 4 && y == 3) ||
   021c 160000       [4]     JSR   pixelOn:0x03cb
   021f 2605         [3/1]   BNE   *+7 ;abs = 0226
   0221 160000       [4]     JSR   pixelOn:0x03b3
   0224 2708         [3/1]   BEQ   *+10 ;abs = 022e
-  342:           (x == 4 && y == 4) ||
+  344:           (x == 4 && y == 4) ||
   0226 160000       [4]     JSR   pixelOn:0x03cb
   0229 2605         [3/1]   BNE   *+7 ;abs = 0230
   022b 160000       [4]     JSR   pixelOn:0x03c5
   022e 2708         [3/1]   BEQ   *+10 ;abs = 0238
-  343:           (x == 5 && y == 2) ||
+  345:           (x == 5 && y == 2) ||
   0230 160000       [4]     JSR   pixelOn:0x03d1
   0233 2605         [3/1]   BNE   *+7 ;abs = 023a
   0235 160000       [4]     JSR   pixelOn:0x03bf
   0238 2708         [3/1]   BEQ   *+10 ;abs = 0242
-  344:           (x == 5 && y == 3) ||
+  346:           (x == 5 && y == 3) ||
   023a 160000       [4]     JSR   pixelOn:0x03d1
   023d 2605         [3/1]   BNE   *+7 ;abs = 0244
   023f 160000       [4]     JSR   pixelOn:0x03b3
   0242 270c         [3/1]   BEQ   *+14 ;abs = 0250
-  345:           (x == 5 && y == 4)) {
+  347:           (x == 5 && y == 4)) {
   0244 160000       [4]     JSR   pixelOn:0x03d1
   0247 2603         [3/1]   BNE   *+5 ;abs = 024c
   0249 160000       [4]     JSR   pixelOn:0x03c5
   024c 18260159     [4/3]   LBNE  *+349 ;abs = 03a9
-  346:                        
-  347:          return 1;
+  348:                        
+  349:          return 1;
   0250 060000       [3]     JMP   pixelOn:0x03a6
-  348:        }
-  349:        break;
-  350:      case SHIP_HORIZ:
-  351:        if((x == 2 && y == 1) ||
+  350:        }
+  351:        break;
+  352:      case SHIP_HORIZ:
+  353:        if((x == 2 && y == 1) ||
   0253 160000       [4]     JSR   pixelOn:0x03b9
   0256 2605         [3/1]   BNE   *+7 ;abs = 025d
   0258 160000       [4]     JSR   pixelOn:0x03e3
   025b 2708         [3/1]   BEQ   *+10 ;abs = 0265
-  352:           (x == 2 && y == 2) ||
+  354:           (x == 2 && y == 2) ||
   025d 160000       [4]     JSR   pixelOn:0x03b9
   0260 2605         [3/1]   BNE   *+7 ;abs = 0267
   0262 160000       [4]     JSR   pixelOn:0x03bf
   0265 2708         [3/1]   BEQ   *+10 ;abs = 026f
-  353:           (x == 2 && y == 3) ||
+  355:           (x == 2 && y == 3) ||
   0267 160000       [4]     JSR   pixelOn:0x03b9
   026a 2605         [3/1]   BNE   *+7 ;abs = 0271
   026c 160000       [4]     JSR   pixelOn:0x03b3
   026f 2708         [3/1]   BEQ   *+10 ;abs = 0279
-  354:           (x == 2 && y == 4) ||
+  356:           (x == 2 && y == 4) ||
   0271 160000       [4]     JSR   pixelOn:0x03b9
   0274 2605         [3/1]   BNE   *+7 ;abs = 027b
   0276 160000       [4]     JSR   pixelOn:0x03c5
   0279 2708         [3/1]   BEQ   *+10 ;abs = 0283
-  355:           (x == 2 && y == 5) ||
+  357:           (x == 2 && y == 5) ||
   027b 160000       [4]     JSR   pixelOn:0x03b9
   027e 2605         [3/1]   BNE   *+7 ;abs = 0285
   0280 160000       [4]     JSR   pixelOn:0x03dd
   0283 2708         [3/1]   BEQ   *+10 ;abs = 028d
-  356:           (x == 3 && y == 1) ||
+  358:           (x == 3 && y == 1) ||
   0285 160000       [4]     JSR   pixelOn:0x03ad
   0288 2605         [3/1]   BNE   *+7 ;abs = 028f
   028a 160000       [4]     JSR   pixelOn:0x03e3
   028d 2708         [3/1]   BEQ   *+10 ;abs = 0297
-  357:           (x == 3 && y == 2) ||
+  359:           (x == 3 && y == 2) ||
   028f 160000       [4]     JSR   pixelOn:0x03ad
   0292 2605         [3/1]   BNE   *+7 ;abs = 0299
   0294 160000       [4]     JSR   pixelOn:0x03bf
   0297 2708         [3/1]   BEQ   *+10 ;abs = 02a1
-  358:           (x == 3 && y == 3) ||
+  360:           (x == 3 && y == 3) ||
   0299 160000       [4]     JSR   pixelOn:0x03ad
   029c 2605         [3/1]   BNE   *+7 ;abs = 02a3
   029e 160000       [4]     JSR   pixelOn:0x03b3
   02a1 2708         [3/1]   BEQ   *+10 ;abs = 02ab
-  359:           (x == 3 && y == 4) ||
+  361:           (x == 3 && y == 4) ||
   02a3 160000       [4]     JSR   pixelOn:0x03ad
   02a6 2605         [3/1]   BNE   *+7 ;abs = 02ad
   02a8 160000       [4]     JSR   pixelOn:0x03c5
   02ab 2708         [3/1]   BEQ   *+10 ;abs = 02b5
-  360:           (x == 3 && y == 5) ||
+  362:           (x == 3 && y == 5) ||
   02ad 160000       [4]     JSR   pixelOn:0x03ad
   02b0 2605         [3/1]   BNE   *+7 ;abs = 02b7
   02b2 160000       [4]     JSR   pixelOn:0x03dd
   02b5 2708         [3/1]   BEQ   *+10 ;abs = 02bf
-  361:           (x == 4 && y == 1) ||
+  363:           (x == 4 && y == 1) ||
   02b7 160000       [4]     JSR   pixelOn:0x03cb
   02ba 2605         [3/1]   BNE   *+7 ;abs = 02c1
   02bc 160000       [4]     JSR   pixelOn:0x03e3
   02bf 2708         [3/1]   BEQ   *+10 ;abs = 02c9
-  362:           (x == 4 && y == 2) ||
+  364:           (x == 4 && y == 2) ||
   02c1 160000       [4]     JSR   pixelOn:0x03cb
   02c4 2605         [3/1]   BNE   *+7 ;abs = 02cb
   02c6 160000       [4]     JSR   pixelOn:0x03bf
   02c9 2708         [3/1]   BEQ   *+10 ;abs = 02d3
-  363:           (x == 4 && y == 3) ||
+  365:           (x == 4 && y == 3) ||
   02cb 160000       [4]     JSR   pixelOn:0x03cb
   02ce 2605         [3/1]   BNE   *+7 ;abs = 02d5
   02d0 160000       [4]     JSR   pixelOn:0x03b3
   02d3 2708         [3/1]   BEQ   *+10 ;abs = 02dd
-  364:           (x == 4 && y == 4) ||
+  366:           (x == 4 && y == 4) ||
   02d5 160000       [4]     JSR   pixelOn:0x03cb
   02d8 2605         [3/1]   BNE   *+7 ;abs = 02df
   02da 160000       [4]     JSR   pixelOn:0x03c5
   02dd 277d         [3/1]   BEQ   *+127 ;abs = 035c
-  365:           (x == 4 && y == 5)) {
+  367:           (x == 4 && y == 5)) {
   02df 160000       [4]     JSR   pixelOn:0x03cb
   02e2 2603         [3/1]   BNE   *+5 ;abs = 02e7
   02e4 160000       [4]     JSR   pixelOn:0x03dd
   02e7 266d         [3/1]   BNE   *+111 ;abs = 0356
-  366:                        
-  367:          return 1;
+  368:                        
+  369:          return 1;
   02e9 2071         [3]     BRA   *+115 ;abs = 035c
-  368:        } 
-  369:        break;
-  370:      case HIT:
-  371:        if((x == 1 && y == 3) ||
+  370:        } 
+  371:        break;
+  372:      case HIT:
+  373:        if((x == 1 && y == 3) ||
   02eb 160000       [4]     JSR   pixelOn:0x03d7
   02ee 2605         [3/1]   BNE   *+7 ;abs = 02f5
   02f0 160000       [4]     JSR   pixelOn:0x03b3
   02f3 2708         [3/1]   BEQ   *+10 ;abs = 02fd
-  372:           (x == 2 && y == 2) ||
+  374:           (x == 2 && y == 2) ||
   02f5 160000       [4]     JSR   pixelOn:0x03b9
   02f8 2605         [3/1]   BNE   *+7 ;abs = 02ff
   02fa 160000       [4]     JSR   pixelOn:0x03bf
   02fd 2708         [3/1]   BEQ   *+10 ;abs = 0307
-  373:           (x == 2 && y == 3) ||
+  375:           (x == 2 && y == 3) ||
   02ff 160000       [4]     JSR   pixelOn:0x03b9
   0302 2605         [3/1]   BNE   *+7 ;abs = 0309
   0304 160000       [4]     JSR   pixelOn:0x03b3
   0307 2708         [3/1]   BEQ   *+10 ;abs = 0311
-  374:           (x == 2 && y == 4) ||
+  376:           (x == 2 && y == 4) ||
   0309 160000       [4]     JSR   pixelOn:0x03b9
   030c 2605         [3/1]   BNE   *+7 ;abs = 0313
   030e 160000       [4]     JSR   pixelOn:0x03c5
   0311 2708         [3/1]   BEQ   *+10 ;abs = 031b
-  375:           (x == 3 && y == 1) ||
+  377:           (x == 3 && y == 1) ||
   0313 160000       [4]     JSR   pixelOn:0x03ad
   0316 2605         [3/1]   BNE   *+7 ;abs = 031d
   0318 160000       [4]     JSR   pixelOn:0x03e3
   031b 2708         [3/1]   BEQ   *+10 ;abs = 0325
-  376:           (x == 3 && y == 2) ||
+  378:           (x == 3 && y == 2) ||
   031d 160000       [4]     JSR   pixelOn:0x03ad
   0320 2605         [3/1]   BNE   *+7 ;abs = 0327
   0322 160000       [4]     JSR   pixelOn:0x03bf
   0325 2708         [3/1]   BEQ   *+10 ;abs = 032f
-  377:           (x == 3 && y == 4) ||
+  379:           (x == 3 && y == 4) ||
   0327 160000       [4]     JSR   pixelOn:0x03ad
   032a 2605         [3/1]   BNE   *+7 ;abs = 0331
   032c 160000       [4]     JSR   pixelOn:0x03c5
   032f 2707         [3/1]   BEQ   *+9 ;abs = 0338
-  378:           (x == 3 && y == 5) ||
+  380:           (x == 3 && y == 5) ||
   0331 077a         [4]     BSR   *+124 ;abs = 03ad
   0333 2605         [3/1]   BNE   *+7 ;abs = 033a
   0335 160000       [4]     JSR   pixelOn:0x03dd
   0338 2707         [3/1]   BEQ   *+9 ;abs = 0341
-  379:           (x == 4 && y == 2) ||
+  381:           (x == 4 && y == 2) ||
   033a 160000       [4]     JSR   pixelOn:0x03cb
   033d 2604         [3/1]   BNE   *+6 ;abs = 0343
   033f 077e         [4]     BSR   *+128 ;abs = 03bf
   0341 2707         [3/1]   BEQ   *+9 ;abs = 034a
-  380:           (x == 4 && y == 3) ||
+  382:           (x == 4 && y == 3) ||
   0343 160000       [4]     JSR   pixelOn:0x03cb
   0346 2604         [3/1]   BNE   *+6 ;abs = 034c
   0348 0769         [4]     BSR   *+107 ;abs = 03b3
   034a 2706         [3/1]   BEQ   *+8 ;abs = 0352
-  381:           (x == 4 && y == 4) ||
+  383:           (x == 4 && y == 4) ||
   034c 077d         [4]     BSR   *+127 ;abs = 03cb
   034e 2604         [3/1]   BNE   *+6 ;abs = 0354
   0350 0773         [4]     BSR   *+117 ;abs = 03c5
   0352 2752         [3/1]   BEQ   *+84 ;abs = 03a6
-  382:           (x == 5 && y == 3)) {
+  384:           (x == 5 && y == 3)) {
   0354 077b         [4]     BSR   *+125 ;abs = 03d1
   0356 2602         [3/1]   BNE   *+4 ;abs = 035a
   0358 0759         [4]     BSR   *+91 ;abs = 03b3
   035a 2644         [3/1]   BNE   *+70 ;abs = 03a0
-  383:                        
-  384:          return 1;
+  385:                        
+  386:          return 1;
   035c 2048         [3]     BRA   *+74 ;abs = 03a6
-  385:        } 
-  386:        break;
-  387:      case MISS: 
-  388:        if((x == 1 && y == 1) ||
+  387:        } 
+  388:        break;
+  389:      case MISS: 
+  390:        if((x == 1 && y == 1) ||
   035e 0777         [4]     BSR   *+121 ;abs = 03d7
   0360 2604         [3/1]   BNE   *+6 ;abs = 0366
   0362 077f         [4]     BSR   *+129 ;abs = 03e3
   0364 2740         [3/1]   BEQ   *+66 ;abs = 03a6
-  389:           (x == 1 && y == 5) ||
+  391:           (x == 1 && y == 5) ||
   0366 076f         [4]     BSR   *+113 ;abs = 03d7
   0368 2604         [3/1]   BNE   *+6 ;abs = 036e
   036a 0771         [4]     BSR   *+115 ;abs = 03dd
   036c 2738         [3/1]   BEQ   *+58 ;abs = 03a6
-  390:           (x == 2 && y == 2) ||
+  392:           (x == 2 && y == 2) ||
   036e 0749         [4]     BSR   *+75 ;abs = 03b9
   0370 2604         [3/1]   BNE   *+6 ;abs = 0376
   0372 074b         [4]     BSR   *+77 ;abs = 03bf
   0374 2730         [3/1]   BEQ   *+50 ;abs = 03a6
-  391:           (x == 2 && y == 4) ||
+  393:           (x == 2 && y == 4) ||
   0376 0741         [4]     BSR   *+67 ;abs = 03b9
   0378 2604         [3/1]   BNE   *+6 ;abs = 037e
   037a 0749         [4]     BSR   *+75 ;abs = 03c5
   037c 2728         [3/1]   BEQ   *+42 ;abs = 03a6
-  392:           (x == 3 && y == 3) ||
+  394:           (x == 3 && y == 3) ||
   037e 072d         [4]     BSR   *+47 ;abs = 03ad
   0380 2604         [3/1]   BNE   *+6 ;abs = 0386
   0382 072f         [4]     BSR   *+49 ;abs = 03b3
   0384 2720         [3/1]   BEQ   *+34 ;abs = 03a6
-  393:           (x == 4 && y == 2) ||
+  395:           (x == 4 && y == 2) ||
   0386 0743         [4]     BSR   *+69 ;abs = 03cb
   0388 2604         [3/1]   BNE   *+6 ;abs = 038e
   038a 0733         [4]     BSR   *+53 ;abs = 03bf
   038c 2718         [3/1]   BEQ   *+26 ;abs = 03a6
-  394:           (x == 4 && y == 4) ||
+  396:           (x == 4 && y == 4) ||
   038e 073b         [4]     BSR   *+61 ;abs = 03cb
   0390 2604         [3/1]   BNE   *+6 ;abs = 0396
   0392 0731         [4]     BSR   *+51 ;abs = 03c5
   0394 2710         [3/1]   BEQ   *+18 ;abs = 03a6
-  395:           (x == 5 && y == 1) ||
+  397:           (x == 5 && y == 1) ||
   0396 0739         [4]     BSR   *+59 ;abs = 03d1
   0398 2604         [3/1]   BNE   *+6 ;abs = 039e
   039a 0747         [4]     BSR   *+73 ;abs = 03e3
   039c 2708         [3/1]   BEQ   *+10 ;abs = 03a6
-  396:           (x == 5 && y == 5)) {
+  398:           (x == 5 && y == 5)) {
   039e 0731         [4]     BSR   *+51 ;abs = 03d1
   03a0 2607         [3/1]   BNE   *+9 ;abs = 03a9
   03a2 0739         [4]     BSR   *+59 ;abs = 03dd
   03a4 2603         [3/1]   BNE   *+5 ;abs = 03a9
-  397:                        
-  398:          return 1;
+  399:                        
+  400:          return 1;
   03a6 c601         [1]     LDAB  #1
   03a8 21           [1]     SKIP1 
-  399:        }
-  400:        break;
-  401:    }
-  402:    return 0;  
+  401:        }
+  402:        break;
+  403:    }
+  404:    return 0;  
   03a9 c7           [1]     CLRB  
   03aa 87           [1]     CLRA  
-  403:  }
+  405:  }
   03ab 30           [3]     PULX  
   03ac 3d           [5]     RTS   
   03ad ec86         [3]     LDD   6,SP
@@ -962,8 +964,8 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   03e3 ec82         [3]     LDD   2,SP
   03e5 830001       [2]     SUBD  #1
   03e8 3d           [5]     RTS   
-  404:  
-  405:  void LCD_DrawGrid(unsigned char field[10][10]) { 
+  406:  
+  407:  void LCD_DrawGrid(unsigned char field[10][10]) { 
 *** EVALUATION ***
 
 Function: LCD_DrawGrid
@@ -973,48 +975,48 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0000 1b99         [2]     LEAS  -7,SP
   0002 3b           [2]     PSHD  
   0003 36           [2]     PSHA  
-  406:    int i, j, k;               
-  407:    
-  408:    //PTP |= 0x80;
+  408:    int i, j, k;               
   409:    
-  410:    CS1 = 0;
+  410:    //PTP |= 0x80;
+  411:    
+  412:    CS1 = 0;
   0004 1d000001     [4]     BCLR  _PTP,#1
-  411:    CS2 = 1;
+  413:    CS2 = 1;
   0008 1c000002     [4]     BSET  _PTP,#2
-  412:    
-  413:    for(i=0; i<8; i++) {
+  414:    
+  415:    for(i=0; i<8; i++) {
   000c c7           [1]     CLRB  
   000d 87           [1]     CLRA  
   000e 6c84         [2]     STD   4,SP
-  414:      for(j=0; j<61; j++) {
+  416:      for(j=0; j<61; j++) {
   0010 c7           [1]     CLRB  
   0011 87           [1]     CLRA  
   0012 6c86         [2]     STD   6,SP
-  415:        unsigned char pixels = 0;
+  417:        unsigned char pixels = 0;
   0014 6983         [2]     CLR   3,SP
-  416:        if(!(j%6)) {
+  418:        if(!(j%6)) {
   0016 ec86         [3]     LDD   6,SP
   0018 ce0006       [2]     LDX   #6
   001b 1815         [12]    IDIVS 
   001d 046414       [3]     TBNE  D,*+23 ;abs = 0034
-  417:          if(i<7) {
+  419:          if(i<7) {
   0020 ec84         [3]     LDD   4,SP
   0022 8c0007       [2]     CPD   #7
   0025 2c06         [3/1]   BGE   *+8 ;abs = 002d
-  418:            pixels = 0xFF;
+  420:            pixels = 0xFF;
   0027 c6ff         [1]     LDAB  #255
   0029 6b83         [2]     STAB  3,SP
-  419:          } 
+  421:          } 
   002b 2004         [3]     BRA   *+6 ;abs = 0031
-  420:          else {
-  421:            pixels = 0x1F; 
+  422:          else {
+  423:            pixels = 0x1F; 
   002d c61f         [1]     LDAB  #31
   002f 6b83         [2]     STAB  3,SP
   0031 060000       [3]     JMP   LCD_DrawGrid:0x00c4
-  422:          }
-  423:        }
-  424:        else {
-  425:          switch(i) {
+  424:          }
+  425:        }
+  426:        else {
+  427:          switch(i) {
   0034 ec84         [3]     LDD   4,SP
   0036 160000       [4]     JSR   _CASE_CHECKED_BYTE
   0039 08           DC.B  8
@@ -1027,33 +1029,33 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0040 0e           DC.B  14
   0041 08           DC.B  8
   0042 0b           DC.B  11
-  426:            case 0:
-  427:            case 3:
-  428:            case 6:
-  429:              pixels = 0x41;
+  428:            case 0:
+  429:            case 3:
+  430:            case 6:
+  431:              pixels = 0x41;
   0043 c641         [1]     LDAB  #65
-  430:              break;
+  432:              break;
   0045 8f           [2]     SKIP2 
-  431:            case 1:
-  432:            case 4:
-  433:            case 7:
-  434:              pixels = 0x10;
+  433:            case 1:
+  434:            case 4:
+  435:            case 7:
+  436:              pixels = 0x10;
   0046 c610         [1]     LDAB  #16
-  435:              break;
+  437:              break;
   0048 8f           [2]     SKIP2 
-  436:            case 2:
-  437:            case 5:
-  438:              pixels = 0x04;
+  438:            case 2:
+  439:            case 5:
+  440:              pixels = 0x04;
   0049 c604         [1]     LDAB  #4
   004b 6b83         [2]     STAB  3,SP
-  439:              break;
-  440:          }
-  441:          for(k=0; k<8 && (i<7 || k<4); k++) {
+  441:              break;
+  442:          }
+  443:          for(k=0; k<8 && (i<7 || k<4); k++) {
   004d c7           [1]     CLRB  
   004e 87           [1]     CLRA  
   004f 6c88         [2]     STD   8,SP
   0051 205e         [3]     BRA   *+96 ;abs = 00b1
-  442:            unsigned char boxRow = ((i*8)+k)/6;
+  444:            unsigned char boxRow = ((i*8)+k)/6;
   0053 ec84         [3]     LDD   4,SP
   0055 59           [1]     LSLD  
   0056 59           [1]     LSLD  
@@ -1063,25 +1065,25 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   005d 3b           [2]     PSHD  
   005e 1815         [12]    IDIVS 
   0060 b751         [1]     TFR   X,B
-  443:            unsigned char boxCol = j/6;
+  445:            unsigned char boxCol = j/6;
   0062 37           [2]     PSHB  
   0063 ec89         [3]     LDD   9,SP
   0065 ce0006       [2]     LDX   #6
   0068 1815         [12]    IDIVS 
   006a b751         [1]     TFR   X,B
-  444:            
-  445:            unsigned char boxX = ((i*8)+k)%6;
+  446:            
+  447:            unsigned char boxX = ((i*8)+k)%6;
   006c 37           [2]     PSHB  
   006d ec82         [3]     LDD   2,SP
   006f ce0006       [2]     LDX   #6
   0072 1815         [12]    IDIVS 
-  446:            unsigned char boxY = j%6;
+  448:            unsigned char boxY = j%6;
   0074 37           [2]     PSHB  
   0075 ec8b         [3]     LDD   11,SP
   0077 ce0006       [2]     LDX   #6
   007a 1815         [12]    IDIVS 
-  447:            
-  448:            if(pixelOn(field[boxRow][boxCol], boxX, boxY)) {
+  449:            
+  450:            if(pixelOn(field[boxRow][boxCol], boxX, boxY)) {
   007c 6b85         [2]     STAB  5,SP
   007e e682         [3]     LDAB  2,SP
   0080 87           [1]     CLRA  
@@ -1102,7 +1104,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   009a 8c0000       [2]     CPD   #0
   009d 1b89         [2]     LEAS  9,SP
   009f 270b         [3/1]   BEQ   *+13 ;abs = 00ac
-  449:              pixels |= 1 << k;            
+  451:              pixels |= 1 << k;            
   00a1 c601         [1]     LDAB  #1
   00a3 a689         [3]     LDAA  9,SP
   00a5 160000       [4]     JSR   _BSHL
@@ -1119,10 +1121,10 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00bd 2d94         [3/1]   BLT   *-106 ;abs = 0053
   00bf 8c0004       [2]     CPD   #4
   00c2 2d8f         [3/1]   BLT   *-111 ;abs = 0053
-  450:            }
-  451:          }
-  452:        }
-  453:        OutByte(i + 0xB8, j + 0x40, pixels);
+  452:            }
+  453:          }
+  454:        }
+  455:        OutByte(i + 0xB8, j + 0x40, pixels);
   00c4 e685         [3]     LDAB  5,SP
   00c6 cbb8         [1]     ADDB  #184
   00c8 37           [2]     PSHB  
@@ -1142,20 +1144,20 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00e3 6e84         [2]     STX   4,SP
   00e5 8e0008       [2]     CPX   #8
   00e8 182dff24     [4/3]   LBLT  *-216 ;abs = 0010
-  454:      }
-  455:    }
-  456:  }
+  456:      }
+  457:    }
+  458:  }
   00ec 1b8a         [2]     LEAS  10,SP
   00ee 3d           [5]     RTS   
-  457:  
-  458:  // ********* LCD_OutChar***********
-  459:  // Output ASCII character on the
-  460:  //    AGM1264F 128-bit by 64-bit graphics display
-  461:  // Input: 7-bit ASCII to display
-  462:  // Output: none
-  463:  // letter must be between 32 and 127 inclusive
-  464:  // execute LCD_GoTo to specify cursor location
-  465:  void LCD_OutChar(unsigned char letter){
+  459:  
+  460:  // ********* LCD_OutChar***********
+  461:  // Output ASCII character on the
+  462:  //    AGM1264F 128-bit by 64-bit graphics display
+  463:  // Input: 7-bit ASCII to display
+  464:  // Output: none
+  465:  // letter must be between 32 and 127 inclusive
+  466:  // execute LCD_GoTo to specify cursor location
+  467:  void LCD_OutChar(unsigned char letter){
 *** EVALUATION ***
 
 Function: LCD_OutChar
@@ -1163,19 +1165,19 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 6bab         [2]     STAB  5,-SP
-  466:  unsigned short i,cnt;
-  467:    if(OpenFlag == 0) return;
+  468:  unsigned short i,cnt;
+  469:    if(OpenFlag == 0) return;
   0002 fc0000       [3]     LDD   OpenFlag
   0005 182700ac     [4/3]   LBEQ  *+176 ;abs = 00b5
-  468:  // page 0 is 0xB8, varies from 0xB7 to 0xBF
-  469:    if(letter<32) return;
+  470:  // page 0 is 0xB8, varies from 0xB7 to 0xBF
+  471:    if(letter<32) return;
   0009 e680         [3]     LDAB  0,SP
   000b c120         [1]     CMPB  #32
   000d 182500a4     [4/3]   LBCS  *+168 ;abs = 00b5
-  470:    if(letter>127) return;
+  472:    if(letter>127) return;
   0011 c17f         [1]     CMPB  #127
   0013 1822009e     [4/3]   LBHI  *+162 ;abs = 00b5
-  471:    i = 5*(letter-32); // index into font table
+  473:    i = 5*(letter-32); // index into font table
   0017 87           [1]     CLRA  
   0018 830020       [2]     SUBD  #32
   001b b746         [1]     TFR   D,Y
@@ -1183,118 +1185,118 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   001f 87           [1]     CLRA  
   0020 13           [3]     EMUL  
   0021 6c81         [2]     STD   1,SP
-  472:    CS2 = bRight1;   // right enable
+  474:    CS2 = bRight1;   // right enable
   0023 1e00000106   [5]     BRSET bRight1,#1,*+11 ;abs = 002e
   0028 1d000002     [4]     BCLR  _PTP,#2
   002c 2004         [3]     BRA   *+6 ;abs = 0032
   002e 1c000002     [4]     BSET  _PTP,#2
-  473:    CS1 = bLeft1;    // left enable
+  475:    CS1 = bLeft1;    // left enable
   0032 1e00000106   [5]     BRSET bLeft1,#1,*+11 ;abs = 003d
   0037 1d000001     [4]     BCLR  _PTP,#1
   003b 2004         [3]     BRA   *+6 ;abs = 0041
   003d 1c000001     [4]     BSET  _PTP,#1
-  474:    lcdCmd(Page);    // Page address 0 to 7 
+  476:    lcdCmd(Page);    // Page address 0 to 7 
   0041 0775         [4]     BSR   *+119 ;abs = 00b8
-  475:    lcdCmd(Column1); // Column = 0
-  476:    for(cnt=5; cnt>0; cnt--){
+  477:    lcdCmd(Column1); // Column = 0
+  478:    for(cnt=5; cnt>0; cnt--){
   0043 c605         [1]     LDAB  #5
   0045 87           [1]     CLRA  
   0046 6c83         [2]     STD   3,SP
-  477:      if(bDown){
+  479:      if(bDown){
   0048 f60000       [3]     LDAB  bDown
   004b 2709         [3/1]   BEQ   *+11 ;abs = 0056
-  478:        lcdData(Font[i]<<1);  // copy one byte, shifted down 
+  480:        lcdData(Font[i]<<1);  // copy one byte, shifted down 
   004d ee81         [3]     LDX   1,SP
   004f e6e20000     [4]     LDAB  Font,X
   0053 58           [1]     LSLB  
-  479:      } else{
+  481:      } else{
   0054 2006         [3]     BRA   *+8 ;abs = 005c
-  480:        lcdData(Font[i]);  // copy one byte 
+  482:        lcdData(Font[i]);  // copy one byte 
   0056 ee81         [3]     LDX   1,SP
   0058 e6e20000     [4]     LDAB  Font,X
   005c 160000       [4]     JSR   lcdData
-  481:      }
-  482:      i++;
+  483:      }
+  484:      i++;
   005f ee81         [3]     LDX   1,SP
   0061 08           [1]     INX   
   0062 6e81         [2]     STX   1,SP
-  483:      Column1++;
+  485:      Column1++;
   0064 720000       [4]     INC   Column1
-  484:      if(bLeft1&&(Column1==0x80)){
+  486:      if(bLeft1&&(Column1==0x80)){
   0067 f60000       [3]     LDAB  bLeft1
   006a 270b         [3/1]   BEQ   *+13 ;abs = 0077
   006c f60000       [3]     LDAB  Column1
   006f c180         [1]     CMPB  #128
   0071 2604         [3/1]   BNE   *+6 ;abs = 0077
-  485:        Column1 = 0x40;
+  487:        Column1 = 0x40;
   0073 074f         [4]     BSR   *+81 ;abs = 00c4
-  486:        bLeft1 = 0;  
-  487:        bRight1 = 1;     // switch to right side
-  488:        CS2 = bRight1;   // right enable
-  489:        CS1 = bLeft1;    // left enable
-  490:        lcdCmd(Page);    // Page address 0 to 7) 
+  488:        bLeft1 = 0;  
+  489:        bRight1 = 1;     // switch to right side
+  490:        CS2 = bRight1;   // right enable
+  491:        CS1 = bLeft1;    // left enable
+  492:        lcdCmd(Page);    // Page address 0 to 7) 
   0075 0741         [4]     BSR   *+67 ;abs = 00b8
-  491:        lcdCmd(Column1); // Column = 0
-  492:      }
-  493:      if(bRight1&&(Column1==0x7F)){
+  493:        lcdCmd(Column1); // Column = 0
+  494:      }
+  495:      if(bRight1&&(Column1==0x7F)){
   0077 f60000       [3]     LDAB  bRight1
   007a 270b         [3/1]   BEQ   *+13 ;abs = 0087
   007c f60000       [3]     LDAB  Column1
   007f c17f         [1]     CMPB  #127
   0081 2604         [3/1]   BNE   *+6 ;abs = 0087
-  494:        Column1 = 0x41;
+  496:        Column1 = 0x41;
   0083 0754         [4]     BSR   *+86 ;abs = 00d9
-  495:        bLeft1 = 1;  
-  496:        bRight1 = 0;     // switch to left side
-  497:        CS2 = bRight1;   // right enable
-  498:        CS1 = bLeft1;    // left enable
-  499:        lcdCmd(Page);    // Page address 0 to 7) 
+  497:        bLeft1 = 1;  
+  498:        bRight1 = 0;     // switch to left side
+  499:        CS2 = bRight1;   // right enable
+  500:        CS1 = bLeft1;    // left enable
+  501:        lcdCmd(Page);    // Page address 0 to 7) 
   0085 0731         [4]     BSR   *+51 ;abs = 00b8
   0087 ee83         [3]     LDX   3,SP
   0089 09           [1]     DEX   
   008a 6e83         [2]     STX   3,SP
   008c 26ba         [3/1]   BNE   *-68 ;abs = 0048
-  500:        lcdCmd(Column1); // Column = 0
-  501:      }
-  502:    }
-  503:    lcdData(0);  // inter-character space copy one byte 
+  502:        lcdCmd(Column1); // Column = 0
+  503:      }
+  504:    }
+  505:    lcdData(0);  // inter-character space copy one byte 
   008e c7           [1]     CLRB  
   008f 160000       [4]     JSR   lcdData
-  504:    Column1++;
+  506:    Column1++;
   0092 720000       [4]     INC   Column1
-  505:    if(bLeft1&&(Column1==0x80)){
+  507:    if(bLeft1&&(Column1==0x80)){
   0095 f60000       [3]     LDAB  bLeft1
   0098 270b         [3/1]   BEQ   *+13 ;abs = 00a5
   009a f60000       [3]     LDAB  Column1
   009d c180         [1]     CMPB  #128
   009f 2604         [3/1]   BNE   *+6 ;abs = 00a5
-  506:      Column1 = 0x40;
+  508:      Column1 = 0x40;
   00a1 0721         [4]     BSR   *+35 ;abs = 00c4
-  507:      bLeft1 = 0;  
-  508:      bRight1 = 1;     // switch to right side
-  509:      CS2 = bRight1;   // right enable
-  510:      CS1 = bLeft1;    // left enable
-  511:      lcdCmd(Page);    // Page address 0 to 7) 
+  509:      bLeft1 = 0;  
+  510:      bRight1 = 1;     // switch to right side
+  511:      CS2 = bRight1;   // right enable
+  512:      CS1 = bLeft1;    // left enable
+  513:      lcdCmd(Page);    // Page address 0 to 7) 
   00a3 0713         [4]     BSR   *+21 ;abs = 00b8
-  512:      lcdCmd(Column1); // Column = 0
-  513:    }
-  514:    if(bRight1&&(Column1==0x7F)){
+  514:      lcdCmd(Column1); // Column = 0
+  515:    }
+  516:    if(bRight1&&(Column1==0x7F)){
   00a5 f60000       [3]     LDAB  bRight1
   00a8 270b         [3/1]   BEQ   *+13 ;abs = 00b5
   00aa f60000       [3]     LDAB  Column1
   00ad c17f         [1]     CMPB  #127
   00af 2604         [3/1]   BNE   *+6 ;abs = 00b5
-  515:      Column1 = 0x41;
+  517:      Column1 = 0x41;
   00b1 0726         [4]     BSR   *+40 ;abs = 00d9
-  516:      bLeft1 = 1;  
-  517:      bRight1 = 0;     // switch to left side
-  518:      CS2 = bRight1;   // right enable
-  519:      CS1 = bLeft1;    // left enable
-  520:      lcdCmd(Page);    // Page address 0 to 7) 
+  518:      bLeft1 = 1;  
+  519:      bRight1 = 0;     // switch to left side
+  520:      CS2 = bRight1;   // right enable
+  521:      CS1 = bLeft1;    // left enable
+  522:      lcdCmd(Page);    // Page address 0 to 7) 
   00b3 0703         [4]     BSR   *+5 ;abs = 00b8
-  521:      lcdCmd(Column1); // Column = 0
-  522:    }
-  523:  }  
+  523:      lcdCmd(Column1); // Column = 0
+  524:    }
+  525:  }  
   00b5 1b85         [2]     LEAS  5,SP
   00b7 3d           [5]     RTS   
   00b8 f60000       [3]     LDAB  Page
@@ -1315,14 +1317,14 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00e5 1d000002     [4]     BCLR  _PTP,#2
   00e9 1c000001     [4]     BSET  _PTP,#1
   00ed 3d           [5]     RTS   
-  524:  
-  525:  
-  526:    
-  527:  //---------------------LCD_OutString--------------
-  528:  // Display String
-  529:  // Input: pointer to NULL-terminationed ASCII string 
-  530:  // Output: none
-  531:  void LCD_OutString(char *pt){ 
+  526:  
+  527:  
+  528:    
+  529:  //---------------------LCD_OutString--------------
+  530:  // Display String
+  531:  // Input: pointer to NULL-terminationed ASCII string 
+  532:  // Output: none
+  533:  void LCD_OutString(char *pt){ 
 *** EVALUATION ***
 
 Function: LCD_OutString
@@ -1330,33 +1332,33 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
-  532:    if(OpenFlag==0){
+  534:    if(OpenFlag==0){
   0001 fc0000       [3]     LDD   OpenFlag
   0004 260a         [3/1]   BNE   *+12 ;abs = 0010
-  533:      return;  // not open
+  535:      return;  // not open
   0006 200e         [3]     BRA   *+16 ;abs = 0016
-  534:    }
-  535:    while(*pt){
-  536:      LCD_OutChar((unsigned char)*pt);
+  536:    }
+  537:    while(*pt){
+  538:      LCD_OutChar((unsigned char)*pt);
   0008 160000       [4]     JSR   LCD_OutChar
-  537:      pt++;
+  539:      pt++;
   000b ee80         [3]     LDX   0,SP
   000d 08           [1]     INX   
   000e 6e80         [2]     STX   0,SP
   0010 ee80         [3]     LDX   0,SP
   0012 e600         [3]     LDAB  0,X
   0014 26f2         [3/1]   BNE   *-12 ;abs = 0008
-  538:    }
-  539:  }
+  540:    }
+  541:  }
   0016 3a           [3]     PULD  
   0017 3d           [5]     RTS   
-  540:  
-  541:  //-----------------------LCD_GoTo-----------------------
-  542:  // Move cursor
-  543:  // Input: line number is 1 to 8, column from 1 to 21 
-  544:  // Output: none
-  545:  // errors: it will ignore legal addresses
-  546:  void LCD_GoTo(int line, int column){
+  542:  
+  543:  //-----------------------LCD_GoTo-----------------------
+  544:  // Move cursor
+  545:  // Input: line number is 1 to 8, column from 1 to 21 
+  546:  // Output: none
+  547:  // errors: it will ignore legal addresses
+  548:  void LCD_GoTo(int line, int column){
 *** EVALUATION ***
 
 Function: LCD_GoTo
@@ -1364,66 +1366,66 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\LCDG.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\LCDG.c.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
-  547:    if(OpenFlag==0){
+  549:    if(OpenFlag==0){
   0001 fc0000       [3]     LDD   OpenFlag
   0004 2759         [3/1]   BEQ   *+91 ;abs = 005f
-  548:      return;  // not open
-  549:    }
-  550:    if((line<1) || (line>8)) return;
+  550:      return;  // not open
+  551:    }
+  552:    if((line<1) || (line>8)) return;
   0006 ee84         [3]     LDX   4,SP
   0008 8e0001       [2]     CPX   #1
   000b 2d52         [3/1]   BLT   *+84 ;abs = 005f
   000d 8e0008       [2]     CPX   #8
   0010 2e4d         [3/1]   BGT   *+79 ;abs = 005f
-  551:    if((column<1) || (column>21)) return;
+  553:    if((column<1) || (column>21)) return;
   0012 ed80         [3]     LDY   0,SP
   0014 8d0001       [2]     CPY   #1
   0017 2d46         [3/1]   BLT   *+72 ;abs = 005f
   0019 8d0015       [2]     CPY   #21
   001c 2e41         [3/1]   BGT   *+67 ;abs = 005f
-  552:    if(line<5){
+  554:    if(line<5){
   001e 8e0005       [2]     CPX   #5
   0021 2c05         [3/1]   BGE   *+7 ;abs = 0028
-  553:      bDown = 0;             // normal position on lines 1,2,3,4
+  555:      bDown = 0;             // normal position on lines 1,2,3,4
   0023 790000       [3]     CLR   bDown
-  554:    } else{
+  556:    } else{
   0026 2005         [3]     BRA   *+7 ;abs = 002d
-  555:      bDown = 0xFF;          // shifted down on lines 5,6,7,8
+  557:      bDown = 0xFF;          // shifted down on lines 5,6,7,8
   0028 c6ff         [1]     LDAB  #255
   002a 7b0000       [3]     STAB  bDown
-  556:    }
-  557:    Page = 0xB8+line-1;      // 0xB8 to 0xBF
+  558:    }
+  559:    Page = 0xB8+line-1;      // 0xB8 to 0xBF
   002d e685         [3]     LDAB  5,SP
   002f cbb7         [1]     ADDB  #183
   0031 7b0000       [3]     STAB  Page
-  558:    if(column<12){
+  560:    if(column<12){
   0034 8d000c       [2]     CPY   #12
   0037 2c14         [3/1]   BGE   *+22 ;abs = 004d
-  559:      Column1 = 59+6*column; // 0x41+6*(column-1);
+  561:      Column1 = 59+6*column; // 0x41+6*(column-1);
   0039 c606         [1]     LDAB  #6
   003b a681         [3]     LDAA  1,SP
   003d 12           [1]     MUL   
   003e cb3b         [1]     ADDB  #59
   0040 7b0000       [3]     STAB  Column1
-  560:      bLeft1 = 1;  
+  562:      bLeft1 = 1;  
   0043 c601         [1]     LDAB  #1
   0045 7b0000       [3]     STAB  bLeft1
-  561:      bRight1 = 0;           // on left side
+  563:      bRight1 = 0;           // on left side
   0048 790000       [3]     CLR   bRight1
-  562:    } else{
+  564:    } else{
   004b 2012         [3]     BRA   *+20 ;abs = 005f
-  563:      Column1 = 6*column-5;  // 0x43+6*(column-12);
+  565:      Column1 = 6*column-5;  // 0x43+6*(column-12);
   004d c606         [1]     LDAB  #6
   004f a681         [3]     LDAA  1,SP
   0051 12           [1]     MUL   
   0052 c005         [1]     SUBB  #5
   0054 7b0000       [3]     STAB  Column1
-  564:      bLeft1 = 0;  
+  566:      bLeft1 = 0;  
   0057 790000       [3]     CLR   bLeft1
-  565:      bRight1 = 1;           // on right side
+  567:      bRight1 = 1;           // on right side
   005a c601         [1]     LDAB  #1
   005c 7b0000       [3]     STAB  bRight1
-  566:    }
-  567:  }
+  568:    }
+  569:  }
   005f 3a           [3]     PULD  
   0060 3d           [5]     RTS   
