@@ -1,0 +1,3 @@
+Objectives:
+During this lab, we developed an interface between embedded system components operating at different voltage levels, developed debugging techniques for transmitter (Tx)/receiver(Rx) systems, adapted a virtual port to provide serial communication with a wireless module, and implemented a text communication system between a PC and a previously used LCD display via an IEEE
+802.15.4 – ZigBee wireless module.
