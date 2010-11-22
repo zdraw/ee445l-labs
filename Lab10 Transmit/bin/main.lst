@@ -1,0 +1,116 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  /*
+    2:    Initiating ADC Conversion:
+    3:      1. Writing to ATD0CTL5
+    4:      2. Edge on external trigger
+    5:      3. Level on external trigger
+    6:    
+    7:    Completed Conversion
+    8:      1. Reading ATD0STAT1
+    9:      2. Interrupt when complete
+   10:  */
+   11:  
+   12:  #include <hidef.h>      /* common defines and macros */
+   13:  #include <mc9s12dp512.h>     /* derivative information */
+   14:  #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
+   15:                
+   16:  #include "PLL.h"
+   17:  #include "lcd.h"
+   18:  #include "Timer.h"
+   19:  #include <stdio.h>
+   20:  
+   21:  #include "SCI1.h"
+   22:  #include "Fifo.h"
+   23:  #include "Xbee.h"
+   24:  
+   25:  volatile char whee;
+   26:  
+   27:  void main(void) {
+*** EVALUATION ***
+
+Function: main
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+
+  0000 1bf1db       [2]     LEAS  -37,SP
+   28:    int i;
+   29:    DDRP |= 0x80;
+  0003 1c000080     [4]     BSET  _DDRP,#128
+   30:    PLL_Init(); // 24 MHz 
+  0007 160000       [4]     JSR   PLL_Init
+   31:    Timer_Init();
+  000a 160000       [4]     JSR   Timer_Init
+   32:    LCD_Open();
+  000d 160000       [4]     JSR   LCD_Open
+   33:    Fifo_Init();
+  0010 160000       [4]     JSR   Fifo_Init
+   34:    SCI1_Init(9600); // SCI output to PC
+  0013 cc2580       [2]     LDD   #9600
+  0016 ce0000       [2]     LDX   #0
+  0019 160000       [4]     JSR   SCI1_Init
+   35:       
+   36:    asm cli;
+  001c 10ef         [1]     CLI   
+   37:    
+   38:      LCD_Clear();
+  001e 160000       [4]     JSR   LCD_Clear
+   39:    
+   40:    XBee_Init();
+  0021 160000       [4]     JSR   XBee_Init
+   41:    Timer_Wait10ms(100);
+  0024 c664         [1]     LDAB  #100
+  0026 87           [1]     CLRA  
+  0027 160000       [4]     JSR   Timer_Wait10ms
+   42:    for(;;) {
+   43:      long blah;
+   44:      FrameType frame;
+   45:      Fifo_Init();
+  002a 160000       [4]     JSR   Fifo_Init
+   46:      while(!XBee_RecieveTxFrame(&frame));
+  002d 1a82         [2]     LEAX  2,SP
+  002f b754         [1]     TFR   X,D
+  0031 160000       [4]     JSR   XBee_RecieveTxFrame
+  0034 0454f6       [3]     TBEQ  D,*-7 ;abs = 002d
+   47:      
+   48:      LCD_Clear();
+  0037 160000       [4]     JSR   LCD_Clear
+   49:      for(i=5; i<frame.length; i++) {
+  003a c605         [1]     LDAB  #5
+  003c 87           [1]     CLRA  
+  003d 6c80         [2]     STD   0,SP
+  003f 2020         [3]     BRA   *+34 ;abs = 0061
+   50:        if(i == 13) {
+  0041 8c000d       [2]     CPD   #13
+  0044 2609         [3/1]   BNE   *+11 ;abs = 004f
+   51:          LCD_GoTo(1,0);  
+  0046 c601         [1]     LDAB  #1
+  0048 37           [2]     PSHB  
+  0049 c7           [1]     CLRB  
+  004a 160000       [4]     JSR   LCD_GoTo
+  004d 1b81         [2]     LEAS  1,SP
+   52:        }
+   53:        LCD_OutChar(frame.data[i]);  
+  004f 1a84         [2]     LEAX  4,SP
+  0051 b754         [1]     TFR   X,D
+  0053 e380         [3]     ADDD  0,SP
+  0055 b745         [1]     TFR   D,X
+  0057 e600         [3]     LDAB  0,X
+  0059 160000       [4]     JSR   LCD_OutChar
+  005c ee80         [3]     LDX   0,SP
+  005e 08           [1]     INX   
+  005f 6e80         [2]     STX   0,SP
+  0061 ec80         [3]     LDD   0,SP
+  0063 ac82         [3]     CPD   2,SP
+  0065 2dda         [3/1]   BLT   *-36 ;abs = 0041
+   54:      }
+   55:      Fifo_Init();
+  0067 160000       [4]     JSR   Fifo_Init
+   56:      PTP ^= 0x80;
+  006a f60000       [3]     LDAB  _PTP
+  006d c880         [1]     EORB  #128
+  006f 7b0000       [3]     STAB  _PTP
+  0072 20b6         [3]     BRA   *-72 ;abs = 002a
+   57:    }
+   58:  }

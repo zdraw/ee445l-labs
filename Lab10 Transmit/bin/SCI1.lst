@@ -1,0 +1,180 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  // filename  ***************  SCI1.C ****************************** 
+    2:  // Simple I/O routines to 9S12DP512 serial port   
+    3:  // Jonathan W. Valvano 8/10/09
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //        Thompson, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+    9:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   10:  
+   11:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  // Modified by EE345L students Charlie Gough && Matt Hawk
+   15:  // Modified by EE345M students Agustinus Darmawan + Mingjie Qiu
+   16:   
+   17:  #include <mc9s12dp512.h>     /* derivative information */
+   18:  #include "SCI1.h"
+   19:  #include "FIFO.h"
+   20:  #define RDRF 0x20   // Receive Data Register Full Bit
+   21:  #define TDRE 0x80   // Transmit Data Register Empty Bit
+   22:  
+   23:  //-------------------------SCI1_Init------------------------
+   24:  // Initialize Serial port SCI1
+   25:  // Input: baudRate is tha baud rate in bits/sec
+   26:  // Output: none
+   27:  // assumes a module clock frequency of 24 MHz
+   28:  void SCI1_Init(unsigned long baudRate){
+*** EVALUATION ***
+
+Function: SCI1_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\SCI1.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\SCI1.c.o" -WmsgSd1106
+
+  0000 6caa         [2]     STD   6,-SP
+  0002 34           [2]     PSHX  
+   29:  unsigned long br;
+   30:    DDRS |= 0x08;
+  0003 1c000008     [4]     BSET  _DDRS,#8
+   31:    DDRS &= ~0x04;
+  0007 1d000004     [4]     BCLR  _DDRS,#4
+   32:    SCI1BDH = 0;   
+  000b 790000       [3]     CLR   _SCI1BD
+   33:    br=(1500000+baudRate/2)/baudRate; // MCLK/(16*baudRate) 
+  000e b7c5         [1]     EXG   D,X
+  0010 49           [1]     LSRD  
+  0011 b7c5         [1]     EXG   D,X
+  0013 46           [1]     RORA  
+  0014 56           [1]     RORB  
+  0015 c3e360       [2]     ADDD  #58208
+  0018 b7c5         [1]     EXG   D,X
+  001a c916         [1]     ADCB  #22
+  001c 8900         [1]     ADCA  #0
+  001e ed82         [3]     LDY   2,SP
+  0020 35           [2]     PSHY  
+  0021 ed82         [3]     LDY   2,SP
+  0023 35           [2]     PSHY  
+  0024 b7c5         [1]     EXG   D,X
+  0026 160000       [4]     JSR   _LDIVU
+  0029 6c86         [2]     STD   6,SP
+  002b 6e84         [2]     STX   4,SP
+   34:    SCI1BDL= (unsigned char) br; 
+  002d e687         [3]     LDAB  7,SP
+  002f 5b00         [2]     STAB  _SCI1BD:1
+   35:    SCI1CR1 = 0x00;
+  0031 790000       [3]     CLR   _SCI1CR1
+   36:  /* bit value meaning
+   37:      7   0    LOOPS, no looping, normal
+   38:      6   0    WOMS, normal high/low outputs
+   39:      5   0    RSRC, not appliable with LOOPS=0
+   40:      4   0    M, 1 start, 8 data, 1 stop
+   41:      3   0    WAKE, wake by idle (not applicable)
+   42:      2   0    ILT, short idle time (not applicable)
+   43:      1   0    PE, no parity
+   44:      0   0    PT, parity type (not applicable with PE=0) */ 
+   45:    SCI1CR2 = 0x2C; 
+  0034 c62c         [1]     LDAB  #44
+  0036 5b00         [2]     STAB  _SCI1CR2
+   46:  /* bit value meaning
+   47:      7   0    TIE, no transmit interrupts on TDRE
+   48:      6   0    TCIE, no transmit interrupts on TC
+   49:      5   1    RIE, receive interrupts on RDRF
+   50:      4   0    ILIE, interrupts on idle
+   51:      3   1    TE, enable transmitter
+   52:      2   1    RE, enable receiver
+   53:      1   0    RWU, no receiver wakeup
+   54:      0   0    SBK, no send break */ 
+   55:  }
+  0038 1b88         [2]     LEAS  8,SP
+  003a 3d           [5]     RTS   
+   56:  
+   57:  //-------------------------SCI1_OutChar------------------------
+   58:  // Wait for buffer to be empty, output 8-bit to serial port
+   59:  // busy-waiting synchronization
+   60:  // Input: 8-bit data to be transferred
+   61:  // Output: none
+   62:  void SCI1_OutChar(char data) {
+*** EVALUATION ***
+
+Function: SCI1_OutChar
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\SCI1.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\SCI1.c.o" -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+   63:    while((SCI1SR1 & TDRE) == 0){};
+  0001 4f0080fc     [4]     BRCLR _SCI1SR1,#128,*+0 ;abs = 0001
+   64:    SCI1DRL = data;
+  0005 33           [3]     PULB  
+  0006 5b00         [2]     STAB  _SCI1DRL
+   65:  }
+  0008 3d           [5]     RTS   
+   66:  
+   67:  //-------------------------SCI1_InChar------------------------
+   68:  // Wait for new serial port input, busy-waiting synchronization
+   69:  // The input is not echoed
+   70:  // Input: none
+   71:  // Output: ASCII code for key typed
+   72:  unsigned char SCI1_InChar(void) {
+*** EVALUATION ***
+
+Function: SCI1_InChar
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\SCI1.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\SCI1.c.o" -WmsgSd1106
+
+  0000 36           [2]     PSHA  
+   73:    unsigned char data;
+   74:    while(!Fifo_Get(&data)){};
+  0001 b774         [1]     TFR   SP,D
+  0003 160000       [4]     JSR   Fifo_Get
+  0006 0454f8       [3]     TBEQ  D,*-5 ;abs = 0001
+   75:    return data;
+  0009 e680         [3]     LDAB  0,SP
+   76:  }
+  000b 32           [3]     PULA  
+  000c 3d           [5]     RTS   
+   77:  
+   78:  interrupt 21 void SCI1Handler(void) {
+*** EVALUATION ***
+
+Function: SCI1Handler
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\SCI1.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\SCI1.c.o" -WmsgSd1106
+
+   79:    if(SCI1SR1 & RDRF){ 
+  0000 4f002005     [4]     BRCLR _SCI1SR1,#32,*+9 ;abs = 0009
+   80:      Fifo_Put(SCI1DRL); // clears RDRF
+  0004 d600         [3]     LDAB  _SCI1DRL
+  0006 160000       [4]     JSR   Fifo_Put
+   81:    }    
+   82:  }
+  0009 0b           [8]     RTI   
+   83:  
+   84:  void SCI1_OutString(char *pt) {
+*** EVALUATION ***
+
+Function: SCI1_OutString
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\SCI1.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\SCI1.c.o" -WmsgSd1106
+
+   85:    while(*pt){
+  0000 b745         [1]     TFR   D,X
+  0002 2005         [3]     BRA   *+7 ;abs = 0009
+   86:      SCI1_OutChar(*pt);
+  0004 34           [2]     PSHX  
+  0005 0700         [4]     BSR   SCI1_OutChar
+   87:      pt++;
+  0007 30           [3]     PULX  
+  0008 08           [1]     INX   
+  0009 e600         [3]     LDAB  0,X
+  000b 26f7         [3/1]   BNE   *-7 ;abs = 0004
+   88:    }
+   89:  }
+  000d 3d           [5]     RTS   
+   90:  
+   91:  
+   92:  
+   93:  
