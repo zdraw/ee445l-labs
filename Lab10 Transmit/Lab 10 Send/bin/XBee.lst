@@ -1,0 +1,322 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.40 Build 10020, Jan 21 2010
+
+    1:  #include "derivative.h"      /* derivative-specific definitions */
+    2:  #include "SCIb.h"
+    3:  #include "XBee.h"
+    4:  #include "Timer.h"
+    5:  #include <string.h>
+    6:  
+    7:  char FrameID;
+    8:  
+    9:  int ok(void) {
+*** EVALUATION ***
+
+Function: ok
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\XBee.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\XBee.c.o" -WmsgSd1106
+
+   10:    if(SCIb_InChar() != 'O') {
+  0000 160000       [4]     JSR   SCIb_InChar
+  0003 c14f         [1]     CMPB  #79
+  0005 260e         [3/1]   BNE   *+16 ;abs = 0015
+   11:      return 0;  
+   12:    }
+   13:    if(SCIb_InChar() != 'K') {
+  0007 160000       [4]     JSR   SCIb_InChar
+  000a c14b         [1]     CMPB  #75
+  000c 2607         [3/1]   BNE   *+9 ;abs = 0015
+   14:      return 0;  
+   15:    }
+   16:    if(SCIb_InChar() != '\r') {
+  000e 160000       [4]     JSR   SCIb_InChar
+  0011 c10d         [1]     CMPB  #13
+  0013 2702         [3/1]   BEQ   *+4 ;abs = 0017
+   17:      return 0;  
+  0015 c7           [1]     CLRB  
+  0016 8f           [2]     SKIP2 
+   18:    } 
+   19:    return 1;
+  0017 c601         [1]     LDAB  #1
+  0019 87           [1]     CLRA  
+   20:  }
+  001a 3d           [5]     RTS   
+   21:  
+   22:  void sendATCommand(char * command) {
+*** EVALUATION ***
+
+Function: sendATCommand
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\XBee.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\XBee.c.o" -WmsgSd1106
+
+   23:    char * temp= command;
+  0000 3b           [2]     PSHD  
+  0001 2008         [3]     BRA   *+10 ;abs = 000b
+   24:    do{
+   25:        while(*temp) {
+   26:          SCIb_OutChar(*temp);
+  0003 160000       [4]     JSR   SCIb_OutChar
+   27:          temp++;
+  0006 ee80         [3]     LDX   0,SP
+  0008 08           [1]     INX   
+  0009 6e80         [2]     STX   0,SP
+  000b ee80         [3]     LDX   0,SP
+  000d e600         [3]     LDAB  0,X
+  000f 26f2         [3/1]   BNE   *-12 ;abs = 0003
+   28:        }
+   29:        Timer_Wait1ms(20);
+  0011 c614         [1]     LDAB  #20
+  0013 87           [1]     CLRA  
+  0014 160000       [4]     JSR   Timer_Wait1ms
+   30:      } while(!ok());
+  0017 0700         [4]     BSR   ok
+  0019 0454ef       [3]     TBEQ  D,*-14 ;abs = 000b
+   31:  }
+  001c 3a           [3]     PULD  
+  001d 3d           [5]     RTS   
+   32:  
+   33:  /*-----------------------XBee_Init----------------------------
+   34:    Initialize XBee
+   35:    Inputs: none
+   36:    Outputs: none */
+   37:  void XBee_Init(void) {
+*** EVALUATION ***
+
+Function: XBee_Init
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\XBee.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\XBee.c.o" -WmsgSd1106
+
+   38:    FrameID = 1;
+  0000 c601         [1]     LDAB  #1
+  0002 7b0000       [3]     STAB  FrameID
+   39:    
+   40:    PTP_PTP7 = 0;
+  0005 1d000080     [4]     BCLR  _PTP,#128
+   41:    do{
+   42:     // SCIb_Clear();
+   43:      SCIb_OutString("X");
+  0009 cc0000       [2]     LDD   #"X"
+  000c 160000       [4]     JSR   SCIb_OutString
+   44:      Timer_Wait10ms(110);
+  000f c66e         [1]     LDAB  #110
+  0011 87           [1]     CLRA  
+  0012 160000       [4]     JSR   Timer_Wait10ms
+   45:  
+   46:      SCIb_OutString("+++");
+  0015 cc0000       [2]     LDD   #"+++"
+  0018 160000       [4]     JSR   SCIb_OutString
+   47:      Timer_Wait10ms(110);
+  001b c66e         [1]     LDAB  #110
+  001d 87           [1]     CLRA  
+  001e 160000       [4]     JSR   Timer_Wait10ms
+   48:    
+   49:      sendATCommand("ATDL4E\r");
+  0021 cc0000       [2]     LDD   #"ATDL4E\015"
+  0024 0700         [4]     BSR   sendATCommand
+   50:      sendATCommand("ATDH0\r");
+  0026 cc0000       [2]     LDD   #"ATDH0\015"
+  0029 0700         [4]     BSR   sendATCommand
+   51:      sendATCommand("ATMY4F\r");
+  002b cc0000       [2]     LDD   #"ATMY4F\015"
+  002e 0700         [4]     BSR   sendATCommand
+   52:      sendATCommand("ATAP1\r");
+  0030 cc0000       [2]     LDD   #"ATAP1\015"
+  0033 0700         [4]     BSR   sendATCommand
+   53:      sendATCommand("ATCN\r");
+  0035 cc0000       [2]     LDD   #"ATCN\015"
+  0038 0700         [4]     BSR   sendATCommand
+   54:      } while(!ok());
+  003a 0700         [4]     BSR   ok
+  003c 0454ca       [3]     TBEQ  D,*-51 ;abs = 0009
+   55:  }
+  003f 3d           [5]     RTS   
+   56:  
+   57:  /*-----------------------XBee_CreateTxFrameType-------------------
+   58:    Creates a frame of char data
+   59:    Inputs: Data to be sent
+   60:    Outputs: frame structure */
+   61:  FrameType XBee_CreateTxFrameType(char * data)
+   62:  { 
+*** EVALUATION ***
+
+Function: XBee_CreateTxFrameType
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\XBee.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\XBee.c.o" -WmsgSd1106
+
+  0000 1b95         [2]     LEAS  -11,SP
+  0002 3b           [2]     PSHD  
+   63:    FrameType frame;
+   64:    short length = strlen(data) + 5;
+  0003 160000       [4]     JSR   strlen
+  0006 c30005       [2]     ADDD  #5
+  0009 6c8b         [2]     STD   11,SP
+   65:    unsigned char checkSum = 0;
+  000b 6988         [2]     CLR   8,SP
+   66:    short i = 0;
+   67:    for(i = 0; i < length; i++)
+  000d c7           [1]     CLRB  
+  000e 87           [1]     CLRA  
+  000f 6c89         [2]     STD   9,SP
+  0011 2011         [3]     BRA   *+19 ;abs = 0024
+   68:    {
+   69:      checkSum += data[i];
+  0013 ec80         [3]     LDD   0,SP
+  0015 e389         [3]     ADDD  9,SP
+  0017 b745         [1]     TFR   D,X
+  0019 e600         [3]     LDAB  0,X
+  001b eb88         [3]     ADDB  8,SP
+  001d 6b88         [2]     STAB  8,SP
+  001f ee89         [3]     LDX   9,SP
+  0021 08           [1]     INX   
+  0022 6e89         [2]     STX   9,SP
+  0024 ec89         [3]     LDD   9,SP
+  0026 ac8b         [3]     CPD   11,SP
+  0028 2de9         [3/1]   BLT   *-21 ;abs = 0013
+   70:    }
+   71:    checkSum += 0x01;
+  002a 6288         [3]     INC   8,SP
+   72:    checkSum += FrameID;
+  002c f60000       [3]     LDAB  FrameID
+  002f eb88         [3]     ADDB  8,SP
+  0031 6b88         [2]     STAB  8,SP
+   73:    checkSum = 0xFF - checkSum;
+  0033 c6ff         [1]     LDAB  #255
+  0035 e088         [3]     SUBB  8,SP
+   74:    frame.length = length;
+  0037 ee8b         [3]     LDX   11,SP
+  0039 6e82         [2]     STX   2,SP
+   75:    frame.data = data;
+  003b ee80         [3]     LDX   0,SP
+  003d 6e84         [2]     STX   4,SP
+   76:    frame.checkSum = checkSum;
+  003f 6b86         [2]     STAB  6,SP
+   77:    frame.frameID = FrameID++;
+  0041 f60000       [3]     LDAB  FrameID
+  0044 6b87         [2]     STAB  7,SP
+  0046 52           [1]     INCB  
+  0047 7b0000       [3]     STAB  FrameID
+   78:    if(FrameID > 255)
+  004a b715         [1]     SEX   B,X
+  004c 8e00ff       [2]     CPX   #255
+  004f 2f05         [3/1]   BLE   *+7 ;abs = 0056
+   79:    {
+   80:      FrameID = 1;
+  0051 c601         [1]     LDAB  #1
+  0053 7b0000       [3]     STAB  FrameID
+   81:    }
+   82:    return frame;
+  0056 ee8f         [3]     LDX   15,SP
+  0058 ec82         [3]     LDD   2,SP
+  005a 6c00         [2]     STD   0,X
+  005c ec84         [3]     LDD   4,SP
+  005e 6c02         [2]     STD   2,X
+  0060 ec86         [3]     LDD   6,SP
+  0062 6c04         [2]     STD   4,X
+   83:  }
+  0064 1b8d         [2]     LEAS  13,SP
+  0066 3d           [5]     RTS   
+   84:  
+   85:  /*-----------------------XBee_SendTxFrameType-------------------
+   86:    Sends a frame to SCI Out
+   87:    Inputs: Data to be sent
+   88:    Outputs: frame structure */
+   89:  void XBee_SendTxFrameType(FrameType data_frame)
+   90:  {
+*** EVALUATION ***
+
+Function: XBee_SendTxFrameType
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\XBee.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\XBee.c.o" -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+   91:    int i;
+   92:    SCIb_OutChar(0x7E);
+  0001 c67e         [1]     LDAB  #126
+  0003 160000       [4]     JSR   SCIb_OutChar
+   93:    SCIb_OutChar((char)((data_frame.length & 0xFF00) >> 8));
+  0006 ec84         [3]     LDD   4,SP
+  0008 b701         [1]     TFR   A,B
+  000a 160000       [4]     JSR   SCIb_OutChar
+   94:    SCIb_OutChar((char)(data_frame.length & 0x00FF));
+  000d e685         [3]     LDAB  5,SP
+  000f 160000       [4]     JSR   SCIb_OutChar
+   95:    SCIb_OutChar(0x01);
+  0012 c601         [1]     LDAB  #1
+  0014 160000       [4]     JSR   SCIb_OutChar
+   96:    SCIb_OutChar(data_frame.frameID);
+  0017 e689         [3]     LDAB  9,SP
+  0019 160000       [4]     JSR   SCIb_OutChar
+   97:    SCIb_OutChar(0x00);
+  001c c7           [1]     CLRB  
+  001d 160000       [4]     JSR   SCIb_OutChar
+   98:    SCIb_OutChar(0x4E);
+  0020 c64e         [1]     LDAB  #78
+  0022 160000       [4]     JSR   SCIb_OutChar
+   99:    SCIb_OutChar(0x00);
+  0025 c7           [1]     CLRB  
+  0026 160000       [4]     JSR   SCIb_OutChar
+  100:    for(i = 0; i < data_frame.length; i++)
+  0029 c7           [1]     CLRB  
+  002a 87           [1]     CLRA  
+  002b 6c80         [2]     STD   0,SP
+  002d 2010         [3]     BRA   *+18 ;abs = 003f
+  101:    {
+  102:      SCIb_OutChar(data_frame.data[i]);  
+  002f ec86         [3]     LDD   6,SP
+  0031 e380         [3]     ADDD  0,SP
+  0033 b745         [1]     TFR   D,X
+  0035 e600         [3]     LDAB  0,X
+  0037 160000       [4]     JSR   SCIb_OutChar
+  003a ee80         [3]     LDX   0,SP
+  003c 08           [1]     INX   
+  003d 6e80         [2]     STX   0,SP
+  003f ec80         [3]     LDD   0,SP
+  0041 ac84         [3]     CPD   4,SP
+  0043 2dea         [3/1]   BLT   *-20 ;abs = 002f
+  103:    }
+  104:    SCIb_OutChar(data_frame.checkSum);
+  0045 e688         [3]     LDAB  8,SP
+  0047 160000       [4]     JSR   SCIb_OutChar
+  105:  }
+  004a 3a           [3]     PULD  
+  004b 3d           [5]     RTS   
+  106:  
+  107:  /*-----------------------XBee_TxStatus------------------------
+  108:    Checks the status of XBee
+  109:    Inputs: none
+  110:    Outputs: 1 if Transmitter was successful, 0 if not */
+  111:  short XBee_TxStatus(void)
+  112:  {
+*** EVALUATION ***
+
+Function: XBee_TxStatus
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\XBee.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\XBee.c.o" -WmsgSd1106
+
+  113:    short length, checkSum, data, i;
+  114:    if(SCIb_InChar() != 0x7E) {
+  0000 160000       [4]     JSR   SCIb_InChar
+  0003 c17e         [1]     CMPB  #126
+  0005 2702         [3/1]   BEQ   *+4 ;abs = 0009
+  115:      return 0;  
+  0007 c7           [1]     CLRB  
+  0008 8f           [2]     SKIP2 
+  116:    } 
+  117:    else return 1;
+  0009 c601         [1]     LDAB  #1
+  000b 87           [1]     CLRA  
+  118:    length = (SCIb_InChar()<<8) + SCIb_InChar();
+  119:    
+  120:    for(i = 0; i < length; i++){
+  121:      data = SCIb_InChar();
+  122:      checkSum += data;
+  123:    }
+  124:    if(checkSum == SCIb_InChar())
+  125:    {
+  126:      return data;
+  127:    } 
+  128:    
+  129:    return 0;
+  130:  }
+  000c 3d           [5]     RTS   
+  131:  
