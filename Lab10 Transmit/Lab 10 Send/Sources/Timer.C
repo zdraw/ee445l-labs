@@ -23,7 +23,7 @@
 void Timer_Init(void){
   asm sei      // make ritual atomic 
   TSCR1 = 0x80;   // Enable TCNT, 24MHz E clock
-  TSCR2 = 0x04;   // divide by 16 TCNT prescale, TOI disarm
+  TSCR2 = 0x00;   // divide by 16 TCNT prescale, TOI disarm
   PACTL = 0;      // timer prescale used for TCNT
 /* Bottom three bits of TSCR2 (PR2,PR1,PR0) determine TCNT period
     divide  FastMode(24MHz)    Slow Mode (4MHz)
@@ -45,7 +45,7 @@ void Timer_Init(void){
 void Timer_Wait(unsigned short delay){ 
 unsigned short startTime;
   startTime = TCNT;
-  while((TCNT-startTime) <= (delay*16)){} 
+  while((TCNT-startTime) <= (delay)){} 
 }
 
 //---------Timer_Wait1ms------------------

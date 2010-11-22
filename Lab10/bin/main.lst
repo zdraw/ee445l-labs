@@ -31,8 +31,8 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
 *** EVALUATION ***
 
 Function: main
-Source  : C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources\main.c
-Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\prm;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\cmd;C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10 Transmit\Lab10_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+Source  : C:\Users\Raz\Documents\EE 445L\Lab10\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Lab10;C:\Users\Raz\Documents\EE 445L\Lab10\bin;C:\Users\Raz\Documents\EE 445L\Lab10\prm;C:\Users\Raz\Documents\EE 445L\Lab10\cmd;C:\Users\Raz\Documents\EE 445L\Lab10\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Lab10\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Lab10\Lab10_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
 
   0000 1bf1db       [2]     LEAS  -37,SP
    28:    int i;
