@@ -1,0 +1,208 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.40 Build 10020, Jan 21 2010
+
+    1:  // filename ******** main.C ************** 
+    2:  // Test of virtual SCI port   
+    3:  // Technological Arts MC9S12DP512 board
+    4:  
+    5:  // 9S12DP512 PT2 is RxD (input to 9S12DP512) 
+    6:  // 9S12DP512 PT3 is TxD (output from 9S12DP512)
+    7:  // 9S12DP512 channel 4 output compare interrupt used 
+    8:  // baud rate can be from 1000 to 50000 bits/sec
+    9:  // 1 start bit, 8 bit data, 1 stop
+   10:  // Jonathan W. Valvano 10/25/09
+   11:  
+   12:  //  This example accompanies the books
+   13:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+   14:  //        Thompson, copyright (c) 2006,
+   15:  //   "Introduction to Embedded Systems: Interfacing to the Freescale 9S12",
+   16:  //        Cengage Publishing 2009, ISBN-10: 049541137X | ISBN-13: 9780495411376
+   17:  
+   18:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   19:  //    You may use, edit, run or distribute this file 
+   20:  //    as long as the above copyright notice remains 
+   21:  
+   22:  #include <hidef.h>      /* common defines and macros */
+   23:  #include "derivative.h"      /* derivative-specific definitions */
+   24:  #include "SCIb.H"
+   25:  #include "PLL.H"
+   26:  #include "lcd.h"
+   27:  #include "Timer.H"
+   28:  #include "XBee.h"
+   29:  #include "SCI1.h"
+   30:  
+   31:  
+   32:  unsigned short num;
+   33:  unsigned char Letter;
+   34:  void main(void) {
+*** EVALUATION ***
+
+Function: main
+Source  : E:\Lab10\SCIB_DP512\Lab 10\Sources\main.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=E:\Lab10\SCIB_DP512\Lab 10;E:\Lab10\SCIB_DP512\Lab 10\bin;E:\Lab10\SCIB_DP512\Lab 10\prm;E:\Lab10\SCIB_DP512\Lab 10\cmd;E:\Lab10\SCIB_DP512\Lab 10\Sources;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\lib;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\src;C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CodeWarrior for S12(X) V5.0\lib\HC12c\include" -Env"OBJPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Env"TEXTPATH=E:\Lab10\SCIB_DP512\Lab 10\bin" -Lasm=%n.lst -Ms -ObjN="E:\Lab10\SCIB_DP512\Lab 10\SCIB_DP512_Data\Standard\ObjectCode\main.c.o" -WmsgSd1106
+
+  0000 1bf19b       [2]     LEAS  -101,SP
+   35:    PLL_Init();         // running at 24MHz
+  0003 160000       [4]     JSR   PLL_Init
+   36:    SCIb_Init(9600);    // SCIb initialization
+  0006 cc2580       [2]     LDD   #9600
+  0009 160000       [4]     JSR   SCIb_Init
+   37:    SCI1_Init(115200);
+  000c 86c2         [1]     LDAA  #194
+  000e c7           [1]     CLRB  
+  000f ce0001       [2]     LDX   #1
+  0012 160000       [4]     JSR   SCI1_Init
+   38:    XBee_Init();
+  0015 160000       [4]     JSR   XBee_Init
+   39:    DDRP_DDRP7 = 1;
+  0018 1c000080     [4]     BSET  _DDRP,#128
+   40:    for(;;) {
+   41:      unsigned char buffer[95] = {0};
+  001c 6980         [2]     CLR   0,SP
+  001e 6981         [2]     CLR   1,SP
+  0020 6982         [2]     CLR   2,SP
+  0022 6983         [2]     CLR   3,SP
+  0024 6984         [2]     CLR   4,SP
+  0026 6985         [2]     CLR   5,SP
+  0028 6986         [2]     CLR   6,SP
+  002a 6987         [2]     CLR   7,SP
+  002c 6988         [2]     CLR   8,SP
+  002e 6989         [2]     CLR   9,SP
+  0030 698a         [2]     CLR   10,SP
+  0032 698b         [2]     CLR   11,SP
+  0034 698c         [2]     CLR   12,SP
+  0036 698d         [2]     CLR   13,SP
+  0038 698e         [2]     CLR   14,SP
+  003a 698f         [2]     CLR   15,SP
+  003c 69f010       [3]     CLR   16,SP
+  003f 69f011       [3]     CLR   17,SP
+  0042 69f012       [3]     CLR   18,SP
+  0045 69f013       [3]     CLR   19,SP
+  0048 69f014       [3]     CLR   20,SP
+  004b 69f015       [3]     CLR   21,SP
+  004e 69f016       [3]     CLR   22,SP
+  0051 69f017       [3]     CLR   23,SP
+  0054 69f018       [3]     CLR   24,SP
+  0057 69f019       [3]     CLR   25,SP
+  005a 69f01a       [3]     CLR   26,SP
+  005d 69f01b       [3]     CLR   27,SP
+  0060 69f01c       [3]     CLR   28,SP
+  0063 69f01d       [3]     CLR   29,SP
+  0066 69f01e       [3]     CLR   30,SP
+  0069 69f01f       [3]     CLR   31,SP
+  006c 69f020       [3]     CLR   32,SP
+  006f 69f021       [3]     CLR   33,SP
+  0072 69f022       [3]     CLR   34,SP
+  0075 69f023       [3]     CLR   35,SP
+  0078 69f024       [3]     CLR   36,SP
+  007b 69f025       [3]     CLR   37,SP
+  007e 69f026       [3]     CLR   38,SP
+  0081 69f027       [3]     CLR   39,SP
+  0084 69f028       [3]     CLR   40,SP
+  0087 69f029       [3]     CLR   41,SP
+  008a 69f02a       [3]     CLR   42,SP
+  008d 69f02b       [3]     CLR   43,SP
+  0090 69f02c       [3]     CLR   44,SP
+  0093 69f02d       [3]     CLR   45,SP
+  0096 69f02e       [3]     CLR   46,SP
+  0099 69f02f       [3]     CLR   47,SP
+  009c 69f030       [3]     CLR   48,SP
+  009f 69f031       [3]     CLR   49,SP
+  00a2 69f032       [3]     CLR   50,SP
+  00a5 69f033       [3]     CLR   51,SP
+  00a8 69f034       [3]     CLR   52,SP
+  00ab 69f035       [3]     CLR   53,SP
+  00ae 69f036       [3]     CLR   54,SP
+  00b1 69f037       [3]     CLR   55,SP
+  00b4 69f038       [3]     CLR   56,SP
+  00b7 69f039       [3]     CLR   57,SP
+  00ba 69f03a       [3]     CLR   58,SP
+  00bd 69f03b       [3]     CLR   59,SP
+  00c0 69f03c       [3]     CLR   60,SP
+  00c3 69f03d       [3]     CLR   61,SP
+  00c6 69f03e       [3]     CLR   62,SP
+  00c9 69f03f       [3]     CLR   63,SP
+  00cc 69f040       [3]     CLR   64,SP
+  00cf 69f041       [3]     CLR   65,SP
+  00d2 69f042       [3]     CLR   66,SP
+  00d5 69f043       [3]     CLR   67,SP
+  00d8 69f044       [3]     CLR   68,SP
+  00db 69f045       [3]     CLR   69,SP
+  00de 69f046       [3]     CLR   70,SP
+  00e1 69f047       [3]     CLR   71,SP
+  00e4 69f048       [3]     CLR   72,SP
+  00e7 69f049       [3]     CLR   73,SP
+  00ea 69f04a       [3]     CLR   74,SP
+  00ed 69f04b       [3]     CLR   75,SP
+  00f0 69f04c       [3]     CLR   76,SP
+  00f3 69f04d       [3]     CLR   77,SP
+  00f6 69f04e       [3]     CLR   78,SP
+  00f9 69f04f       [3]     CLR   79,SP
+  00fc 69f050       [3]     CLR   80,SP
+  00ff 69f051       [3]     CLR   81,SP
+  0102 69f052       [3]     CLR   82,SP
+  0105 69f053       [3]     CLR   83,SP
+  0108 69f054       [3]     CLR   84,SP
+  010b 69f055       [3]     CLR   85,SP
+  010e 69f056       [3]     CLR   86,SP
+  0111 69f057       [3]     CLR   87,SP
+  0114 69f058       [3]     CLR   88,SP
+  0117 69f059       [3]     CLR   89,SP
+  011a 69f05a       [3]     CLR   90,SP
+  011d 69f05b       [3]     CLR   91,SP
+  0120 69f05c       [3]     CLR   92,SP
+  0123 69f05d       [3]     CLR   93,SP
+  0126 69f05e       [3]     CLR   94,SP
+   42:      FrameType frame;
+   43:      PTP_PTP7 = 1;
+  0129 1c000080     [4]     BSET  _PTP,#128
+   44:      SCI1_InString(buffer,95);
+  012d 1a80         [2]     LEAX  0,SP
+  012f 34           [2]     PSHX  
+  0130 c65f         [1]     LDAB  #95
+  0132 87           [1]     CLRA  
+  0133 160000       [4]     JSR   SCI1_InString
+  0136 1b82         [2]     LEAS  2,SP
+   45:      do{
+   46:        //SCI1_OutString(frame.data);
+   47:      //  SCI1_OutString(buffer);
+   48:        frame=XBee_CreateTxFrameType(buffer);
+  0138 1af05f       [2]     LEAX  95,SP
+  013b 34           [2]     PSHX  
+  013c 1a82         [2]     LEAX  2,SP
+  013e b754         [1]     TFR   X,D
+  0140 160000       [4]     JSR   XBee_CreateTxFrameType
+  0143 3a           [3]     PULD  
+   49:        PTP_PTP7 ^= 1;
+  0144 f60000       [3]     LDAB  _PTP
+  0147 c880         [1]     EORB  #128
+  0149 7b0000       [3]     STAB  _PTP
+   50:        XBee_SendTxFrameType(frame);
+  014c ecf063       [3]     LDD   99,SP
+  014f 3b           [2]     PSHD  
+  0150 ecf063       [3]     LDD   99,SP
+  0153 3b           [2]     PSHD  
+  0154 ecf063       [3]     LDD   99,SP
+  0157 3b           [2]     PSHD  
+  0158 160000       [4]     JSR   XBee_SendTxFrameType
+  015b 1b86         [2]     LEAS  6,SP
+   51:      }while(!XBee_TxStatus());
+  015d 160000       [4]     JSR   XBee_TxStatus
+  0160 0454d5       [3]     TBEQ  D,*-40 ;abs = 0138
+  0163 060000       [3]     JMP   main:0x001c
+   52:    }
+   53:   /*
+   54:    SCIb_OutString("Jonathan Valvano 10/25/09");
+   55:    for(;;) {
+   56:      SCIb_OutChar(CR);   SCIb_OutChar(LF); 
+   57:      SCIb_OutString("Decimal ");
+   58:      num = SCIb_InUDec();
+   59:      SCIb_OutUDec(num);
+   60:      SCIb_OutChar(CR);   SCIb_OutChar(LF); 
+   61:      SCIb_OutString("Hex ");
+   62:      num = SCIb_InUHex();
+   63:      SCIb_OutUHex(num);
+   64:    } 
+   65:    */
+   66:  }
+   67:  
