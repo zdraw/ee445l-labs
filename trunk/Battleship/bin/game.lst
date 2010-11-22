@@ -8,111 +8,118 @@ ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
     5:  
     6:  #define DEBOUNCE_DELAY 30000
     7:  
-    8:  #define SINGLE       0
-    9:  #define MULTI_XBEE   1
-   10:  #define MULTI_SERIAL 2 
-   11:  
-   12:  #define VERTICAL 0
-   13:  #define HORIZONTAL 1
-   14:  
-   15:  typedef struct {
-   16:    unsigned int x:4;
-   17:    unsigned int y:4;
-   18:    unsigned int orientation:1;
-   19:    unsigned int size:3;
-   20:  } ShipType; 
-   21:  
-   22:  typedef struct {
-   23:    unsigned int x:4;
-   24:    unsigned int y:4;
-   25:    unsigned int type:1;
-   26:  } AttackType;
-   27:  
-   28:  struct {
-   29:    unsigned int x:4;
-   30:    unsigned int y:4;  
-   31:  } cursor;
-   32:  
-   33:  static int mode;
-   34:  static int state;
-   35:  
-   36:  static int buttonFlag;
-   37:  
-   38:  static ShipType ships[5] = {
-   39:    {0, 0, VERTICAL, 2},
+    8:  #define SINGLE      0
+    9:  #define MULTIPLAYER 1 
+   10:  
+   11:  #define VERTICAL 0
+   12:  #define HORIZONTAL 1
+   13:  
+   14:  typedef struct {
+   15:    unsigned int x:4;
+   16:    unsigned int y:4;
+   17:    unsigned int orientation:1;
+   18:    unsigned int size:3;
+   19:  } ShipType; 
+   20:  
+   21:  typedef struct {
+   22:    unsigned int x:4;
+   23:    unsigned int y:4;
+   24:    unsigned int type:1;
+   25:  } AttackType;
+   26:  
+   27:  struct {
+   28:    unsigned int x:4;
+   29:    unsigned int y:4;  
+   30:  } cursor;
+   31:  
+   32:  static int mode;
+   33:  static int state;
+   34:  
+   35:  static int buttonFlag;
+   36:  
+   37:  static ShipType ships[5] = {
+   38:    {0, 0, VERTICAL, 2},
+   39:    {0, 0, VERTICAL, 3},
    40:    {0, 0, VERTICAL, 3},
-   41:    {0, 0, VERTICAL, 3},
-   42:    {0, 0, VERTICAL, 4},
-   43:    {0, 0, VERTICAL, 5}
-   44:  };
-   45:  
-   46:  static unsigned char field[10][10];
-   47:  
-   48:  static int numShips;
-   49:  
-   50:  static AttackType enemyAttacks[100];
-   51:  static int numEnemyAttacks;     
-   52:  
-   53:  static AttackType playerAttacks[100];
-   54:  static int numPlayerAttacks;  
-   55:  
-   56:  void incState(void) {
+   41:    {0, 0, VERTICAL, 4},
+   42:    {0, 0, VERTICAL, 5}
+   43:  };
+   44:  
+   45:  static unsigned char field[10][10];
+   46:  
+   47:  static int numShips;
+   48:  
+   49:  static AttackType enemyAttacks[100];
+   50:  static int numEnemyAttacks;     
+   51:  
+   52:  static AttackType playerAttacks[100];
+   53:  static int numPlayerAttacks;  
+   54:  
+   55:  void incState(void) {
 *** EVALUATION ***
 
 Function: incState
 Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
-   57:    switch(state) {
+   56:    switch(state) {
   0000 fc0000       [3]     LDD   state
-  0003 2705         [3/1]   BEQ   *+7 ;abs = 000a
-  0005 040407       [3]     DBEQ  D,*+10 ;abs = 000f
-  0008 200f         [3]     BRA   *+17 ;abs = 0019
-   58:      case WELCOME:  
-   59:        state = PICKING_MODE;
-  000a c601         [1]     LDAB  #1
-  000c 87           [1]     CLRA  
-   60:        break;
-  000d 2007         [3]     BRA   *+9 ;abs = 0016
-   61:      case PICKING_MODE:
-   62:        numShips = 1;
-  000f c601         [1]     LDAB  #1
-  0011 87           [1]     CLRA  
-  0012 7c0000       [3]     STD   numShips
-   63:        state = PLACING_SHIPS;
-  0015 58           [1]     LSLB  
-  0016 7c0000       [3]     STD   state
-   64:        break;  
-   65:    }
-   66:    Game_Update();
-  0019 060000       [3]     JMP   Game_Update
-   67:  }
-   68:  
-   69:  void Game_Init(void) {
+  0003 160000       [4]     JSR   _CASE_CHECKED_BYTE
+  0006 03           DC.B  3
+  0007 16           DC.B  22
+  0008 03           DC.B  3
+  0009 06           DC.B  6
+  000a 0b           DC.B  11
+   57:      case WELCOME:  
+   58:        state = PICKING_MODE;
+  000b c601         [1]     LDAB  #1
+   59:        break;
+  000d 8f           [2]     SKIP2 
+   60:      case PICKING_MODE:
+   61:        state = WAITING_FOR_OPPONENT;
+  000e c602         [1]     LDAB  #2
+   62:        break;
+  0010 87           [1]     CLRA  
+  0011 2008         [3]     BRA   *+10 ;abs = 001b
+   63:      case WAITING_FOR_OPPONENT:
+   64:        numShips = 1;
+  0013 c601         [1]     LDAB  #1
+  0015 87           [1]     CLRA  
+  0016 7c0000       [3]     STD   numShips
+   65:        state = PLACING_SHIPS;
+  0019 c603         [1]     LDAB  #3
+  001b 7c0000       [3]     STD   state
+   66:        break;
+   67:    }
+   68:    Game_Update();
+  001e 060000       [3]     JMP   Game_Update
+   69:  }
+   70:  
+   71:  void Game_Init(void) {
 *** EVALUATION ***
 
 Function: Game_Init
 Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
-   70:    state = WELCOME;  
+   72:    state = WELCOME;  
   0000 c7           [1]     CLRB  
   0001 87           [1]     CLRA  
   0002 7c0000       [3]     STD   state
-   71:    numShips = 0;
+   73:    numShips = 0;
   0005 7c0000       [3]     STD   numShips
-   72:    numEnemyAttacks = 0;
+   74:    numEnemyAttacks = 0;
   0008 7c0000       [3]     STD   numEnemyAttacks
-   73:    numPlayerAttacks = 0;
+   75:    numPlayerAttacks = 0;
   000b 7c0000       [3]     STD   numPlayerAttacks
-   74:    cursor.x = 0;
+   76:    cursor.x = 0;
   000e 7b0000       [3]     STAB  cursor
-   75:    cursor.y =0;
-   76:    Game_Update();
+   77:    cursor.y =0;
+   78:    Game_Update();
   0011 060000       [3]     JMP   Game_Update
-   77:  }             
-   78:  
-   79:  void Game_Update(void) { 
+   79:  }             
+   80:  
+   81:  void Game_Update(void) { 
 *** EVALUATION ***
 
 Function: Game_Update
@@ -120,304 +127,328 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
   0000 1b98         [2]     LEAS  -8,SP
-   80:    int i, j;
-   81:    
-   82:    switch(state) {
+   82:    int i, j;
+   83:    
+   84:    switch(state) {
   0002 fc0000       [3]     LDD   state
   0005 160000       [4]     JSR   _CASE_CHECKED
-  0008 0003         DC.W  3
-  000a 0000         DC.W  Game_Update:0x01a4
-  000c 0000         DC.W  Game_Update:0x0012
-  000e 0000         DC.W  Game_Update:0x003a
-  0010 0000         DC.W  Game_Update:0x0085
-   83:      case WELCOME:
-   84:        LCD_Clear(0);
-  0012 c7           [1]     CLRB  
-  0013 160000       [4]     JSR   LCD_Clear
-   85:        LCD_GoTo(4, 1);
-  0016 c604         [1]     LDAB  #4
-  0018 87           [1]     CLRA  
-  0019 3b           [2]     PSHD  
-  001a c601         [1]     LDAB  #1
-  001c 160000       [4]     JSR   LCD_GoTo
-  001f 3a           [3]     PULD  
-   86:        LCD_OutString("Welcome to Battleship");
-  0020 cc0000       [2]     LDD   #"Welcome to Battleship"
-  0023 160000       [4]     JSR   LCD_OutString
-   87:        
-   88:        enableOC6(&incState, 62500, 72, 1);
-  0026 cc0000       [2]     LDD   #incState
-  0029 3b           [2]     PSHD  
-  002a ccf424       [2]     LDD   #62500
-  002d 3b           [2]     PSHD  
-  002e 58           [1]     LSLB  
-  002f 87           [1]     CLRA  
-  0030 3b           [2]     PSHD  
-  0031 c601         [1]     LDAB  #1
-  0033 160000       [4]     JSR   enableOC6
-  0036 1b86         [2]     LEAS  6,SP
-   89:        break;
-  0038 2048         [3]     BRA   *+74 ;abs = 0082
-   90:      case PICKING_MODE:
-   91:        LCD_Clear(0);
-  003a c7           [1]     CLRB  
-  003b 160000       [4]     JSR   LCD_Clear
-   92:        LCD_GoTo(2, 3);
-  003e c602         [1]     LDAB  #2
-  0040 87           [1]     CLRA  
-  0041 3b           [2]     PSHD  
-  0042 52           [1]     INCB  
-  0043 160000       [4]     JSR   LCD_GoTo
-  0046 3a           [3]     PULD  
-   93:        LCD_OutString("Single Player");
-  0047 cc0000       [2]     LDD   #"Single Player"
-  004a 160000       [4]     JSR   LCD_OutString
-   94:        LCD_GoTo(4, 3);
-  004d c604         [1]     LDAB  #4
-  004f 87           [1]     CLRA  
-  0050 3b           [2]     PSHD  
-  0051 53           [1]     DECB  
-  0052 160000       [4]     JSR   LCD_GoTo
-  0055 3a           [3]     PULD  
-   95:        LCD_OutString("Multiplayer XBee");
-  0056 cc0000       [2]     LDD   #"Multiplayer XBee"
-  0059 160000       [4]     JSR   LCD_OutString
-   96:        LCD_GoTo(6, 3);
-  005c c606         [1]     LDAB  #6
-  005e 87           [1]     CLRA  
-  005f 3b           [2]     PSHD  
-  0060 57           [1]     ASRB  
+  0008 0004         DC.W  4
+  000a 0000         DC.W  Game_Update:0x01b6
+  000c 0000         DC.W  Game_Update:0x0014
+  000e 0000         DC.W  Game_Update:0x0031
+  0010 0000         DC.W  Game_Update:0x006c
+  0012 0000         DC.W  Game_Update:0x0097
+   85:      case WELCOME:
+   86:        LCD_Clear(0);
+  0014 160000       [4]     JSR   Game_Update:0x01ca
+   87:        LCD_GoTo(4, 1);
+   88:        LCD_OutString("Welcome to Battleship");
+  0017 cc0000       [2]     LDD   #"Welcome to Battleship"
+  001a 160000       [4]     JSR   LCD_OutString
+   89:        
+   90:        enableOC6(&incState, 62500, 72, 1);
+  001d cc0000       [2]     LDD   #incState
+  0020 3b           [2]     PSHD  
+  0021 ccf424       [2]     LDD   #62500
+  0024 3b           [2]     PSHD  
+  0025 58           [1]     LSLB  
+  0026 87           [1]     CLRA  
+  0027 3b           [2]     PSHD  
+  0028 c601         [1]     LDAB  #1
+  002a 160000       [4]     JSR   enableOC6
+  002d 1b86         [2]     LEAS  6,SP
+   91:        break;
+  002f 2063         [3]     BRA   *+101 ;abs = 0094
+   92:      case PICKING_MODE:
+   93:        LCD_Clear(0);
+  0031 c7           [1]     CLRB  
+  0032 160000       [4]     JSR   LCD_Clear
+   94:        LCD_GoTo(3, 3);
+  0035 c603         [1]     LDAB  #3
+  0037 87           [1]     CLRA  
+  0038 3b           [2]     PSHD  
+  0039 160000       [4]     JSR   LCD_GoTo
+  003c 3a           [3]     PULD  
+   95:        LCD_OutString("Single Player");
+  003d cc0000       [2]     LDD   #"Single Player"
+  0040 160000       [4]     JSR   LCD_OutString
+   96:        LCD_GoTo(5, 3);
+  0043 c605         [1]     LDAB  #5
+  0045 87           [1]     CLRA  
+  0046 3b           [2]     PSHD  
+  0047 c603         [1]     LDAB  #3
+  0049 160000       [4]     JSR   LCD_GoTo
+  004c 3a           [3]     PULD  
+   97:        LCD_OutString("Multiplayer");
+  004d cc0000       [2]     LDD   #"Multiplayer"
+  0050 160000       [4]     JSR   LCD_OutString
+   98:        LCD_GoTo((cursor.x*2)+3,1);
+  0053 f60000       [3]     LDAB  cursor
+  0056 c40f         [1]     ANDB  #15
+  0058 87           [1]     CLRA  
+  0059 59           [1]     LSLD  
+  005a c30003       [2]     ADDD  #3
+  005d 3b           [2]     PSHD  
+  005e c601         [1]     LDAB  #1
+  0060 87           [1]     CLRA  
   0061 160000       [4]     JSR   LCD_GoTo
   0064 3a           [3]     PULD  
-   97:        LCD_OutString("Multiplayer Wired");
-  0065 cc0000       [2]     LDD   #"Multiplayer Wired"
-  0068 160000       [4]     JSR   LCD_OutString
-   98:        LCD_GoTo((cursor.x+1)*2,1);
-  006b f60000       [3]     LDAB  cursor
-  006e c40f         [1]     ANDB  #15
-  0070 87           [1]     CLRA  
-  0071 c30001       [2]     ADDD  #1
-  0074 59           [1]     LSLD  
-  0075 3b           [2]     PSHD  
-  0076 c601         [1]     LDAB  #1
-  0078 87           [1]     CLRA  
-  0079 160000       [4]     JSR   LCD_GoTo
-  007c 3a           [3]     PULD  
    99:        LCD_OutChar(127);
-  007d c67f         [1]     LDAB  #127
-  007f 160000       [4]     JSR   LCD_OutChar
+  0065 c67f         [1]     LDAB  #127
+  0067 160000       [4]     JSR   LCD_OutChar
   100:        break;
-  0082 060000       [3]     JMP   Game_Update:0x01a4
-  101:      case PLACING_SHIPS:
-  102:        LCD_Clear(0);
-  0085 c7           [1]     CLRB  
-  0086 160000       [4]     JSR   LCD_Clear
-  103:        
-  104:        for(i=0; i<10; i++) {
-  0089 c7           [1]     CLRB  
-  008a 87           [1]     CLRA  
-  008b 6c84         [2]     STD   4,SP
-  105:          for(j=0; j<10; j++) {
-  008d c7           [1]     CLRB  
-  008e 87           [1]     CLRA  
-  008f 6c82         [2]     STD   2,SP
-  106:            field[i][j] = EMPTY;      
-  0091 c60a         [1]     LDAB  #10
-  0093 87           [1]     CLRA  
-  0094 ed84         [3]     LDY   4,SP
-  0096 13           [3]     EMUL  
-  0097 e382         [3]     ADDD  2,SP
-  0099 b745         [1]     TFR   D,X
-  009b 69e20000     [3]     CLR   field,X
-  009f ee82         [3]     LDX   2,SP
-  00a1 08           [1]     INX   
-  00a2 6e82         [2]     STX   2,SP
-  00a4 8e000a       [2]     CPX   #10
-  00a7 2de8         [3/1]   BLT   *-22 ;abs = 0091
-  00a9 ee84         [3]     LDX   4,SP
-  00ab 08           [1]     INX   
-  00ac 6e84         [2]     STX   4,SP
-  00ae 8e000a       [2]     CPX   #10
-  00b1 2dda         [3/1]   BLT   *-36 ;abs = 008d
-  107:          }
-  108:        }
-  109:        
-  110:        for(i=0; i<numShips; i++) {
-  00b3 c7           [1]     CLRB  
-  00b4 87           [1]     CLRA  
-  00b5 6c84         [2]     STD   4,SP
-  00b7 060000       [3]     JMP   Game_Update:0x0164
-  111:          ShipType ship = ships[i];
-  00ba ec84         [3]     LDD   4,SP
-  00bc 59           [1]     LSLD  
-  00bd b745         [1]     TFR   D,X
-  00bf ece20000     [4]     LDD   ships,X
-  00c3 6c80         [2]     STD   0,SP
-  112:          if(ship.orientation == HORIZONTAL) {
-  00c5 0f81014d     [4]     BRCLR 1,SP,#1,*+81 ;abs = 0116
-  113:            field[ship.x][ship.y] = SHIPEND_LEFT;
-  00c9 e680         [3]     LDAB  0,SP
-  00cb 160000       [4]     JSR   Game_Update:0x01b0
-  00ce 160000       [4]     JSR   Game_Update:0x01a7
-  00d1 c603         [1]     LDAB  #3
-  00d3 6be20000     [3]     STAB  field,X
-  114:            for(j=1; j<ship.size-1; j++) {
-  00d7 57           [1]     ASRB  
-  00d8 6c82         [2]     STD   2,SP
-  00da 2015         [3]     BRA   *+23 ;abs = 00f1
-  115:              field[ship.x][ship.y+j] = SHIP_HORIZ;    
-  00dc e680         [3]     LDAB  0,SP
-  00de 160000       [4]     JSR   Game_Update:0x01b8
-  00e1 e382         [3]     ADDD  2,SP
-  00e3 b745         [1]     TFR   D,X
-  00e5 e680         [3]     LDAB  0,SP
-  00e7 160000       [4]     JSR   Game_Update:0x01b0
-  00ea 1ae6         [2]     LEAX  D,X
-  00ec c606         [1]     LDAB  #6
-  00ee 160000       [4]     JSR   Game_Update:0x01c0
-  00f1 e681         [3]     LDAB  1,SP
-  00f3 c40e         [1]     ANDB  #14
-  00f5 54           [1]     LSRB  
-  00f6 87           [1]     CLRA  
-  00f7 b745         [1]     TFR   D,X
-  00f9 830001       [2]     SUBD  #1
-  00fc ac82         [3]     CPD   2,SP
-  00fe 2edc         [3/1]   BGT   *-34 ;abs = 00dc
-  116:            }
-  117:            field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
-  0100 e680         [3]     LDAB  0,SP
-  0102 160000       [4]     JSR   Game_Update:0x01b8
-  0105 1ae6         [2]     LEAX  D,X
-  0107 e680         [3]     LDAB  0,SP
-  0109 160000       [4]     JSR   Game_Update:0x01b0
-  010c 1ae6         [2]     LEAX  D,X
-  010e c604         [1]     LDAB  #4
-  0110 6be20000     [3]     STAB  field:-1,X
-  118:          }
-  0114 2049         [3]     BRA   *+75 ;abs = 015f
-  119:          else {
-  120:            field[ship.x][ship.y] = SHIPEND_UP;
-  0116 e680         [3]     LDAB  0,SP
-  0118 160000       [4]     JSR   Game_Update:0x01b0
-  011b 160000       [4]     JSR   Game_Update:0x01a7
-  011e 42           [1]     INCA  
-  011f 6ae20000     [3]     STAA  field,X
-  121:            for(j=1; j<ship.size-1; j++) {
-  0123 b704         [1]     SEX   A,D
-  0125 6c82         [2]     STD   2,SP
-  0127 2014         [3]     BRA   *+22 ;abs = 013d
-  122:              field[ship.x+j][ship.y] = SHIP_VERT;    
-  0129 e680         [3]     LDAB  0,SP
-  012b c40f         [1]     ANDB  #15
-  012d 87           [1]     CLRA  
-  012e e382         [3]     ADDD  2,SP
-  0130 b746         [1]     TFR   D,Y
-  0132 c60a         [1]     LDAB  #10
-  0134 87           [1]     CLRA  
-  0135 13           [3]     EMUL  
-  0136 076f         [4]     BSR   *+113 ;abs = 01a7
-  0138 c605         [1]     LDAB  #5
-  013a 160000       [4]     JSR   Game_Update:0x01c0
-  013d e681         [3]     LDAB  1,SP
-  013f c40e         [1]     ANDB  #14
-  0141 54           [1]     LSRB  
-  0142 b745         [1]     TFR   D,X
-  0144 830001       [2]     SUBD  #1
-  0147 ac82         [3]     CPD   2,SP
-  0149 2ede         [3/1]   BGT   *-32 ;abs = 0129
-  123:            }
-  124:            field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
-  014b e680         [3]     LDAB  0,SP
-  014d c40f         [1]     ANDB  #15
-  014f 87           [1]     CLRA  
-  0150 1ae6         [2]     LEAX  D,X
-  0152 c60a         [1]     LDAB  #10
-  0154 b756         [1]     TFR   X,Y
-  0156 13           [3]     EMUL  
-  0157 074e         [4]     BSR   *+80 ;abs = 01a7
-  0159 c602         [1]     LDAB  #2
-  015b 6be20000     [3]     STAB  field:-10,X
-  015f ee84         [3]     LDX   4,SP
-  0161 08           [1]     INX   
-  0162 6e84         [2]     STX   4,SP
-  0164 fc0000       [3]     LDD   numShips
-  0167 ac84         [3]     CPD   4,SP
-  0169 182eff4d     [4/3]   LBGT  *-175 ;abs = 00ba
-  125:          }
-  126:        }
-  127:        
-  128:        for(i=0; i<numEnemyAttacks; i++) {
-  016d c7           [1]     CLRB  
-  016e 87           [1]     CLRA  
-  016f 6c84         [2]     STD   4,SP
-  0171 2024         [3]     BRA   *+38 ;abs = 0197
-  129:          AttackType attack = enemyAttacks[i];
-  0173 ec84         [3]     LDD   4,SP
-  0175 59           [1]     LSLD  
-  0176 b745         [1]     TFR   D,X
-  0178 ece20000     [4]     LDD   enemyAttacks,X
-  017c 6c86         [2]     STD   6,SP
-  130:          field[attack.x][attack.y] = attack.type;  
-  017e e686         [3]     LDAB  6,SP
-  0180 072e         [4]     BSR   *+48 ;abs = 01b0
-  0182 b745         [1]     TFR   D,X
-  0184 e686         [3]     LDAB  6,SP
-  0186 0730         [4]     BSR   *+50 ;abs = 01b8
-  0188 1ae6         [2]     LEAX  D,X
-  018a e687         [3]     LDAB  7,SP
-  018c c401         [1]     ANDB  #1
-  018e 6be20000     [3]     STAB  field,X
-  0192 ee84         [3]     LDX   4,SP
-  0194 08           [1]     INX   
-  0195 6e84         [2]     STX   4,SP
-  0197 fc0000       [3]     LDD   numEnemyAttacks
-  019a ac84         [3]     CPD   4,SP
-  019c 2ed5         [3/1]   BGT   *-41 ;abs = 0173
-  131:        }
-  132:          
-  133:        LCD_DrawGrid(field);
-  019e cc0000       [2]     LDD   #field
-  01a1 160000       [4]     JSR   LCD_DrawGrid
-  134:        break;
-  135:    }
-  136:    
-  137:    /*
-  138:      
-  139:      else {
-  140:        for(i=0; i<numPlayerAttacks; i++) {
-  141:          AttackType attack = playerAttacks[i];
-  142:          field[attack.x][attack.y] = attack.type;  
-  143:        }
-  144:      }
-  145:    */
-  146:  }
-  01a4 1b88         [2]     LEAS  8,SP
-  01a6 3d           [5]     RTS   
-  01a7 b745         [1]     TFR   D,X
-  01a9 e682         [3]     LDAB  2,SP
-  01ab 070b         [4]     BSR   *+13 ;abs = 01b8
-  01ad 1ae6         [2]     LEAX  D,X
-  01af 3d           [5]     RTS   
-  01b0 c40f         [1]     ANDB  #15
-  01b2 37           [2]     PSHB  
-  01b3 c60a         [1]     LDAB  #10
-  01b5 32           [3]     PULA  
-  01b6 12           [1]     MUL   
-  01b7 3d           [5]     RTS   
-  01b8 c4f0         [1]     ANDB  #240
-  01ba 54           [1]     LSRB  
-  01bb 54           [1]     LSRB  
-  01bc 54           [1]     LSRB  
-  01bd 54           [1]     LSRB  
-  01be 87           [1]     CLRA  
-  01bf 3d           [5]     RTS   
-  01c0 6be20000     [3]     STAB  field,X
-  01c4 ee84         [3]     LDX   4,SP
-  01c6 08           [1]     INX   
-  01c7 6e84         [2]     STX   4,SP
+  006a 2028         [3]     BRA   *+42 ;abs = 0094
+  101:      case WAITING_FOR_OPPONENT:
+  102:        switch(mode) {
+  006c fc0000       [3]     LDD   mode
+  006f 2705         [3/1]   BEQ   *+7 ;abs = 0076
+  0071 040407       [3]     DBEQ  D,*+10 ;abs = 007b
+  0074 201e         [3]     BRA   *+32 ;abs = 0094
+  103:          case SINGLE:
+  104:            incState();
+  0076 160000       [4]     JSR   incState
+  105:            break;
+  0079 2019         [3]     BRA   *+27 ;abs = 0094
+  106:          case MULTIPLAYER: 
+  107:            LCD_Clear(0);
+  007b 160000       [4]     JSR   Game_Update:0x01ca
+  108:            LCD_GoTo(4, 1);
+  109:            LCD_OutString(" Waiting on opponent ");
+  007e cc0000       [2]     LDD   #" Waiting on opponent "
+  0081 160000       [4]     JSR   LCD_OutString
+  110:            LCD_GoTo(5, 1);          
+  0084 c605         [1]     LDAB  #5
+  0086 87           [1]     CLRA  
+  0087 3b           [2]     PSHD  
+  0088 c601         [1]     LDAB  #1
+  008a 160000       [4]     JSR   LCD_GoTo
+  008d 3a           [3]     PULD  
+  111:            LCD_OutString("  Press B to cancel  ");
+  008e cc0000       [2]     LDD   #"  Press B to cancel  "
+  0091 160000       [4]     JSR   LCD_OutString
+  112:            break;
+  0094 060000       [3]     JMP   Game_Update:0x01b6
+  113:        }
+  114:        break;
+  115:      case PLACING_SHIPS:
+  116:        LCD_Clear(0);
+  0097 c7           [1]     CLRB  
+  0098 160000       [4]     JSR   LCD_Clear
+  117:        
+  118:        for(i=0; i<10; i++) {
+  009b c7           [1]     CLRB  
+  009c 87           [1]     CLRA  
+  009d 6c84         [2]     STD   4,SP
+  119:          for(j=0; j<10; j++) {
+  009f c7           [1]     CLRB  
+  00a0 87           [1]     CLRA  
+  00a1 6c82         [2]     STD   2,SP
+  120:            field[i][j] = EMPTY;      
+  00a3 c60a         [1]     LDAB  #10
+  00a5 87           [1]     CLRA  
+  00a6 ed84         [3]     LDY   4,SP
+  00a8 13           [3]     EMUL  
+  00a9 e382         [3]     ADDD  2,SP
+  00ab b745         [1]     TFR   D,X
+  00ad 69e20000     [3]     CLR   field,X
+  00b1 ee82         [3]     LDX   2,SP
+  00b3 08           [1]     INX   
+  00b4 6e82         [2]     STX   2,SP
+  00b6 8e000a       [2]     CPX   #10
+  00b9 2de8         [3/1]   BLT   *-22 ;abs = 00a3
+  00bb ee84         [3]     LDX   4,SP
+  00bd 08           [1]     INX   
+  00be 6e84         [2]     STX   4,SP
+  00c0 8e000a       [2]     CPX   #10
+  00c3 2dda         [3/1]   BLT   *-36 ;abs = 009f
+  121:          }
+  122:        }
+  123:        
+  124:        for(i=0; i<numShips; i++) {
+  00c5 c7           [1]     CLRB  
+  00c6 87           [1]     CLRA  
+  00c7 6c84         [2]     STD   4,SP
+  00c9 060000       [3]     JMP   Game_Update:0x0176
+  125:          ShipType ship = ships[i];
+  00cc ec84         [3]     LDD   4,SP
+  00ce 59           [1]     LSLD  
+  00cf b745         [1]     TFR   D,X
+  00d1 ece20000     [4]     LDD   ships,X
+  00d5 6c80         [2]     STD   0,SP
+  126:          if(ship.orientation == HORIZONTAL) {
+  00d7 0f81014d     [4]     BRCLR 1,SP,#1,*+81 ;abs = 0128
+  127:            field[ship.x][ship.y] = SHIPEND_LEFT;
+  00db e680         [3]     LDAB  0,SP
+  00dd 160000       [4]     JSR   Game_Update:0x01c2
+  00e0 160000       [4]     JSR   Game_Update:0x01b9
+  00e3 c603         [1]     LDAB  #3
+  00e5 6be20000     [3]     STAB  field,X
+  128:            for(j=1; j<ship.size-1; j++) {
+  00e9 57           [1]     ASRB  
+  00ea 6c82         [2]     STD   2,SP
+  00ec 2015         [3]     BRA   *+23 ;abs = 0103
+  129:              field[ship.x][ship.y+j] = SHIP_HORIZ;    
+  00ee e680         [3]     LDAB  0,SP
+  00f0 160000       [4]     JSR   Game_Update:0x01da
+  00f3 e382         [3]     ADDD  2,SP
+  00f5 b745         [1]     TFR   D,X
+  00f7 e680         [3]     LDAB  0,SP
+  00f9 160000       [4]     JSR   Game_Update:0x01c2
+  00fc 1ae6         [2]     LEAX  D,X
+  00fe c606         [1]     LDAB  #6
+  0100 160000       [4]     JSR   Game_Update:0x01e2
+  0103 e681         [3]     LDAB  1,SP
+  0105 c40e         [1]     ANDB  #14
+  0107 54           [1]     LSRB  
+  0108 87           [1]     CLRA  
+  0109 b745         [1]     TFR   D,X
+  010b 830001       [2]     SUBD  #1
+  010e ac82         [3]     CPD   2,SP
+  0110 2edc         [3/1]   BGT   *-34 ;abs = 00ee
+  130:            }
+  131:            field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
+  0112 e680         [3]     LDAB  0,SP
+  0114 160000       [4]     JSR   Game_Update:0x01da
+  0117 1ae6         [2]     LEAX  D,X
+  0119 e680         [3]     LDAB  0,SP
+  011b 160000       [4]     JSR   Game_Update:0x01c2
+  011e 1ae6         [2]     LEAX  D,X
+  0120 c604         [1]     LDAB  #4
+  0122 6be20000     [3]     STAB  field:-1,X
+  132:          }
+  0126 2049         [3]     BRA   *+75 ;abs = 0171
+  133:          else {
+  134:            field[ship.x][ship.y] = SHIPEND_UP;
+  0128 e680         [3]     LDAB  0,SP
+  012a 160000       [4]     JSR   Game_Update:0x01c2
+  012d 160000       [4]     JSR   Game_Update:0x01b9
+  0130 42           [1]     INCA  
+  0131 6ae20000     [3]     STAA  field,X
+  135:            for(j=1; j<ship.size-1; j++) {
+  0135 b704         [1]     SEX   A,D
+  0137 6c82         [2]     STD   2,SP
+  0139 2014         [3]     BRA   *+22 ;abs = 014f
+  136:              field[ship.x+j][ship.y] = SHIP_VERT;    
+  013b e680         [3]     LDAB  0,SP
+  013d c40f         [1]     ANDB  #15
+  013f 87           [1]     CLRA  
+  0140 e382         [3]     ADDD  2,SP
+  0142 b746         [1]     TFR   D,Y
+  0144 c60a         [1]     LDAB  #10
+  0146 87           [1]     CLRA  
+  0147 13           [3]     EMUL  
+  0148 076f         [4]     BSR   *+113 ;abs = 01b9
+  014a c605         [1]     LDAB  #5
+  014c 160000       [4]     JSR   Game_Update:0x01e2
+  014f e681         [3]     LDAB  1,SP
+  0151 c40e         [1]     ANDB  #14
+  0153 54           [1]     LSRB  
+  0154 b745         [1]     TFR   D,X
+  0156 830001       [2]     SUBD  #1
+  0159 ac82         [3]     CPD   2,SP
+  015b 2ede         [3/1]   BGT   *-32 ;abs = 013b
+  137:            }
+  138:            field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
+  015d e680         [3]     LDAB  0,SP
+  015f c40f         [1]     ANDB  #15
+  0161 87           [1]     CLRA  
+  0162 1ae6         [2]     LEAX  D,X
+  0164 c60a         [1]     LDAB  #10
+  0166 b756         [1]     TFR   X,Y
+  0168 13           [3]     EMUL  
+  0169 074e         [4]     BSR   *+80 ;abs = 01b9
+  016b c602         [1]     LDAB  #2
+  016d 6be20000     [3]     STAB  field:-10,X
+  0171 ee84         [3]     LDX   4,SP
+  0173 08           [1]     INX   
+  0174 6e84         [2]     STX   4,SP
+  0176 fc0000       [3]     LDD   numShips
+  0179 ac84         [3]     CPD   4,SP
+  017b 182eff4d     [4/3]   LBGT  *-175 ;abs = 00cc
+  139:          }
+  140:        }
+  141:        
+  142:        for(i=0; i<numEnemyAttacks; i++) {
+  017f c7           [1]     CLRB  
+  0180 87           [1]     CLRA  
+  0181 6c84         [2]     STD   4,SP
+  0183 2024         [3]     BRA   *+38 ;abs = 01a9
+  143:          AttackType attack = enemyAttacks[i];
+  0185 ec84         [3]     LDD   4,SP
+  0187 59           [1]     LSLD  
+  0188 b745         [1]     TFR   D,X
+  018a ece20000     [4]     LDD   enemyAttacks,X
+  018e 6c86         [2]     STD   6,SP
+  144:          field[attack.x][attack.y] = attack.type;  
+  0190 e686         [3]     LDAB  6,SP
+  0192 072e         [4]     BSR   *+48 ;abs = 01c2
+  0194 b745         [1]     TFR   D,X
+  0196 e686         [3]     LDAB  6,SP
+  0198 0740         [4]     BSR   *+66 ;abs = 01da
+  019a 1ae6         [2]     LEAX  D,X
+  019c e687         [3]     LDAB  7,SP
+  019e c401         [1]     ANDB  #1
+  01a0 6be20000     [3]     STAB  field,X
+  01a4 ee84         [3]     LDX   4,SP
+  01a6 08           [1]     INX   
+  01a7 6e84         [2]     STX   4,SP
+  01a9 fc0000       [3]     LDD   numEnemyAttacks
+  01ac ac84         [3]     CPD   4,SP
+  01ae 2ed5         [3/1]   BGT   *-41 ;abs = 0185
+  145:        }
+  146:          
+  147:        LCD_DrawGrid(field);
+  01b0 cc0000       [2]     LDD   #field
+  01b3 160000       [4]     JSR   LCD_DrawGrid
+  148:        break;
+  149:    }
+  150:    
+  151:    /*
+  152:      
+  153:      else {
+  154:        for(i=0; i<numPlayerAttacks; i++) {
+  155:          AttackType attack = playerAttacks[i];
+  156:          field[attack.x][attack.y] = attack.type;  
+  157:        }
+  158:      }
+  159:    */
+  160:  }
+  01b6 1b88         [2]     LEAS  8,SP
+  01b8 3d           [5]     RTS   
+  01b9 b745         [1]     TFR   D,X
+  01bb e682         [3]     LDAB  2,SP
+  01bd 071b         [4]     BSR   *+29 ;abs = 01da
+  01bf 1ae6         [2]     LEAX  D,X
+  01c1 3d           [5]     RTS   
+  01c2 c40f         [1]     ANDB  #15
+  01c4 37           [2]     PSHB  
+  01c5 c60a         [1]     LDAB  #10
+  01c7 32           [3]     PULA  
+  01c8 12           [1]     MUL   
   01c9 3d           [5]     RTS   
-  147:  
-  148:  int shipInBounds(int index) {
+  01ca c7           [1]     CLRB  
+  01cb 160000       [4]     JSR   LCD_Clear
+  01ce c604         [1]     LDAB  #4
+  01d0 87           [1]     CLRA  
+  01d1 3b           [2]     PSHD  
+  01d2 c601         [1]     LDAB  #1
+  01d4 160000       [4]     JSR   LCD_GoTo
+  01d7 1b82         [2]     LEAS  2,SP
+  01d9 3d           [5]     RTS   
+  01da c4f0         [1]     ANDB  #240
+  01dc 54           [1]     LSRB  
+  01dd 54           [1]     LSRB  
+  01de 54           [1]     LSRB  
+  01df 54           [1]     LSRB  
+  01e0 87           [1]     CLRA  
+  01e1 3d           [5]     RTS   
+  01e2 6be20000     [3]     STAB  field,X
+  01e6 ee84         [3]     LDX   4,SP
+  01e8 08           [1]     INX   
+  01e9 6e84         [2]     STX   4,SP
+  01eb 3d           [5]     RTS   
+  161:  
+  162:  int shipInBounds(int index) {
 *** EVALUATION ***
 
 Function: shipInBounds
@@ -425,13 +456,13 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
   0000 3b           [2]     PSHD  
-  149:    ShipType ship = ships[index];
+  163:    ShipType ship = ships[index];
   0001 59           [1]     LSLD  
   0002 b745         [1]     TFR   D,X
   0004 ece20000     [4]     LDD   ships,X
   0008 6c80         [2]     STD   0,SP
-  150:    
-  151:    if(ship.x < 0 || ship.x > 9 || ship.y < 0 || ship.y > 9 ||
+  164:    
+  165:    if(ship.x < 0 || ship.x > 9 || ship.y < 0 || ship.y > 9 ||
   000a e680         [3]     LDAB  0,SP
   000c c40f         [1]     ANDB  #15
   000e c109         [1]     CMPB  #9
@@ -444,7 +475,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0019 44           [1]     LSRA  
   001a 8109         [1]     CMPA  #9
   001c 2230         [3/1]   BHI   *+50 ;abs = 004e
-  152:      (ship.orientation == VERTICAL && ship.x + ship.size > 10) ||
+  166:      (ship.orientation == VERTICAL && ship.x + ship.size > 10) ||
   001e 0e810111     [4]     BRSET 1,SP,#1,*+21 ;abs = 0033
   0022 37           [2]     PSHB  
   0023 e682         [3]     LDAB  2,SP
@@ -456,7 +487,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   002c 1ae6         [2]     LEAX  D,X
   002e 8e000a       [2]     CPX   #10
   0031 2e1b         [3/1]   BGT   *+29 ;abs = 004e
-  153:      (ship.orientation == HORIZONTAL && ship.y + ship.size > 10)) {
+  167:      (ship.orientation == HORIZONTAL && ship.y + ship.size > 10)) {
   0033 0f810119     [4]     BRCLR 1,SP,#1,*+29 ;abs = 0050
   0037 e680         [3]     LDAB  0,SP
   0039 c4f0         [1]     ANDB  #240
@@ -472,19 +503,19 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0047 1ae6         [2]     LEAX  D,X
   0049 8e000a       [2]     CPX   #10
   004c 2f02         [3/1]   BLE   *+4 ;abs = 0050
-  154:        return 0;
+  168:        return 0;
   004e c7           [1]     CLRB  
   004f 8f           [2]     SKIP2 
-  155:    } 
-  156:    
-  157:    return 1;
+  169:    } 
+  170:    
+  171:    return 1;
   0050 c601         [1]     LDAB  #1
   0052 87           [1]     CLRA  
-  158:  }
+  172:  }
   0053 30           [3]     PULX  
   0054 3d           [5]     RTS   
-  159:  
-  160:  int validShipPos(int index) {
+  173:  
+  174:  int validShipPos(int index) {
 *** EVALUATION ***
 
 Function: validShipPos
@@ -493,33 +524,33 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
 
   0000 6caa         [2]     STD   6,-SP
   0002 1b9d         [2]     LEAS  -3,SP
-  161:    ShipType ship = ships[index];
+  175:    ShipType ship = ships[index];
   0004 59           [1]     LSLD  
   0005 b745         [1]     TFR   D,X
   0007 ece20000     [4]     LDD   ships,X
   000b 6c85         [2]     STD   5,SP
-  162:    int i;
-  163:    
-  164:    for(i=0; i<numShips; i++) {
+  176:    int i;
+  177:    
+  178:    for(i=0; i<numShips; i++) {
   000d c7           [1]     CLRB  
   000e 87           [1]     CLRA  
   000f 6c87         [2]     STD   7,SP
   0011 060000       [3]     JMP   validShipPos:0x0110
-  165:      if(i != index) {
+  179:      if(i != index) {
   0014 ec87         [3]     LDD   7,SP
   0016 ac83         [3]     CPD   3,SP
   0018 277f         [3/1]   BEQ   *+129 ;abs = 0099
-  166:        if(ship.orientation == HORIZONTAL) {
+  180:        if(ship.orientation == HORIZONTAL) {
   001a 0f86017d     [4]     BRCLR 6,SP,#1,*+129 ;abs = 009b
-  167:          if(ships[i].orientation == HORIZONTAL) {
+  181:          if(ships[i].orientation == HORIZONTAL) {
   001e 59           [1]     LSLD  
   001f b745         [1]     TFR   D,X
   0021 0fe200000136 [6]     BRCLR ships:1,X,#1,*+60 ;abs = 005d
-  168:            if(ship.x == ships[i].x) {
+  182:            if(ship.x == ships[i].x) {
   0027 160000       [4]     JSR   validShipPos:0x013a
   002a 1817         [2]     CBA   
   002c 266b         [3/1]   BNE   *+109 ;abs = 0099
-  169:              if(ship.y + ship.size > ships[i].y ||
+  183:              if(ship.y + ship.size > ships[i].y ||
   002e e685         [3]     LDAB  5,SP
   0030 160000       [4]     JSR   validShipPos:0x0147
   0033 87           [1]     CLRA  
@@ -534,7 +565,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0044 3b           [2]     PSHD  
   0045 aeb1         [3]     CPX   2,SP+
   0047 2e11         [3/1]   BGT   *+19 ;abs = 005a
-  170:                 ship.y < ships[i].y + ships[i].size) {
+  184:                 ship.y < ships[i].y + ships[i].size) {
   0049 ee81         [3]     LDX   1,SP
   004b 3b           [2]     PSHD  
   004c e6e20000     [4]     LDAB  ships:1,X
@@ -544,17 +575,17 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0055 3b           [2]     PSHD  
   0056 adb3         [3]     CPY   4,SP+
   0058 2c17         [3/1]   BGE   *+25 ;abs = 0071
-  171:                return 0;  
+  185:                return 0;  
   005a 060000       [3]     JMP   validShipPos:0x0108
-  172:              }
-  173:            }
-  174:          }
-  175:          else {
-  176:            if(ship.x >= ships[i].x && 
+  186:              }
+  187:            }
+  188:          }
+  189:          else {
+  190:            if(ship.x >= ships[i].x && 
   005d 160000       [4]     JSR   validShipPos:0x013a
   0060 1817         [2]     CBA   
   0062 2520         [3/1]   BCS   *+34 ;abs = 0084
-  177:               ship.x < ships[i].x + ships[i].size &&
+  191:               ship.x < ships[i].x + ships[i].size &&
   0064 b790         [1]     EXG   B,A
   0066 36           [2]     PSHA  
   0067 87           [1]     CLRA  
@@ -563,7 +594,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   006d 33           [3]     PULB  
   006e 160000       [4]     JSR   validShipPos:0x014e
   0071 2c69         [3/1]   BGE   *+107 ;abs = 00dc
-  178:               ships[i].y >= ship.y &&
+  192:               ships[i].y >= ship.y &&
   0073 e680         [3]     LDAB  0,SP
   0075 160000       [4]     JSR   validShipPos:0x0147
   0078 a685         [3]     LDAA  5,SP
@@ -575,7 +606,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0080 b781         [1]     EXG   A,B
   0082 1817         [2]     CBA   
   0084 2556         [3/1]   BCS   *+88 ;abs = 00dc
-  179:               ships[i].y < ship.y + ship.size) {
+  193:               ships[i].y < ship.y + ship.size) {
   0086 b790         [1]     EXG   B,A
   0088 36           [2]     PSHA  
   0089 87           [1]     CLRA  
@@ -588,20 +619,20 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0094 160000       [4]     JSR   validShipPos:0x014e
   0097 2d41         [3/1]   BLT   *+67 ;abs = 00da
   0099 2070         [3]     BRA   *+114 ;abs = 010b
-  180:              return 0;  
-  181:            }
-  182:          }
-  183:        }
-  184:        else {
-  185:          if(ships[i].orientation == HORIZONTAL) {
+  194:              return 0;  
+  195:            }
+  196:          }
+  197:        }
+  198:        else {
+  199:          if(ships[i].orientation == HORIZONTAL) {
   009b 59           [1]     LSLD  
   009c b745         [1]     TFR   D,X
   009e 0fe20000013a [6]     BRCLR ships:1,X,#1,*+64 ;abs = 00de
-  186:            if(ship.y >= ships[i].y && 
+  200:            if(ship.y >= ships[i].y && 
   00a4 0779         [4]     BSR   *+123 ;abs = 011f
   00a6 1817         [2]     CBA   
   00a8 2561         [3/1]   BCS   *+99 ;abs = 010b
-  187:               ship.y < ships[i].y + ships[i].size &&
+  201:               ship.y < ships[i].y + ships[i].size &&
   00aa b790         [1]     EXG   B,A
   00ac 36           [2]     PSHA  
   00ad 87           [1]     CLRA  
@@ -613,7 +644,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00b6 ec82         [3]     LDD   2,SP
   00b8 acb4         [3]     CPD   5,SP+
   00ba 2c4f         [3/1]   BGE   *+81 ;abs = 010b
-  188:               ships[i].x >= ship.x &&
+  202:               ships[i].x >= ship.x &&
   00bc e680         [3]     LDAB  0,SP
   00be c40f         [1]     ANDB  #15
   00c0 a685         [3]     LDAA  5,SP
@@ -621,7 +652,7 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00c4 b781         [1]     EXG   A,B
   00c6 1817         [2]     CBA   
   00c8 2541         [3/1]   BCS   *+67 ;abs = 010b
-  189:               ships[i].x < ship.x + ship.size) {
+  203:               ships[i].x < ship.x + ship.size) {
   00ca b790         [1]     EXG   B,A
   00cc 36           [2]     PSHA  
   00cd 87           [1]     CLRA  
@@ -633,16 +664,16 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00d7 33           [3]     PULB  
   00d8 0774         [4]     BSR   *+118 ;abs = 014e
   00da 2d2c         [3/1]   BLT   *+46 ;abs = 0108
-  190:              return 0;  
-  191:            }
-  192:          }
+  204:              return 0;  
+  205:            }
+  206:          }
   00dc 202d         [3]     BRA   *+47 ;abs = 010b
-  193:          else {
-  194:            if(ship.y == ships[i].y) {
+  207:          else {
+  208:            if(ship.y == ships[i].y) {
   00de 073f         [4]     BSR   *+65 ;abs = 011f
   00e0 1817         [2]     CBA   
   00e2 2627         [3/1]   BNE   *+41 ;abs = 010b
-  195:              if(ship.x + ship.size > ships[i].x ||
+  209:              if(ship.x + ship.size > ships[i].x ||
   00e4 e686         [3]     LDAB  6,SP
   00e6 c40e         [1]     ANDB  #14
   00e8 54           [1]     LSRB  
@@ -657,14 +688,14 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   00f8 3b           [2]     PSHD  
   00f9 adb1         [3]     CPY   2,SP+
   00fb 2e0b         [3/1]   BGT   *+13 ;abs = 0108
-  196:                 ship.x < ships[i].x + ships[i].size) {
+  210:                 ship.x < ships[i].x + ships[i].size) {
   00fd 0731         [4]     BSR   *+51 ;abs = 0130
   00ff 19ee         [2]     LEAY  D,Y
   0101 35           [2]     PSHY  
   0102 ec83         [3]     LDD   3,SP
   0104 acb1         [3]     CPD   2,SP+
   0106 2c03         [3/1]   BGE   *+5 ;abs = 010b
-  197:                return 0;
+  211:                return 0;
   0108 c7           [1]     CLRB  
   0109 2010         [3]     BRA   *+18 ;abs = 011b
   010b ee87         [3]     LDX   7,SP
@@ -673,17 +704,17 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0110 fc0000       [3]     LDD   numShips
   0113 ac87         [3]     CPD   7,SP
   0115 182efefb     [4/3]   LBGT  *-257 ;abs = 0014
-  198:              }
-  199:            }
-  200:          }
-  201:        }
-  202:      }
-  203:    }
-  204:    
-  205:    return 1;
+  212:              }
+  213:            }
+  214:          }
+  215:        }
+  216:      }
+  217:    }
+  218:    
+  219:    return 1;
   0119 c601         [1]     LDAB  #1
   011b 87           [1]     CLRA  
-  206:  }
+  220:  }
   011c 1b89         [2]     LEAS  9,SP
   011e 3d           [5]     RTS   
   011f a687         [3]     LDAA  7,SP
@@ -717,22 +748,22 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0150 34           [2]     PSHX  
   0151 adb1         [3]     CPY   2,SP+
   0153 3d           [5]     RTS   
-  207:  
-  208:  void flag(void) {
+  221:  
+  222:  void flag(void) {
 *** EVALUATION ***
 
 Function: flag
 Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
-  209:    buttonFlag = 0;
+  223:    buttonFlag = 0;
   0000 c7           [1]     CLRB  
   0001 87           [1]     CLRA  
   0002 7c0000       [3]     STD   buttonFlag
-  210:  }
+  224:  }
   0005 3d           [5]     RTS   
-  211:  
-  212:  void Game_DPad(unsigned char direction) {
+  225:  
+  226:  void Game_DPad(unsigned char direction) {
 *** EVALUATION ***
 
 Function: Game_DPad
@@ -740,196 +771,181 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
   0000 6ba9         [2]     STAB  7,-SP
-  213:    unsigned int tempX, tempY;
-  214:    if(!buttonFlag) {
+  227:    unsigned int tempX, tempY;
+  228:    if(!buttonFlag) {
   0002 fc0000       [3]     LDD   buttonFlag
-  0005 182600ef     [4/3]   LBNE  *+243 ;abs = 00f8
-  215:      switch(state) {
+  0005 182600e3     [4/3]   LBNE  *+231 ;abs = 00ec
+  229:      switch(state) {
   0009 fc0000       [3]     LDD   state
   000c 8c0001       [2]     CPD   #1
   000f 2708         [3/1]   BEQ   *+10 ;abs = 0019
-  0011 8c0002       [2]     CPD   #2
-  0014 272a         [3/1]   BEQ   *+44 ;abs = 0040
-  0016 060000       [3]     JMP   Game_DPad:0x00e0
-  216:        case PICKING_MODE:
-  217:          if(direction == UP) {
+  0011 8c0003       [2]     CPD   #3
+  0014 271e         [3/1]   BEQ   *+32 ;abs = 0034
+  0016 060000       [3]     JMP   Game_DPad:0x00d4
+  230:        case PICKING_MODE:
+  231:          if(direction == UP || direction == DOWN) {
   0019 e680         [3]     LDAB  0,SP
-  001b 2608         [3/1]   BNE   *+10 ;abs = 0025
-  218:            cursor.x--;
-  001d f60000       [3]     LDAB  cursor
-  0020 c40f         [1]     ANDB  #15
-  0022 53           [1]     DECB  
-  219:          }
-  0023 2009         [3]     BRA   *+11 ;abs = 002e
-  220:          else if (direction == DOWN) {
-  0025 042109       [3]     DBNE  B,*+12 ;abs = 0031
-  221:            cursor.x++;  
-  0028 f60000       [3]     LDAB  cursor
-  002b c40f         [1]     ANDB  #15
-  002d 52           [1]     INCB  
-  002e 160000       [4]     JSR   Game_DPad:0x010e
-  222:          }
-  223:          cursor.x %= 3;
-  0031 f60000       [3]     LDAB  cursor
-  0034 c40f         [1]     ANDB  #15
-  0036 8603         [1]     LDAA  #3
-  0038 160000       [4]     JSR   _BDIVMODU
-  003b 160000       [4]     JSR   Game_DPad:0x010e
-  224:          Game_Update();
-  225:          break;
-  003e 207b         [3]     BRA   *+125 ;abs = 00bb
-  226:        case PLACING_SHIPS:
-  227:          tempX = ships[numShips-1].x;
-  0040 fc0000       [3]     LDD   numShips
-  0043 59           [1]     LSLD  
-  0044 b745         [1]     TFR   D,X
-  0046 e6e20000     [4]     LDAB  ships:-2,X
-  004a 37           [2]     PSHB  
-  004b c40f         [1]     ANDB  #15
-  004d 87           [1]     CLRA  
-  004e 6c86         [2]     STD   6,SP
-  228:          tempY = ships[numShips-1].y;  
-  0050 33           [3]     PULB  
-  0051 160000       [4]     JSR   Game_DPad:0x011a
-  0054 6c83         [2]     STD   3,SP
-  229:          
-  230:          do {
-  231:            switch(direction) {
-  0056 e680         [3]     LDAB  0,SP
-  0058 c103         [1]     CMPB  #3
-  005a 223f         [3/1]   BHI   *+65 ;abs = 009b
-  005c 87           [1]     CLRA  
-  005d 160000       [4]     JSR   _CASE_CHECKED_BYTE
-  0060 04           DC.B  4
-  0061 39           DC.B  57
-  0062 04           DC.B  4
-  0063 0e           DC.B  14
-  0064 1c           DC.B  28
-  0065 26           DC.B  38
-  232:              case UP:
-  233:                ships[numShips-1].x--;
-  0066 160000       [4]     JSR   Game_DPad:0x00fb
-  0069 c40f         [1]     ANDB  #15
-  006b 6b81         [2]     STAB  1,SP
-  006d 53           [1]     DECB  
-  234:                break;
-  006e 2008         [3]     BRA   *+10 ;abs = 0078
-  235:              case DOWN:
-  236:                ships[numShips-1].x++;
-  0070 160000       [4]     JSR   Game_DPad:0x00fb
-  0073 c40f         [1]     ANDB  #15
-  0075 6b81         [2]     STAB  1,SP
-  0077 52           [1]     INCB  
-  0078 e800         [3]     EORB  0,X
-  007a c40f         [1]     ANDB  #15
-  237:                break;
-  007c 2019         [3]     BRA   *+27 ;abs = 0097
-  238:              case LEFT:
-  239:                ships[numShips-1].y--;
-  007e 077b         [4]     BSR   *+125 ;abs = 00fb
-  0080 160000       [4]     JSR   Game_DPad:0x011a
-  0083 6b81         [2]     STAB  1,SP
-  0085 53           [1]     DECB  
-  240:                break;
-  0086 2008         [3]     BRA   *+10 ;abs = 0090
-  241:              case RIGHT:
-  242:                ships[numShips-1].y++;
-  0088 0771         [4]     BSR   *+115 ;abs = 00fb
-  008a 160000       [4]     JSR   Game_DPad:0x011a
-  008d 6b81         [2]     STAB  1,SP
-  008f 52           [1]     INCB  
-  0090 8610         [1]     LDAA  #16
-  0092 12           [1]     MUL   
-  0093 e800         [3]     EORB  0,X
-  0095 c4f0         [1]     ANDB  #240
-  0097 e800         [3]     EORB  0,X
-  0099 6b00         [2]     STAB  0,X
-  243:                break;
-  244:            }
-  245:          }while(!validShipPos(numShips-1) && shipInBounds(numShips-1));          
-  009b 076a         [4]     BSR   *+108 ;abs = 0107
-  009d 160000       [4]     JSR   validShipPos
-  00a0 046408       [3]     TBNE  D,*+11 ;abs = 00ab
-  00a3 0762         [4]     BSR   *+100 ;abs = 0107
-  00a5 160000       [4]     JSR   shipInBounds
-  00a8 0474ab       [3]     TBNE  D,*-82 ;abs = 0056
-  246:          
-  247:          if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
-  00ab 075a         [4]     BSR   *+92 ;abs = 0107
-  00ad 160000       [4]     JSR   validShipPos
-  00b0 04440d       [3]     TBEQ  D,*+16 ;abs = 00c0
-  00b3 0752         [4]     BSR   *+84 ;abs = 0107
-  00b5 160000       [4]     JSR   shipInBounds
-  00b8 044405       [3]     TBEQ  D,*+8 ;abs = 00c0
-  248:            Game_Update();            
-  00bb 160000       [4]     JSR   Game_Update
-  00be 2020         [3]     BRA   *+34 ;abs = 00e0
-  249:          }
-  250:          else {
-  251:            ships[numShips-1].x = tempX;
-  00c0 0739         [4]     BSR   *+59 ;abs = 00fb
-  00c2 e886         [3]     EORB  6,SP
-  00c4 c40f         [1]     ANDB  #15
-  00c6 e800         [3]     EORB  0,X
-  00c8 6b00         [2]     STAB  0,X
-  252:            ships[numShips-1].y = tempY;
-  00ca 073b         [4]     BSR   *+61 ;abs = 0107
-  00cc 58           [1]     LSLB  
-  00cd 87           [1]     CLRA  
-  00ce c30000       [2]     ADDD  #ships
-  00d1 b745         [1]     TFR   D,X
-  00d3 c610         [1]     LDAB  #16
-  00d5 a684         [3]     LDAA  4,SP
-  00d7 12           [1]     MUL   
-  00d8 e800         [3]     EORB  0,X
-  00da c4f0         [1]     ANDB  #240
-  00dc e800         [3]     EORB  0,X
-  00de 6b00         [2]     STAB  0,X
-  253:          }
-  254:          break;
-  255:      }
-  256:      
-  257:      buttonFlag = 1;  
-  00e0 c601         [1]     LDAB  #1
-  00e2 87           [1]     CLRA  
-  00e3 7c0000       [3]     STD   buttonFlag
-  258:      enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-  00e6 ce0000       [2]     LDX   #flag
-  00e9 34           [2]     PSHX  
-  00ea ce7530       [2]     LDX   #30000
-  00ed 34           [2]     PSHX  
-  00ee c608         [1]     LDAB  #8
-  00f0 3b           [2]     PSHD  
-  00f1 c601         [1]     LDAB  #1
-  00f3 160000       [4]     JSR   enableOC6
-  00f6 1b86         [2]     LEAS  6,SP
-  259:    }
-  260:  }
-  00f8 1b87         [2]     LEAS  7,SP
+  001b 2703         [3/1]   BEQ   *+5 ;abs = 0020
+  001d 04218f       [3]     DBNE  B,*+146 ;abs = 00af
+  232:            cursor.x ^= 1;
+  0020 f60000       [3]     LDAB  cursor
+  0023 c40f         [1]     ANDB  #15
+  0025 c801         [1]     EORB  #1
+  0027 f80000       [3]     EORB  cursor
+  002a c40f         [1]     ANDB  #15
+  002c f80000       [3]     EORB  cursor
+  002f 7b0000       [3]     STAB  cursor
+  0032 207b         [3]     BRA   *+125 ;abs = 00af
+  233:          }
+  234:          Game_Update();
+  235:          break;
+  236:        case PLACING_SHIPS:
+  237:          tempX = ships[numShips-1].x;
+  0034 fc0000       [3]     LDD   numShips
+  0037 59           [1]     LSLD  
+  0038 b745         [1]     TFR   D,X
+  003a e6e20000     [4]     LDAB  ships:-2,X
+  003e 37           [2]     PSHB  
+  003f c40f         [1]     ANDB  #15
+  0041 87           [1]     CLRA  
+  0042 6c86         [2]     STD   6,SP
+  238:          tempY = ships[numShips-1].y;  
+  0044 33           [3]     PULB  
+  0045 160000       [4]     JSR   Game_DPad:0x0102
+  0048 6c83         [2]     STD   3,SP
+  239:          
+  240:          do {
+  241:            switch(direction) {
+  004a e680         [3]     LDAB  0,SP
+  004c c103         [1]     CMPB  #3
+  004e 223f         [3/1]   BHI   *+65 ;abs = 008f
+  0050 87           [1]     CLRA  
+  0051 160000       [4]     JSR   _CASE_CHECKED_BYTE
+  0054 04           DC.B  4
+  0055 39           DC.B  57
+  0056 04           DC.B  4
+  0057 0e           DC.B  14
+  0058 1c           DC.B  28
+  0059 26           DC.B  38
+  242:              case UP:
+  243:                ships[numShips-1].x--;
+  005a 160000       [4]     JSR   Game_DPad:0x00ef
+  005d c40f         [1]     ANDB  #15
+  005f 6b81         [2]     STAB  1,SP
+  0061 53           [1]     DECB  
+  244:                break;
+  0062 2008         [3]     BRA   *+10 ;abs = 006c
+  245:              case DOWN:
+  246:                ships[numShips-1].x++;
+  0064 160000       [4]     JSR   Game_DPad:0x00ef
+  0067 c40f         [1]     ANDB  #15
+  0069 6b81         [2]     STAB  1,SP
+  006b 52           [1]     INCB  
+  006c e800         [3]     EORB  0,X
+  006e c40f         [1]     ANDB  #15
+  247:                break;
+  0070 2019         [3]     BRA   *+27 ;abs = 008b
+  248:              case LEFT:
+  249:                ships[numShips-1].y--;
+  0072 077b         [4]     BSR   *+125 ;abs = 00ef
+  0074 160000       [4]     JSR   Game_DPad:0x0102
+  0077 6b81         [2]     STAB  1,SP
+  0079 53           [1]     DECB  
+  250:                break;
+  007a 2008         [3]     BRA   *+10 ;abs = 0084
+  251:              case RIGHT:
+  252:                ships[numShips-1].y++;
+  007c 0771         [4]     BSR   *+115 ;abs = 00ef
+  007e 160000       [4]     JSR   Game_DPad:0x0102
+  0081 6b81         [2]     STAB  1,SP
+  0083 52           [1]     INCB  
+  0084 8610         [1]     LDAA  #16
+  0086 12           [1]     MUL   
+  0087 e800         [3]     EORB  0,X
+  0089 c4f0         [1]     ANDB  #240
+  008b e800         [3]     EORB  0,X
+  008d 6b00         [2]     STAB  0,X
+  253:                break;
+  254:            }
+  255:          }while(!validShipPos(numShips-1) && shipInBounds(numShips-1));          
+  008f 076a         [4]     BSR   *+108 ;abs = 00fb
+  0091 160000       [4]     JSR   validShipPos
+  0094 046408       [3]     TBNE  D,*+11 ;abs = 009f
+  0097 0762         [4]     BSR   *+100 ;abs = 00fb
+  0099 160000       [4]     JSR   shipInBounds
+  009c 0474ab       [3]     TBNE  D,*-82 ;abs = 004a
+  256:          
+  257:          if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
+  009f 075a         [4]     BSR   *+92 ;abs = 00fb
+  00a1 160000       [4]     JSR   validShipPos
+  00a4 04440d       [3]     TBEQ  D,*+16 ;abs = 00b4
+  00a7 0752         [4]     BSR   *+84 ;abs = 00fb
+  00a9 160000       [4]     JSR   shipInBounds
+  00ac 044405       [3]     TBEQ  D,*+8 ;abs = 00b4
+  258:            Game_Update();            
+  00af 160000       [4]     JSR   Game_Update
+  00b2 2020         [3]     BRA   *+34 ;abs = 00d4
+  259:          }
+  260:          else {
+  261:            ships[numShips-1].x = tempX;
+  00b4 0739         [4]     BSR   *+59 ;abs = 00ef
+  00b6 e886         [3]     EORB  6,SP
+  00b8 c40f         [1]     ANDB  #15
+  00ba e800         [3]     EORB  0,X
+  00bc 6b00         [2]     STAB  0,X
+  262:            ships[numShips-1].y = tempY;
+  00be 073b         [4]     BSR   *+61 ;abs = 00fb
+  00c0 58           [1]     LSLB  
+  00c1 87           [1]     CLRA  
+  00c2 c30000       [2]     ADDD  #ships
+  00c5 b745         [1]     TFR   D,X
+  00c7 c610         [1]     LDAB  #16
+  00c9 a684         [3]     LDAA  4,SP
+  00cb 12           [1]     MUL   
+  00cc e800         [3]     EORB  0,X
+  00ce c4f0         [1]     ANDB  #240
+  00d0 e800         [3]     EORB  0,X
+  00d2 6b00         [2]     STAB  0,X
+  263:          }
+  264:          break;
+  265:      }
+  266:      
+  267:      buttonFlag = 1;  
+  00d4 c601         [1]     LDAB  #1
+  00d6 87           [1]     CLRA  
+  00d7 7c0000       [3]     STD   buttonFlag
+  268:      enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+  00da ce0000       [2]     LDX   #flag
+  00dd 34           [2]     PSHX  
+  00de ce7530       [2]     LDX   #30000
+  00e1 34           [2]     PSHX  
+  00e2 c608         [1]     LDAB  #8
+  00e4 3b           [2]     PSHD  
+  00e5 c601         [1]     LDAB  #1
+  00e7 160000       [4]     JSR   enableOC6
+  00ea 1b86         [2]     LEAS  6,SP
+  269:    }
+  270:  }
+  00ec 1b87         [2]     LEAS  7,SP
+  00ee 3d           [5]     RTS   
+  00ef 070a         [4]     BSR   *+12 ;abs = 00fb
+  00f1 58           [1]     LSLB  
+  00f2 87           [1]     CLRA  
+  00f3 c30000       [2]     ADDD  #ships
+  00f6 b745         [1]     TFR   D,X
+  00f8 e600         [3]     LDAB  0,X
   00fa 3d           [5]     RTS   
-  00fb 070a         [4]     BSR   *+12 ;abs = 0107
-  00fd 58           [1]     LSLB  
-  00fe 87           [1]     CLRA  
-  00ff c30000       [2]     ADDD  #ships
-  0102 b745         [1]     TFR   D,X
-  0104 e600         [3]     LDAB  0,X
-  0106 3d           [5]     RTS   
-  0107 fc0000       [3]     LDD   numShips
-  010a 830001       [2]     SUBD  #1
-  010d 3d           [5]     RTS   
-  010e f80000       [3]     EORB  cursor
-  0111 c40f         [1]     ANDB  #15
-  0113 f80000       [3]     EORB  cursor
-  0116 7b0000       [3]     STAB  cursor
-  0119 3d           [5]     RTS   
-  011a c4f0         [1]     ANDB  #240
-  011c 54           [1]     LSRB  
-  011d 54           [1]     LSRB  
-  011e 54           [1]     LSRB  
-  011f 54           [1]     LSRB  
-  0120 3d           [5]     RTS   
-  261:  
-  262:  void Game_A(void) {
+  00fb fc0000       [3]     LDD   numShips
+  00fe 830001       [2]     SUBD  #1
+  0101 3d           [5]     RTS   
+  0102 c4f0         [1]     ANDB  #240
+  0104 54           [1]     LSRB  
+  0105 54           [1]     LSRB  
+  0106 54           [1]     LSRB  
+  0107 54           [1]     LSRB  
+  0108 3d           [5]     RTS   
+  271:  
+  272:  void Game_A(void) {
 *** EVALUATION ***
 
 Function: Game_A
@@ -937,195 +953,197 @@ Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
   0000 1b9c         [2]     LEAS  -4,SP
-  263:    if(!buttonFlag) {
+  273:    ShipType * ship;
+  274:    int shipFlag;
+  275:    
+  276:    if(!buttonFlag) {
   0002 fc0000       [3]     LDD   buttonFlag
-  0005 182600d6     [4/3]   LBNE  *+218 ;abs = 00df
-  264:      switch(state) {
+  0005 182600d4     [4/3]   LBNE  *+216 ;abs = 00dd
+  277:      switch(state) {
   0009 fc0000       [3]     LDD   state
   000c 8c0001       [2]     CPD   #1
-  000f 2707         [3/1]   BEQ   *+9 ;abs = 0018
-  0011 8c0002       [2]     CPD   #2
-  0014 270d         [3/1]   BEQ   *+15 ;abs = 0023
-  0016 2016         [3]     BRA   *+24 ;abs = 002e
-  265:        case PICKING_MODE:
-  266:          mode = cursor.x;
-  0018 f60000       [3]     LDAB  cursor
-  001b c40f         [1]     ANDB  #15
-  001d 87           [1]     CLRA  
-  001e 7c0000       [3]     STD   mode
-  267:          incState();
-  268:          break;        
-  0021 2008         [3]     BRA   *+10 ;abs = 002b
-  269:        case PLACING_SHIPS:
-  270:          if(numShips == 4) {
-  0023 fc0000       [3]     LDD   numShips
-  0026 8c0004       [2]     CPD   #4
-  0029 2606         [3/1]   BNE   *+8 ;abs = 0031
-  271:            incState();  
-  002b 160000       [4]     JSR   incState
-  002e 060000       [3]     JMP   Game_A:0x00c7
-  272:          }
-  273:          else {
-  274:            ShipType * ship = &ships[numShips];
-  0031 f60000       [3]     LDAB  numShips:1
-  0034 58           [1]     LSLB  
-  0035 87           [1]     CLRA  
-  0036 c30000       [2]     ADDD  #ships
-  0039 6c80         [2]     STD   0,SP
-  275:            int shipFlag = 1;
-  003b c601         [1]     LDAB  #1
-  003d 87           [1]     CLRA  
-  003e 6c82         [2]     STD   2,SP
-  276:            while(shipFlag && ship->orientation < 2) {
-  0040 2071         [3]     BRA   *+115 ;abs = 00b3
-  277:              while(shipFlag && ship->x < 10) {
-  278:                while(shipFlag && ship->y < 10) {
-  279:                  if(validShipPos(numShips)) {
-  0042 fc0000       [3]     LDD   numShips
-  0045 160000       [4]     JSR   validShipPos
-  0048 046472       [3]     TBNE  D,*+117 ;abs = 00bd
-  280:                    shipFlag = 0;  
-  281:                  }
-  282:                  if(shipFlag) {
-  004b ec82         [3]     LDD   2,SP
-  004d 2719         [3/1]   BEQ   *+27 ;abs = 0068
-  283:                    ship->y++;
-  004f ee80         [3]     LDX   0,SP
-  0051 e600         [3]     LDAB  0,X
-  0053 37           [2]     PSHB  
+  000f 2708         [3/1]   BEQ   *+10 ;abs = 0019
+  0011 8c0003       [2]     CPD   #3
+  0014 270f         [3/1]   BEQ   *+17 ;abs = 0025
+  0016 060000       [3]     JMP   Game_A:0x00c5
+  278:        case PICKING_MODE:
+  279:          mode = cursor.x;
+  0019 f60000       [3]     LDAB  cursor
+  001c c40f         [1]     ANDB  #15
+  001e 87           [1]     CLRA  
+  001f 7c0000       [3]     STD   mode
+  280:          incState();
+  281:          break;        
+  0022 060000       [3]     JMP   Game_A:0x00bd
+  282:        case PLACING_SHIPS:
+  283:          ship = &ships[numShips];
+  0025 f60000       [3]     LDAB  numShips:1
+  0028 58           [1]     LSLB  
+  0029 87           [1]     CLRA  
+  002a c30000       [2]     ADDD  #ships
+  002d 6c80         [2]     STD   0,SP
+  284:          shipFlag = 1;
+  002f c601         [1]     LDAB  #1
+  0031 87           [1]     CLRA  
+  0032 6c82         [2]     STD   2,SP
+  285:          while(shipFlag && ship->orientation < 2) {
+  0034 2071         [3]     BRA   *+115 ;abs = 00a7
+  286:            while(shipFlag && ship->x < 10) {
+  287:              while(shipFlag && ship->y < 10) {
+  288:                if(validShipPos(numShips)) {
+  0036 fc0000       [3]     LDD   numShips
+  0039 160000       [4]     JSR   validShipPos
+  003c 046472       [3]     TBNE  D,*+117 ;abs = 00b1
+  289:                  shipFlag = 0;  
+  290:                }
+  291:                if(shipFlag) {
+  003f ec82         [3]     LDD   2,SP
+  0041 2719         [3/1]   BEQ   *+27 ;abs = 005c
+  292:                  ship->y++;
+  0043 ee80         [3]     LDX   0,SP
+  0045 e600         [3]     LDAB  0,X
+  0047 37           [2]     PSHB  
+  0048 c4f0         [1]     ANDB  #240
+  004a 54           [1]     LSRB  
+  004b 54           [1]     LSRB  
+  004c 54           [1]     LSRB  
+  004d 54           [1]     LSRB  
+  004e 52           [1]     INCB  
+  004f 8610         [1]     LDAA  #16
+  0051 12           [1]     MUL   
+  0052 e880         [3]     EORB  0,SP
   0054 c4f0         [1]     ANDB  #240
-  0056 54           [1]     LSRB  
-  0057 54           [1]     LSRB  
-  0058 54           [1]     LSRB  
-  0059 54           [1]     LSRB  
-  005a 52           [1]     INCB  
-  005b 8610         [1]     LDAA  #16
-  005d 12           [1]     MUL   
-  005e e880         [3]     EORB  0,SP
-  0060 c4f0         [1]     ANDB  #240
-  0062 e800         [3]     EORB  0,X
-  0064 6b00         [2]     STAB  0,X
-  0066 1b81         [2]     LEAS  1,SP
-  0068 ec82         [3]     LDD   2,SP
-  006a 270e         [3/1]   BEQ   *+16 ;abs = 007a
-  006c ee80         [3]     LDX   0,SP
-  006e e600         [3]     LDAB  0,X
-  0070 c4f0         [1]     ANDB  #240
-  0072 54           [1]     LSRB  
-  0073 54           [1]     LSRB  
-  0074 54           [1]     LSRB  
-  0075 54           [1]     LSRB  
-  0076 c10a         [1]     CMPB  #10
-  0078 25c8         [3/1]   BCS   *-54 ;abs = 0042
-  284:                  }
-  285:                }               
-  286:                if(shipFlag) {
-  007a ec82         [3]     LDD   2,SP
-  007c 2712         [3/1]   BEQ   *+20 ;abs = 0090
-  287:                  ship->x++;
-  007e ee80         [3]     LDX   0,SP
-  0080 e600         [3]     LDAB  0,X
-  0082 37           [2]     PSHB  
-  0083 c40f         [1]     ANDB  #15
-  0085 52           [1]     INCB  
-  0086 e880         [3]     EORB  0,SP
-  0088 c40f         [1]     ANDB  #15
-  008a e800         [3]     EORB  0,X
-  008c 6b00         [2]     STAB  0,X
-  008e 1b81         [2]     LEAS  1,SP
-  0090 ec82         [3]     LDD   2,SP
-  0092 270a         [3/1]   BEQ   *+12 ;abs = 009e
-  0094 ee80         [3]     LDX   0,SP
-  0096 e600         [3]     LDAB  0,X
-  0098 c40f         [1]     ANDB  #15
-  009a c10a         [1]     CMPB  #10
-  009c 25ca         [3/1]   BCS   *-52 ;abs = 0068
-  288:                }
-  289:              }                 
-  290:              if(shipFlag) {
-  009e ec82         [3]     LDD   2,SP
-  00a0 270e         [3/1]   BEQ   *+16 ;abs = 00b0
-  291:                ship->orientation++;  
-  00a2 ee80         [3]     LDX   0,SP
-  00a4 0e010105     [4]     BRSET 1,X,#1,*+9 ;abs = 00ad
-  00a8 0c0101       [4]     BSET  1,X,#1
-  00ab 2003         [3]     BRA   *+5 ;abs = 00b0
-  00ad 0d0101       [4]     BCLR  1,X,#1
-  00b0 04440a       [3]     TBEQ  D,*+13 ;abs = 00bd
-  00b3 ee80         [3]     LDX   0,SP
-  00b5 e601         [3]     LDAB  1,X
-  00b7 c401         [1]     ANDB  #1
-  00b9 c102         [1]     CMPB  #2
-  00bb 25d3         [3/1]   BCS   *-43 ;abs = 0090
-  292:              }
-  293:            }
-  294:            numShips++;
-  00bd fe0000       [3]     LDX   numShips
-  00c0 08           [1]     INX   
-  00c1 7e0000       [3]     STX   numShips
-  295:            
-  296:            Game_Update();
-  00c4 160000       [4]     JSR   Game_Update
-  297:          }
-  298:          break;
-  299:      }
-  300:      buttonFlag = 1;
-  00c7 c601         [1]     LDAB  #1
-  00c9 87           [1]     CLRA  
-  00ca 7c0000       [3]     STD   buttonFlag
-  301:      enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-  00cd ce0000       [2]     LDX   #flag
-  00d0 34           [2]     PSHX  
-  00d1 ce7530       [2]     LDX   #30000
-  00d4 34           [2]     PSHX  
-  00d5 c608         [1]     LDAB  #8
-  00d7 3b           [2]     PSHD  
-  00d8 c601         [1]     LDAB  #1
-  00da 160000       [4]     JSR   enableOC6
-  00dd 1b86         [2]     LEAS  6,SP
-  302:    } 
-  303:    
-  304:  }
-  00df 1b84         [2]     LEAS  4,SP
-  00e1 3d           [5]     RTS   
-  305:  
-  306:  void Game_B(void) {
+  0056 e800         [3]     EORB  0,X
+  0058 6b00         [2]     STAB  0,X
+  005a 1b81         [2]     LEAS  1,SP
+  005c ec82         [3]     LDD   2,SP
+  005e 270e         [3/1]   BEQ   *+16 ;abs = 006e
+  0060 ee80         [3]     LDX   0,SP
+  0062 e600         [3]     LDAB  0,X
+  0064 c4f0         [1]     ANDB  #240
+  0066 54           [1]     LSRB  
+  0067 54           [1]     LSRB  
+  0068 54           [1]     LSRB  
+  0069 54           [1]     LSRB  
+  006a c10a         [1]     CMPB  #10
+  006c 25c8         [3/1]   BCS   *-54 ;abs = 0036
+  293:                }
+  294:              }               
+  295:              if(shipFlag) {
+  006e ec82         [3]     LDD   2,SP
+  0070 2712         [3/1]   BEQ   *+20 ;abs = 0084
+  296:                ship->x++;
+  0072 ee80         [3]     LDX   0,SP
+  0074 e600         [3]     LDAB  0,X
+  0076 37           [2]     PSHB  
+  0077 c40f         [1]     ANDB  #15
+  0079 52           [1]     INCB  
+  007a e880         [3]     EORB  0,SP
+  007c c40f         [1]     ANDB  #15
+  007e e800         [3]     EORB  0,X
+  0080 6b00         [2]     STAB  0,X
+  0082 1b81         [2]     LEAS  1,SP
+  0084 ec82         [3]     LDD   2,SP
+  0086 270a         [3/1]   BEQ   *+12 ;abs = 0092
+  0088 ee80         [3]     LDX   0,SP
+  008a e600         [3]     LDAB  0,X
+  008c c40f         [1]     ANDB  #15
+  008e c10a         [1]     CMPB  #10
+  0090 25ca         [3/1]   BCS   *-52 ;abs = 005c
+  297:              }
+  298:            }                 
+  299:            if(shipFlag) {
+  0092 ec82         [3]     LDD   2,SP
+  0094 270e         [3/1]   BEQ   *+16 ;abs = 00a4
+  300:              ship->orientation++;  
+  0096 ee80         [3]     LDX   0,SP
+  0098 0e010105     [4]     BRSET 1,X,#1,*+9 ;abs = 00a1
+  009c 0c0101       [4]     BSET  1,X,#1
+  009f 2003         [3]     BRA   *+5 ;abs = 00a4
+  00a1 0d0101       [4]     BCLR  1,X,#1
+  00a4 04440a       [3]     TBEQ  D,*+13 ;abs = 00b1
+  00a7 ee80         [3]     LDX   0,SP
+  00a9 e601         [3]     LDAB  1,X
+  00ab c401         [1]     ANDB  #1
+  00ad c102         [1]     CMPB  #2
+  00af 25d3         [3/1]   BCS   *-43 ;abs = 0084
+  301:            }
+  302:          }
+  303:          numShips++;
+  00b1 fe0000       [3]     LDX   numShips
+  00b4 08           [1]     INX   
+  00b5 7e0000       [3]     STX   numShips
+  304:          
+  305:          if(numShips == 6) {
+  00b8 8e0006       [2]     CPX   #6
+  00bb 2605         [3/1]   BNE   *+7 ;abs = 00c2
+  306:            incState();  
+  00bd 160000       [4]     JSR   incState
+  00c0 2003         [3]     BRA   *+5 ;abs = 00c5
+  307:          }
+  308:          else {
+  309:            Game_Update();
+  00c2 160000       [4]     JSR   Game_Update
+  310:          }
+  311:          break;
+  312:      }
+  313:      buttonFlag = 1;
+  00c5 c601         [1]     LDAB  #1
+  00c7 87           [1]     CLRA  
+  00c8 7c0000       [3]     STD   buttonFlag
+  314:      enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+  00cb ce0000       [2]     LDX   #flag
+  00ce 34           [2]     PSHX  
+  00cf ce7530       [2]     LDX   #30000
+  00d2 34           [2]     PSHX  
+  00d3 c608         [1]     LDAB  #8
+  00d5 3b           [2]     PSHD  
+  00d6 c601         [1]     LDAB  #1
+  00d8 160000       [4]     JSR   enableOC6
+  00db 1b86         [2]     LEAS  6,SP
+  315:    } 
+  316:    
+  317:  }
+  00dd 1b84         [2]     LEAS  4,SP
+  00df 3d           [5]     RTS   
+  318:  
+  319:  void Game_B(void) {
 *** EVALUATION ***
 
 Function: Game_B
 Source  : C:\Users\Raz\Documents\EE 445L\Battleship\Sources\game.c
 Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship;C:\Users\Raz\Documents\EE 445L\Battleship\bin;C:\Users\Raz\Documents\EE 445L\Battleship\prm;C:\Users\Raz\Documents\EE 445L\Battleship\cmd;C:\Users\Raz\Documents\EE 445L\Battleship\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship\Battleship_Data\Standard\ObjectCode\game.c.o" -WmsgSd1106
 
-  307:    if(!buttonFlag) {
+  320:    if(!buttonFlag) {
   0000 fc0000       [3]     LDD   buttonFlag
   0003 2638         [3/1]   BNE   *+58 ;abs = 003d
-  308:      switch(state) {
+  321:      switch(state) {
   0005 fc0000       [3]     LDD   state
-  0008 8c0002       [2]     CPD   #2
+  0008 8c0003       [2]     CPD   #3
   000b 2630         [3/1]   BNE   *+50 ;abs = 003d
-  309:        case PLACING_SHIPS:
-  310:          ships[numShips-1].orientation ^= 1;
+  322:        case PLACING_SHIPS:
+  323:          ships[numShips-1].orientation ^= 1;
   000d 072f         [4]     BSR   *+49 ;abs = 003e
-  311:          if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
+  324:          if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
   000f 073d         [4]     BSR   *+63 ;abs = 004e
   0011 160000       [4]     JSR   validShipPos
   0014 04440c       [3]     TBEQ  D,*+15 ;abs = 0023
   0017 0735         [4]     BSR   *+55 ;abs = 004e
   0019 160000       [4]     JSR   shipInBounds
   001c 044404       [3]     TBEQ  D,*+7 ;abs = 0023
-  312:            Game_Update();          
+  325:            Game_Update();          
   001f 160000       [4]     JSR   Game_Update
-  313:          }
+  326:          }
   0022 8f           [2]     SKIP2 
-  314:          else {
-  315:            ships[numShips-1].orientation ^= 1;
+  327:          else {
+  328:            ships[numShips-1].orientation ^= 1;
   0023 0719         [4]     BSR   *+27 ;abs = 003e
-  316:          }
-  317:          buttonFlag = 1;
+  329:          }
+  330:          buttonFlag = 1;
   0025 c601         [1]     LDAB  #1
   0027 87           [1]     CLRA  
   0028 7c0000       [3]     STD   buttonFlag
-  318:          enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
+  331:          enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
   002b ce0000       [2]     LDX   #flag
   002e 34           [2]     PSHX  
   002f ce7530       [2]     LDX   #30000
@@ -1135,10 +1153,10 @@ Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\
   0036 c601         [1]     LDAB  #1
   0038 160000       [4]     JSR   enableOC6
   003b 1b86         [2]     LEAS  6,SP
-  319:          break;
-  320:      }
-  321:    } 
-  322:  }
+  332:          break;
+  333:      }
+  334:    } 
+  335:  }
   003d 3d           [5]     RTS   
   003e 070e         [4]     BSR   *+16 ;abs = 004e
   0040 58           [1]     LSLB  

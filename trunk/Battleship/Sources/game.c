@@ -5,9 +5,8 @@
 
 #define DEBOUNCE_DELAY 30000
 
-#define SINGLE       0
-#define MULTI_XBEE   1
-#define MULTI_SERIAL 2 
+#define SINGLE      0
+#define MULTIPLAYER 1 
 
 #define VERTICAL 0
 #define HORIZONTAL 1
@@ -59,9 +58,12 @@ void incState(void) {
       state = PICKING_MODE;
       break;
     case PICKING_MODE:
+      state = WAITING_FOR_OPPONENT;
+      break;
+    case WAITING_FOR_OPPONENT:
       numShips = 1;
       state = PLACING_SHIPS;
-      break;  
+      break;
   }
   Game_Update();
 }
@@ -89,14 +91,26 @@ void Game_Update(void) {
       break;
     case PICKING_MODE:
       LCD_Clear(0);
-      LCD_GoTo(2, 3);
+      LCD_GoTo(3, 3);
       LCD_OutString("Single Player");
-      LCD_GoTo(4, 3);
-      LCD_OutString("Multiplayer XBee");
-      LCD_GoTo(6, 3);
-      LCD_OutString("Multiplayer Wired");
-      LCD_GoTo((cursor.x+1)*2,1);
+      LCD_GoTo(5, 3);
+      LCD_OutString("Multiplayer");
+      LCD_GoTo((cursor.x*2)+3,1);
       LCD_OutChar(127);
+      break;
+    case WAITING_FOR_OPPONENT:
+      switch(mode) {
+        case SINGLE:
+          incState();
+          break;
+        case MULTIPLAYER: 
+          LCD_Clear(0);
+          LCD_GoTo(4, 1);
+          LCD_OutString(" Waiting on opponent ");
+          LCD_GoTo(5, 1);          
+          LCD_OutString("  Press B to cancel  ");
+          break;
+      }
       break;
     case PLACING_SHIPS:
       LCD_Clear(0);
@@ -214,13 +228,9 @@ void Game_DPad(unsigned char direction) {
   if(!buttonFlag) {
     switch(state) {
       case PICKING_MODE:
-        if(direction == UP) {
-          cursor.x--;
+        if(direction == UP || direction == DOWN) {
+          cursor.x ^= 1;
         }
-        else if (direction == DOWN) {
-          cursor.x++;  
-        }
-        cursor.x %= 3;
         Game_Update();
         break;
       case PLACING_SHIPS:
@@ -260,6 +270,9 @@ void Game_DPad(unsigned char direction) {
 }
 
 void Game_A(void) {
+  ShipType * ship;
+  int shipFlag;
+  
   if(!buttonFlag) {
     switch(state) {
       case PICKING_MODE:
@@ -267,32 +280,32 @@ void Game_A(void) {
         incState();
         break;        
       case PLACING_SHIPS:
-        if(numShips == 4) {
+        ship = &ships[numShips];
+        shipFlag = 1;
+        while(shipFlag && ship->orientation < 2) {
+          while(shipFlag && ship->x < 10) {
+            while(shipFlag && ship->y < 10) {
+              if(validShipPos(numShips)) {
+                shipFlag = 0;  
+              }
+              if(shipFlag) {
+                ship->y++;
+              }
+            }               
+            if(shipFlag) {
+              ship->x++;
+            }
+          }                 
+          if(shipFlag) {
+            ship->orientation++;  
+          }
+        }
+        numShips++;
+        
+        if(numShips == 6) {
           incState();  
         }
         else {
-          ShipType * ship = &ships[numShips];
-          int shipFlag = 1;
-          while(shipFlag && ship->orientation < 2) {
-            while(shipFlag && ship->x < 10) {
-              while(shipFlag && ship->y < 10) {
-                if(validShipPos(numShips)) {
-                  shipFlag = 0;  
-                }
-                if(shipFlag) {
-                  ship->y++;
-                }
-              }               
-              if(shipFlag) {
-                ship->x++;
-              }
-            }                 
-            if(shipFlag) {
-              ship->orientation++;  
-            }
-          }
-          numShips++;
-          
           Game_Update();
         }
         break;
