@@ -11,9 +11,10 @@
 #define HIT           7
 #define MISS          8
 
-#define WELCOME       0
-#define PICKING_MODE  1
-#define PLACING_SHIPS 2
+#define WELCOME               0
+#define PICKING_MODE          1
+#define WAITING_FOR_OPPONENT  2
+#define PLACING_SHIPS         3
 
 #define UP    0
 #define DOWN  1
