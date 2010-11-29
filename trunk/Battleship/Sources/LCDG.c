@@ -447,8 +447,29 @@ void LCD_DrawGrid(unsigned char field[10][10]) {
           unsigned char boxX = ((i*8)+k)%6;
           unsigned char boxY = j%6;
           
+          CursorType curs = Game_GetCursor();
+          
           if(pixelOn(field[boxRow][boxCol], boxX, boxY)) {
-            pixels |= 1 << k;            
+            pixels |= 1 << k;
+          }
+          if(Game_GetState() == PLAYER_TURN_WAITING) {
+            if(curs.x == boxRow && curs.y == boxCol) {
+              if((boxX == 1 && boxY == 1) ||
+                 (boxX == 1 && boxY == 2) ||
+                 (boxX == 1 && boxY == 4) ||
+                 (boxX == 1 && boxY == 5) ||
+                 (boxX == 2 && boxY == 1) ||
+                 (boxX == 2 && boxY == 5) ||
+                 (boxX == 4 && boxY == 1) ||
+                 (boxX == 4 && boxY == 5) ||
+                 (boxX == 5 && boxY == 1) ||
+                 (boxX == 5 && boxY == 2) ||
+                 (boxX == 5 && boxY == 4) ||
+                 (boxX == 5 && boxY == 5)) {
+
+                pixels |= 1 << k;
+              }
+            }
           }
         }
       }

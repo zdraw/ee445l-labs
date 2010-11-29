@@ -12,6 +12,7 @@
 // B      PT0
 
 static void (*OC6Func) (void);
+unsigned static char  OC6Enabled;
 unsigned static short OC6Delay;
 unsigned static short OC6DelayCount1;
 unsigned static short OC6DelayCount2;
@@ -30,14 +31,21 @@ asm cli
 
 void enableOC6(void (*function) (void), unsigned short delay, unsigned short delayCount, unsigned short count) {
   asm sei
-  TIE |= 0x40;    
+  TIE |= 0x40;
+  OC6Enabled = 1;    
   OC6Func = function;
   OC6Delay = delay;
   OC6DelayCount1 = delayCount;
   OC6DelayCount2 = delayCount;
   OC6Count = count;
+  TFLG1 = 0x40;    
   TC6 = TCNT + OC6Delay;
   asm cli
+}
+
+void disableOC6(void) {
+  TIE &= ~0x40;
+  TFLG1 = 0x40;
 }
 
 void interrupt 8 IC0Han(void) {
@@ -77,7 +85,9 @@ void interrupt 14 OC6Han(void){
     (*OC6Func)();
     OC6Count--;
     if(!OC6Count) {
-      TIE &= ~0x40;  
+      asm sei
+      disableOC6();
+      asm cli
     }
   }
   else {

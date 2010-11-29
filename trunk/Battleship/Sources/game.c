@@ -2,11 +2,12 @@
 #include "game.h"
 #include "LCDG.h"
 #include "switch.h"
+#include "Timer.h"
 
 #define DEBOUNCE_DELAY 30000
 
 #define SINGLE      0
-#define MULTIPLAYER 1 
+#define MULTIPLAYER 1
 
 #define VERTICAL 0
 #define HORIZONTAL 1
@@ -16,18 +17,16 @@ typedef struct {
   unsigned int y:4;
   unsigned int orientation:1;
   unsigned int size:3;
+  unsigned int hits:3;
 } ShipType; 
 
 typedef struct {
+  unsigned int type:1;
   unsigned int x:4;
   unsigned int y:4;
-  unsigned int type:1;
 } AttackType;
 
-struct {
-  unsigned int x:4;
-  unsigned int y:4;  
-} cursor;
+CursorType cursor;
 
 static int mode;
 static int state;
@@ -35,11 +34,19 @@ static int state;
 static int buttonFlag;
 
 static ShipType ships[5] = {
-  {0, 0, VERTICAL, 2},
-  {0, 0, VERTICAL, 3},
-  {0, 0, VERTICAL, 3},
-  {0, 0, VERTICAL, 4},
-  {0, 0, VERTICAL, 5}
+  {0, 0, VERTICAL, 2, 0},
+  {0, 0, VERTICAL, 3, 0},
+  {0, 0, VERTICAL, 3, 0},
+  {0, 0, VERTICAL, 4, 0},
+  {0, 0, VERTICAL, 5, 0}
+};
+
+static ShipType computerShips[5] = {
+  {0, 0, VERTICAL, 2, 0},
+  {0, 0, VERTICAL, 3, 0},
+  {0, 0, VERTICAL, 3, 0},
+  {0, 0, VERTICAL, 4, 0},
+  {0, 0, VERTICAL, 5, 0}
 };
 
 static unsigned char field[10][10];
@@ -50,7 +57,9 @@ static AttackType enemyAttacks[100];
 static int numEnemyAttacks;     
 
 static AttackType playerAttacks[100];
-static int numPlayerAttacks;  
+static int numPlayerAttacks;
+
+int findValidPos(ShipType * array, int index);
 
 void incState(void) {
   switch(state) {
@@ -64,8 +73,122 @@ void incState(void) {
       numShips = 1;
       state = PLACING_SHIPS;
       break;
+    case PLACING_SHIPS:
+      cursor.x = 0;
+      cursor.y = 0;
+      if(mode == SINGLE) {
+        state = PLAYER_TURN_WAITING;
+      }
+      break;
+    case PLAYER_TURN_DONE:
+      state = OPPONENT_TURN_WAITING;
+      break;
+    case COMPUTER_SCREEN:
+      state = PLAYER_TURN_WAITING;
+      break;
+    case OPPONENT_TURN_WAITING:
+      state = OPPONENT_TURN_DONE;
+      break;
+    case OPPONENT_TURN_DONE:
+      state = PLAYER_TURN_WAITING;
+      break;
   }
   Game_Update();
+}
+
+int checkDead(ShipType * array) {
+  int i;
+  for(i=0; i<5; i++) {
+    if(array[i].size != array[i].hits) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+unsigned char random(unsigned char max) {
+  unsigned static char seed1 = 0;
+  unsigned static char seed2;
+  unsigned static short last = 0;
+  
+  unsigned short tcnt = TCNT;
+  seed1 = (tcnt&0xFF00) >> 8; 
+  seed2 = (tcnt&0x00FF);
+  
+  last = ((unsigned short) seed1)*last + seed2;
+  
+  return (unsigned char) (last%max);
+}
+
+int shipInBounds(ShipType * array, int index) {
+  ShipType * ship = &array[index];
+  
+  if(ship->x < 0 || ship->x > 9 || ship->y < 0 || ship->y > 9 ||
+    (ship->orientation == VERTICAL && ship->x + ship->size > 10) ||
+    (ship->orientation == HORIZONTAL && ship->y + ship->size > 10)) {
+      return 0;
+  } 
+  
+  return 1;
+} 
+
+int checkHit(ShipType * array, int x, int y) {
+  int i, j;
+  for(i=0; i<5; i++) {
+    for(j=0; j<array[i].size; j++) {
+      if(array[i].orientation == HORIZONTAL) {
+        if(x == array[i].x && y == array[i].y + j) {
+          return i; 
+        }
+      }
+      else if(x == array[i].x + j && y == array[i].y) {
+        return i; 
+      }
+    }
+  }
+  
+  return -1;
+}
+
+void enemyInit(void) {
+  int i;     
+  
+  for (i=0; i<5; i++) {
+    ShipType * ship = &computerShips[i];  
+    ship->x = random(10);
+    ship->y = random(10);
+    ship->orientation = random(2);
+    
+    if(!findValidPos(computerShips, i)) {
+      i--;
+    }
+  }
+}
+
+void enemyPickMove(void) {
+  int i, x, y, moveFlag, hit;
+  
+  do {
+    moveFlag = 0;
+    x = random(10);
+    y = random(10);
+    
+    for(i=0; i<numEnemyAttacks; i++) {
+      if(enemyAttacks[i].x == x && enemyAttacks[i].y == y) {
+        moveFlag = 1;
+      }
+    }
+  }while(moveFlag);
+                   
+  enemyAttacks[numEnemyAttacks].x = x;
+  enemyAttacks[numEnemyAttacks].y = y;
+  hit = checkHit(ships, x, y);
+  if(hit == -1) {
+    enemyAttacks[numEnemyAttacks++].type = MISS;
+  }
+  else {
+    enemyAttacks[numEnemyAttacks++].type = HIT;
+  }
 }
 
 void Game_Init(void) {
@@ -74,20 +197,52 @@ void Game_Init(void) {
   numEnemyAttacks = 0;
   numPlayerAttacks = 0;
   cursor.x = 0;
-  cursor.y =0;
+  cursor.y = 0;
   Game_Update();
-}             
+}
 
-void Game_Update(void) { 
+void createField(ShipType * shipArray, int shipSize, AttackType * attackArray, int attackSize) {
   int i, j;
   
+    for(i=0; i<10; i++) {
+      for(j=0; j<10; j++) {
+        field[i][j] = EMPTY;      
+      }
+    }
+    
+    for(i=0; i<shipSize; i++) {
+      ShipType ship = shipArray[i];
+      if(ship.orientation == HORIZONTAL) {
+        field[ship.x][ship.y] = SHIPEND_LEFT;
+        for(j=1; j<ship.size-1; j++) {
+          field[ship.x][ship.y+j] = SHIP_HORIZ;    
+        }
+        field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
+      }
+      else {
+        field[ship.x][ship.y] = SHIPEND_UP;
+        for(j=1; j<ship.size-1; j++) {
+          field[ship.x+j][ship.y] = SHIP_VERT;    
+        }
+        field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
+      }
+    }
+    
+    for(i=0; i<attackSize; i++) {
+      AttackType attack = attackArray[i];
+      field[attack.x][attack.y] = attack.type;  
+    }
+}
+
+void Game_Update(void) {
   switch(state) {
     case WELCOME:
       LCD_Clear(0);
       LCD_GoTo(4, 1);
       LCD_OutString("Welcome to Battleship");
-      
-      enableOC6(&incState, 62500, 72, 1);
+      asm sei
+      enableOC6(&incState, 62500, /*72*/1, 1);
+      asm cli
       break;
     case PICKING_MODE:
       LCD_Clear(0);
@@ -101,6 +256,7 @@ void Game_Update(void) {
     case WAITING_FOR_OPPONENT:
       switch(mode) {
         case SINGLE:
+          enemyInit();
           incState();
           break;
         case MULTIPLAYER: 
@@ -112,111 +268,146 @@ void Game_Update(void) {
           break;
       }
       break;
-    case PLACING_SHIPS:
+    case PLACING_SHIPS: 
       LCD_Clear(0);
-      
-      for(i=0; i<10; i++) {
-        for(j=0; j<10; j++) {
-          field[i][j] = EMPTY;      
-        }
-      }
-      
-      for(i=0; i<numShips; i++) {
-        ShipType ship = ships[i];
-        if(ship.orientation == HORIZONTAL) {
-          field[ship.x][ship.y] = SHIPEND_LEFT;
-          for(j=1; j<ship.size-1; j++) {
-            field[ship.x][ship.y+j] = SHIP_HORIZ;    
-          }
-          field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
-        }
-        else {
-          field[ship.x][ship.y] = SHIPEND_UP;
-          for(j=1; j<ship.size-1; j++) {
-            field[ship.x+j][ship.y] = SHIP_VERT;    
-          }
-          field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
-        }
-      }
-      
-      for(i=0; i<numEnemyAttacks; i++) {
-        AttackType attack = enemyAttacks[i];
-        field[attack.x][attack.y] = attack.type;  
-      }
-        
+      createField(ships, numShips, enemyAttacks, 0);
       LCD_DrawGrid(field);
       break;
-  }
-  
-  /*
-    
-    else {
-      for(i=0; i<numPlayerAttacks; i++) {
-        AttackType attack = playerAttacks[i];
-        field[attack.x][attack.y] = attack.type;  
+    case PLAYER_TURN_WAITING:
+      LCD_Clear(0);
+      createField(ships, 0, playerAttacks, numPlayerAttacks);
+      LCD_DrawGrid(field);
+      break;
+    case PLAYER_TURN_DONE:
+      LCD_Clear(0);
+      createField(ships, 0, playerAttacks, numPlayerAttacks);
+      LCD_DrawGrid(field);
+      Timer_Wait10ms(100);
+      if(mode == SINGLE && checkDead(computerShips)) {
+        state = WIN;
+        Game_Update();
       }
-    }
-  */
+      else {
+        incState();
+      }
+      break;
+    case OPPONENT_TURN_WAITING:
+      LCD_Clear(0);
+      createField(ships, numShips, enemyAttacks, numEnemyAttacks);
+      LCD_DrawGrid(field);
+      if(mode == SINGLE) { 
+        enemyPickMove();          
+        Timer_Wait10ms(100);
+        incState();
+      }
+      break;
+    case OPPONENT_TURN_DONE:
+      LCD_Clear(0);
+      createField(ships, numShips, enemyAttacks, numEnemyAttacks);
+      LCD_DrawGrid(field);     
+      Timer_Wait10ms(100);
+      if(mode == SINGLE && checkDead(ships)) {
+        state = LOSE;
+        Game_Update();
+      }
+      else {
+        incState();
+      }
+      break;
+    case COMPUTER_SCREEN:
+      LCD_Clear(0);
+      createField(computerShips, 5, playerAttacks, numPlayerAttacks);
+      LCD_DrawGrid(field);
+      break;
+    case WIN:
+      LCD_Clear(0);
+      LCD_GoTo(4, 1);
+      LCD_OutString("       You Win       ");
+      break;
+    case LOSE:
+      LCD_Clear(0);
+      LCD_GoTo(4, 1);
+      LCD_OutString("       You Lose      ");
+      break;
+  }
 }
 
-int shipInBounds(int index) {
-  ShipType ship = ships[index];
-  
-  if(ship.x < 0 || ship.x > 9 || ship.y < 0 || ship.y > 9 ||
-    (ship.orientation == VERTICAL && ship.x + ship.size > 10) ||
-    (ship.orientation == HORIZONTAL && ship.y + ship.size > 10)) {
-      return 0;
-  } 
-  
-  return 1;
-}
-
-int validShipPos(int index) {
-  ShipType ship = ships[index];
+int validShipPos(ShipType * array, int index) {
+  ShipType ship = array[index];
   int i;
   
-  for(i=0; i<numShips; i++) {
-    if(i != index) {
-      if(ship.orientation == HORIZONTAL) {
-        if(ships[i].orientation == HORIZONTAL) {
-          if(ship.x == ships[i].x) {
-            if(ship.y + ship.size > ships[i].y ||
-               ship.y < ships[i].y + ships[i].size) {
-              return 0;  
-            }
-          }
-        }
-        else {
-          if(ship.x >= ships[i].x && 
-             ship.x < ships[i].x + ships[i].size &&
-             ships[i].y >= ship.y &&
-             ships[i].y < ship.y + ship.size) {
+  for(i=0; i<index; i++) {
+    if(ship.orientation == HORIZONTAL) {
+      if(array[i].orientation == HORIZONTAL) {
+        if(ship.x == array[i].x) {
+          if((ship.y + ship.size > array[i].y &&
+             ship.y + ship.size <= array[i].y + array[i].size) ||
+             (ship.y >= array[i].y &&
+             ship.y < array[i].y + array[i].size)) {
             return 0;  
           }
         }
       }
       else {
-        if(ships[i].orientation == HORIZONTAL) {
-          if(ship.y >= ships[i].y && 
-             ship.y < ships[i].y + ships[i].size &&
-             ships[i].x >= ship.x &&
-             ships[i].x < ship.x + ship.size) {
-            return 0;  
-          }
+        if(ship.x >= array[i].x && 
+           ship.x < array[i].x + array[i].size &&
+           array[i].y >= ship.y &&
+           array[i].y < ship.y + ship.size) {
+          return 0;  
         }
-        else {
-          if(ship.y == ships[i].y) {
-            if(ship.x + ship.size > ships[i].x ||
-               ship.x < ships[i].x + ships[i].size) {
-              return 0;
-            }
+      }
+    }
+    else {
+      if(array[i].orientation == HORIZONTAL) {
+        if(ship.y >= array[i].y && 
+           ship.y < array[i].y + array[i].size &&
+           array[i].x >= ship.x &&
+           array[i].x < ship.x + ship.size) {
+          return 0;  
+        }
+      }
+      else {
+        if(ship.y == array[i].y) {
+          if((ship.x + ship.size > array[i].x &&
+             ship.x + ship.size <= array[i].x + array[i].size) ||
+             (ship.x >= array[i].x &&
+             ship.x < array[i].x + array[i].size)) {
+            return 0;
           }
         }
       }
     }
   }
-  
+
   return 1;
+}
+
+int findValidPos(ShipType * array, int index) {
+  if(validShipPos(array, index) && shipInBounds(array, index)) {
+    return 1;
+  }
+  else {  
+    ShipType * ship = &array[index];
+    unsigned int tempX   = (ship->x + 9)%10;
+    unsigned int tempY   = (ship->y + 9)%10;
+    unsigned int tempDir = ship->orientation ^ 1;
+    
+    for(ship->orientation = tempDir ^ 1; ship->orientation != tempDir; ship->orientation = (++ship->orientation)%2) {
+      for(ship->x = (tempX+1)%10; ship->x != tempX; ship->x = (++ship->x)%10) {
+        for(ship->y = (tempY+1)%10; ship->y != tempY; ship->y = (++ship->y)%10) {
+          if(validShipPos(array, index) && shipInBounds(array, index)) {
+            return 1;  
+          }
+        }          
+      }              
+    }
+    
+    ship->x = (tempX+1)&0x0F;
+    ship->y = (tempY+1)&0x0F;
+    ship->orientation = (tempDir+1)&0x01;
+    
+    return 0;
+  }  
 }
 
 void flag(void) {
@@ -252,27 +443,45 @@ void Game_DPad(unsigned char direction) {
               ships[numShips-1].y++;
               break;
           }
-        }while(!validShipPos(numShips-1) && shipInBounds(numShips-1));          
+        }while(!validShipPos(ships, numShips-1) && shipInBounds(ships, numShips-1));          
         
-        if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
+        if(validShipPos(ships, numShips-1) && shipInBounds(ships, numShips-1)) {
           Game_Update();            
         }
         else {
-          ships[numShips-1].x = tempX;
-          ships[numShips-1].y = tempY;
+          ships[numShips-1].x = tempX&0x0F;
+          ships[numShips-1].y = tempY&0x0F;
         }
+        break;
+      case PLAYER_TURN_WAITING:
+        switch(direction) {
+          case UP:
+            cursor.x = (cursor.x+9)%10;
+            break;
+          case DOWN:
+            cursor.x = (cursor.x+1)%10;
+            break;
+          case LEFT:
+            cursor.y = (cursor.y+9)%10;
+            break;
+          case RIGHT:
+            cursor.y = (cursor.y+1)%10;
+            break;
+        }
+        Game_Update();
+        break;
+      case COMPUTER_SCREEN:
+        incState();
         break;
     }
     
-    buttonFlag = 1;  
+    buttonFlag = 1;
     enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
   }
 }
 
 void Game_A(void) {
-  ShipType * ship;
-  int shipFlag;
-  
+  int i, attackFlag;
   if(!buttonFlag) {
     switch(state) {
       case PICKING_MODE:
@@ -280,56 +489,89 @@ void Game_A(void) {
         incState();
         break;        
       case PLACING_SHIPS:
-        ship = &ships[numShips];
-        shipFlag = 1;
-        while(shipFlag && ship->orientation < 2) {
-          while(shipFlag && ship->x < 10) {
-            while(shipFlag && ship->y < 10) {
-              if(validShipPos(numShips)) {
-                shipFlag = 0;  
-              }
-              if(shipFlag) {
-                ship->y++;
-              }
-            }               
-            if(shipFlag) {
-              ship->x++;
-            }
-          }                 
-          if(shipFlag) {
-            ship->orientation++;  
-          }
+        if(findValidPos(ships, numShips)) {
+          numShips++;
         }
-        numShips++;
         
         if(numShips == 6) {
+          numShips--;
           incState();  
         }
         else {
           Game_Update();
         }
         break;
+      case PLAYER_TURN_WAITING:
+        attackFlag = 0;
+        for(i=0; i<numPlayerAttacks; i++) {
+          if(playerAttacks[i].x == cursor.x && playerAttacks[i].y == cursor.y) {
+            attackFlag = 1;
+          }
+        }
+        if(!attackFlag) {
+          if(mode == SINGLE) {
+            int hit = checkHit(computerShips, cursor.x, cursor.y);
+            playerAttacks[numPlayerAttacks].x = cursor.x;
+            playerAttacks[numPlayerAttacks].y = cursor.y;
+            if(hit == -1) {
+              playerAttacks[numPlayerAttacks++].type = MISS;
+            }
+            else {
+              computerShips[hit].hits++;
+              playerAttacks[numPlayerAttacks++].type = HIT;
+            }
+            state = PLAYER_TURN_DONE;
+            Game_Update();
+          }
+        }
+        break; 
+      case COMPUTER_SCREEN:
+        incState();
+        break;
     }
+    
     buttonFlag = 1;
     enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
-  } 
-  
+  }  
 }
 
 void Game_B(void) {
   if(!buttonFlag) {
-    switch(state) {
+    switch(state) {  
+      case WAITING_FOR_OPPONENT:
+        if(mode == MULTIPLAYER) {
+          state = PICKING_MODE;
+          Game_Update();
+        }
+        break;
       case PLACING_SHIPS:
         ships[numShips-1].orientation ^= 1;
-        if(validShipPos(numShips-1) && shipInBounds(numShips-1)) {
+        if(validShipPos(ships, numShips-1) && shipInBounds(ships, numShips-1)) {
           Game_Update();          
         }
         else {
           ships[numShips-1].orientation ^= 1;
         }
-        buttonFlag = 1;
-        enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
         break;
+      case PLAYER_TURN_WAITING:
+        state = COMPUTER_SCREEN;
+        Game_Update();
+        break;
+      case COMPUTER_SCREEN:
+        incState();
+        break;
+        
     }
+    
+    buttonFlag = 1;
+    enableOC6(&flag, DEBOUNCE_DELAY, 8, 1);
   } 
+}
+
+CursorType Game_GetCursor(void) {
+  return cursor;  
+}
+
+int Game_GetState(void) {
+  return state;  
 }
