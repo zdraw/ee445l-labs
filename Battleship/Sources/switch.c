@@ -1,5 +1,4 @@
-
-#include <mc9s12dp512.h>     /* derivative information */
+#include "defs.h"
 #include "game.h"
 
 #define DEBOUNCE_DELAY 10

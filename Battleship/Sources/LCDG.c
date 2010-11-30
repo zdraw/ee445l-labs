@@ -46,18 +46,10 @@
 // GoTo bug fixed on 11/20/09
 
 //******************************************************************
-#include <mc9s12dp512.h>     /* derivative information */
+#include "defs.h"
 #include "LCDG.h"
 #include "Timer.h"
 #include "game.h"
-          
-#define CTRLDR DDRP
-#define E PTP_PTP3
-#define DI PTP_PTP2
-#define CS2 PTP_PTP1
-#define CS1 PTP_PTP0
-#define DATADR DDRH
-#define DATA PTH
 
 // assuming TCNT is 1.5 MHz
 #define T1usec 2
@@ -211,7 +203,8 @@ void lcdData(unsigned char data){
 void LCD_Init(void){
   Timer_Init();   // TCNT at 1.5 MHz
   DATADR = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
-  CTRLDR |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
+  SET_LCD_DDR1();   // PP3-PP0 outputs to E,DI,CS1,CS2
+  SET_LCD_DDR2();   // PP3-PP0 outputs to E,DI,CS1,CS2
   CS2 = 1;         // talk to both LCD controllers
   CS1 = 1;
   DI = 1;          // default mode is data 

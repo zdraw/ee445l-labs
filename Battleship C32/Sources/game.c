@@ -265,7 +265,16 @@ void enemyInit(void) {
     ship->orientation = random(2);
     
     findValidPos(computerShips, i);
-  } 
+  }
+  
+  LCD_Clear(0);
+  createField(computerShips, 5, playerAttacks, numPlayerAttacks);
+  LCD_DrawGrid(field);
+  
+  for (i=0; i<5; i++) {
+    validShipPos(computerShips, i);
+  }
+  while(1);  
 }
 
 void enemyPickMove(void) {
