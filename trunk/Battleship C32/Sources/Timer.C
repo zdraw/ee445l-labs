@@ -14,7 +14,7 @@
 //    You may use, edit, run or distribute this file 
 //    as long as the above copyright notice remains 
 
-#include <mc9s12dp512.h>     /* derivative information */
+#include "defs.h"
 
  
 

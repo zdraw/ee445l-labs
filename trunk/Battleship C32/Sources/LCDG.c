@@ -46,16 +46,10 @@
 // GoTo bug fixed on 11/20/09
 
 //******************************************************************
-#include <mc9s12dp512.h>     /* derivative information */
+#include "defs.h"
 #include "LCDG.h"
 #include "Timer.h"
 #include "game.h"
-
-#define E PTP_PTP3
-#define DI PTP_PTP2
-#define CS2 PTP_PTP1
-#define CS1 PTP_PTP0
-#define DATA PTH
 
 // assuming TCNT is 1.5 MHz
 #define T1usec 2
@@ -179,7 +173,7 @@ void lcdCmd(unsigned char instruction){
   DI = 0;        // D/I=0, COMMAND WRITE
   Timer_Wait(T1usec);
   E = 1;         // E pulse width > 450ns
-  DATA = instruction;
+  SET_DATA(instruction);
   Timer_Wait(T1usec);
   E = 0;         // falling edge latch, setup time 200ns
   DI = 1;        // D/I=1 default state is data
@@ -194,7 +188,7 @@ void lcdData(unsigned char data){
   // R/W=0, write mode  default, R/W=0 always
   // normally D/I will be left at D/I=1 for data
   E = 1;         // E pulse width > 450ns
-  DATA = data;
+  SET_DATA(data);
   Timer_Wait(T1usec);
   E = 0;         // falling edge latch, setup time 200ns
   Timer_Wait(T4usec);
@@ -208,8 +202,9 @@ void lcdData(unsigned char data){
 // does not clear the display
 void LCD_Init(void){
   Timer_Init();   // TCNT at 1.5 MHz
-  DDRH = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
-  DDRP |= 0x0F;   // PP3-PP0 outputs to E,DI,CS1,CS2
+  DATADR = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
+  SET_LCD_DDR1();   // PP3-PP0 outputs to E,DI,CS1,CS2
+  SET_LCD_DDR2();   // PP3-PP0 outputs to E,DI,CS1,CS2
   CS2 = 1;         // talk to both LCD controllers
   CS1 = 1;
   DI = 1;          // default mode is data 
@@ -445,8 +440,29 @@ void LCD_DrawGrid(unsigned char field[10][10]) {
           unsigned char boxX = ((i*8)+k)%6;
           unsigned char boxY = j%6;
           
+          CursorType curs = Game_GetCursor();
+          
           if(pixelOn(field[boxRow][boxCol], boxX, boxY)) {
-            pixels |= 1 << k;            
+            pixels |= 1 << k;
+          }
+          if(Game_GetState() == PLAYER_TURN_WAITING) {
+            if(curs.x == boxRow && curs.y == boxCol) {
+              if((boxX == 1 && boxY == 1) ||
+                 (boxX == 1 && boxY == 2) ||
+                 (boxX == 1 && boxY == 4) ||
+                 (boxX == 1 && boxY == 5) ||
+                 (boxX == 2 && boxY == 1) ||
+                 (boxX == 2 && boxY == 5) ||
+                 (boxX == 4 && boxY == 1) ||
+                 (boxX == 4 && boxY == 5) ||
+                 (boxX == 5 && boxY == 1) ||
+                 (boxX == 5 && boxY == 2) ||
+                 (boxX == 5 && boxY == 4) ||
+                 (boxX == 5 && boxY == 5)) {
+
+                pixels |= 1 << k;
+              }
+            }
           }
         }
       }

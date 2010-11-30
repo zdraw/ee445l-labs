@@ -1,5 +1,4 @@
-#include <hidef.h>      /* common defines and macros */
-#include <mc9s12dp512.h>     /* derivative information */
+#include "defs.h"
 #pragma LINK_INFO DERIVATIVE "mc9s12dp512"
 
 #include "PLL.h"
