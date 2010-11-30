@@ -2,12 +2,12 @@ Design Consistency Status Report
 --------------------------------
 
 Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Design Consistency Status Report).txt
-Report Written : Thursday, November 04, 2010
+Report Written : Thursday, November 25, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
-Last Saved     : 11/5/2010 4:08:43 AM
-Editing Time   : 3617 min
+Last Saved     : 11/8/2010 5:11:45 PM
+Editing Time   : 3667 min
 Units          : mil (precision 0)
 
 Checking integrity of Schematic "C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.sch" with PCB "C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb".
