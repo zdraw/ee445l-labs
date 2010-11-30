@@ -13,11 +13,11 @@
 #define HORIZONTAL 1
 
 typedef struct {
-  unsigned int x:4;
-  unsigned int y:4;
-  unsigned int orientation:1;
-  unsigned int size:3;
-  unsigned int hits:3;
+  unsigned char x;
+  unsigned char y;
+  unsigned char orientation;
+  unsigned char size;
+  unsigned char hits;
 } ShipType; 
 
 typedef struct {
@@ -61,6 +61,16 @@ static int numPlayerAttacks;
 
 int findValidPos(ShipType * array, int index);
 
+int checkDead(ShipType * array) {
+  int i;
+  for(i=0; i<5; i++) {
+    if(array[i].size != array[i].hits) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 void incState(void) {
   switch(state) {
     case WELCOME:  
@@ -81,7 +91,12 @@ void incState(void) {
       }
       break;
     case PLAYER_TURN_DONE:
-      state = OPPONENT_TURN_WAITING;
+      if(mode == SINGLE && checkDead(computerShips)) {
+        state = WIN;
+      }
+      else {
+        state = OPPONENT_TURN_WAITING;
+      }
       break;
     case COMPUTER_SCREEN:
       state = PLAYER_TURN_WAITING;
@@ -90,20 +105,15 @@ void incState(void) {
       state = OPPONENT_TURN_DONE;
       break;
     case OPPONENT_TURN_DONE:
-      state = PLAYER_TURN_WAITING;
+      if(mode == SINGLE && checkDead(ships)) {
+        state = LOSE;
+      }
+      else {
+        state = PLAYER_TURN_WAITING;
+      }
       break;
   }
   Game_Update();
-}
-
-int checkDead(ShipType * array) {
-  int i;
-  for(i=0; i<5; i++) {
-    if(array[i].size != array[i].hits) {
-      return 0;
-    }
-  }
-  return 1;
 }
 
 unsigned char random(unsigned char max) {
@@ -150,6 +160,101 @@ int checkHit(ShipType * array, int x, int y) {
   return -1;
 }
 
+int validShipPos(ShipType * array, int index) {
+  ShipType ship = array[index];
+  int i;
+
+  for(i=0; i<index; i++) {
+    if(ship.orientation == HORIZONTAL) {
+      if(array[i].orientation == HORIZONTAL) {
+        if(ship.x == array[i].x) {
+          if((ship.y + ship.size > array[i].y &&
+              ship.y + ship.size <= array[i].y + array[i].size) ||
+              (ship.y >= array[i].y &&
+              ship.y < array[i].y + array[i].size) || 
+              (array[i].y + array[i].size > ship.y &&
+              array[i].y + array[i].size <= ship.y + ship.size) ||
+              (array[i].y >= ship.y &&
+              array[i].y < ship.y + ship.size)) {
+            
+            return 0;
+          }
+        }
+      }
+      else {
+        if(ship.x >= array[i].x &&
+           ship.x < array[i].x + array[i].size &&
+           array[i].y >= ship.y &&
+           array[i].y < ship.y + ship.size) {
+          
+          return 0;
+        }
+      }
+    }
+    else {
+      if(array[i].orientation == HORIZONTAL) {
+        if(ship.y >= array[i].y &&
+           ship.y < array[i].y + array[i].size &&
+           array[i].x >= ship.x &&
+           array[i].x < ship.x + ship.size) {
+          
+          return 0;
+        }
+      }
+      else {
+        if(ship.y == array[i].y) {
+          if((ship.x + ship.size > array[i].x &&
+              ship.x + ship.size <= array[i].x + array[i].size) ||
+              (ship.x >= array[i].x &&
+              ship.x < array[i].x + array[i].size) ||
+              (array[i].x + array[i].size > ship.x &&
+              array[i].x + array[i].size <= ship.x + ship.size) ||
+              (array[i].x >= ship.x &&
+              array[i].x < ship.x + ship.size)) {
+            
+            return 0;
+          }
+        }
+      }
+    }
+  }
+
+  return 1;
+}
+
+void createField(ShipType * shipArray, int shipSize, AttackType * attackArray, int attackSize) {
+  int i, j;
+  
+    for(i=0; i<10; i++) {
+      for(j=0; j<10; j++) {
+        field[i][j] = EMPTY;      
+      }
+    }
+    
+    for(i=0; i<shipSize; i++) {
+      ShipType ship = shipArray[i];
+      if(ship.orientation == HORIZONTAL) {
+        field[ship.x][ship.y] = SHIPEND_LEFT;
+        for(j=1; j<ship.size-1; j++) {
+          field[ship.x][ship.y+j] = SHIP_HORIZ;    
+        }
+        field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
+      }
+      else {
+        field[ship.x][ship.y] = SHIPEND_UP;
+        for(j=1; j<ship.size-1; j++) {
+          field[ship.x+j][ship.y] = SHIP_VERT;    
+        }
+        field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
+      }
+    }
+    
+    for(i=0; i<attackSize; i++) {
+      AttackType attack = attackArray[i];
+      field[attack.x][attack.y] = attack.type;  
+    }
+}
+
 void enemyInit(void) {
   int i;     
   
@@ -159,10 +264,17 @@ void enemyInit(void) {
     ship->y = random(10);
     ship->orientation = random(2);
     
-    if(!findValidPos(computerShips, i)) {
-      i--;
-    }
+    findValidPos(computerShips, i);
   }
+  
+  LCD_Clear(0);
+  createField(computerShips, 5, playerAttacks, numPlayerAttacks);
+  LCD_DrawGrid(field);
+  
+  for (i=0; i<5; i++) {
+    validShipPos(computerShips, i);
+  }
+  while(1);  
 }
 
 void enemyPickMove(void) {
@@ -201,48 +313,14 @@ void Game_Init(void) {
   Game_Update();
 }
 
-void createField(ShipType * shipArray, int shipSize, AttackType * attackArray, int attackSize) {
-  int i, j;
-  
-    for(i=0; i<10; i++) {
-      for(j=0; j<10; j++) {
-        field[i][j] = EMPTY;      
-      }
-    }
-    
-    for(i=0; i<shipSize; i++) {
-      ShipType ship = shipArray[i];
-      if(ship.orientation == HORIZONTAL) {
-        field[ship.x][ship.y] = SHIPEND_LEFT;
-        for(j=1; j<ship.size-1; j++) {
-          field[ship.x][ship.y+j] = SHIP_HORIZ;    
-        }
-        field[ship.x][ship.y+ship.size-1] = SHIPEND_RIGHT;
-      }
-      else {
-        field[ship.x][ship.y] = SHIPEND_UP;
-        for(j=1; j<ship.size-1; j++) {
-          field[ship.x+j][ship.y] = SHIP_VERT;    
-        }
-        field[ship.x+ship.size-1][ship.y] = SHIPEND_DOWN;
-      }
-    }
-    
-    for(i=0; i<attackSize; i++) {
-      AttackType attack = attackArray[i];
-      field[attack.x][attack.y] = attack.type;  
-    }
-}
-
 void Game_Update(void) {
   switch(state) {
     case WELCOME:
       LCD_Clear(0);
       LCD_GoTo(4, 1);
-      LCD_OutString("Welcome to Battleship");
-      asm sei
-      enableOC6(&incState, 62500, /*72*/1, 1);
-      asm cli
+      LCD_OutString("Welcome to Battleship");     
+      Timer_Wait10ms(100);
+      incState();
       break;
     case PICKING_MODE:
       LCD_Clear(0);
@@ -283,13 +361,7 @@ void Game_Update(void) {
       createField(ships, 0, playerAttacks, numPlayerAttacks);
       LCD_DrawGrid(field);
       Timer_Wait10ms(100);
-      if(mode == SINGLE && checkDead(computerShips)) {
-        state = WIN;
-        Game_Update();
-      }
-      else {
-        incState();
-      }
+      incState();
       break;
     case OPPONENT_TURN_WAITING:
       LCD_Clear(0);
@@ -306,13 +378,7 @@ void Game_Update(void) {
       createField(ships, numShips, enemyAttacks, numEnemyAttacks);
       LCD_DrawGrid(field);     
       Timer_Wait10ms(100);
-      if(mode == SINGLE && checkDead(ships)) {
-        state = LOSE;
-        Game_Update();
-      }
-      else {
-        incState();
-      }
+      incState();
       break;
     case COMPUTER_SCREEN:
       LCD_Clear(0);
@@ -330,56 +396,6 @@ void Game_Update(void) {
       LCD_OutString("       You Lose      ");
       break;
   }
-}
-
-int validShipPos(ShipType * array, int index) {
-  ShipType ship = array[index];
-  int i;
-  
-  for(i=0; i<index; i++) {
-    if(ship.orientation == HORIZONTAL) {
-      if(array[i].orientation == HORIZONTAL) {
-        if(ship.x == array[i].x) {
-          if((ship.y + ship.size > array[i].y &&
-             ship.y + ship.size <= array[i].y + array[i].size) ||
-             (ship.y >= array[i].y &&
-             ship.y < array[i].y + array[i].size)) {
-            return 0;  
-          }
-        }
-      }
-      else {
-        if(ship.x >= array[i].x && 
-           ship.x < array[i].x + array[i].size &&
-           array[i].y >= ship.y &&
-           array[i].y < ship.y + ship.size) {
-          return 0;  
-        }
-      }
-    }
-    else {
-      if(array[i].orientation == HORIZONTAL) {
-        if(ship.y >= array[i].y && 
-           ship.y < array[i].y + array[i].size &&
-           array[i].x >= ship.x &&
-           array[i].x < ship.x + ship.size) {
-          return 0;  
-        }
-      }
-      else {
-        if(ship.y == array[i].y) {
-          if((ship.x + ship.size > array[i].x &&
-             ship.x + ship.size <= array[i].x + array[i].size) ||
-             (ship.x >= array[i].x &&
-             ship.x < array[i].x + array[i].size)) {
-            return 0;
-          }
-        }
-      }
-    }
-  }
-
-  return 1;
 }
 
 int findValidPos(ShipType * array, int index) {
