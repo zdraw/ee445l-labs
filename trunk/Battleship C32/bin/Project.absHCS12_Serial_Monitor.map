@@ -21,7 +21,6 @@ main.c.o                                Model: SMALL,         Lang: ANSI-C
 PLL.c.o                                 Model: SMALL,         Lang: ANSI-C
 switch.c.o                              Model: SMALL,         Lang: ANSI-C
 Timer.C.o                               Model: SMALL,         Lang: ANSI-C
-defs.c.o                                Model: SMALL,         Lang: ANSI-C
 
 *********************************************************************************************
 STARTUP SECTION
@@ -31,7 +30,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x3900     585
-  _Copy    *toCopyDownBeg 0xD6E8
+  _Copy    *toCopyDownBeg 0xD6B4
 } _startupData;
 
 *********************************************************************************************
@@ -42,8 +41,8 @@ Section Name                    Size  Type     From       To       Segment
 .startData                        10     R     0xC03B     0xC044   ROM_C000
 .rodata                          480     R     0xC045     0xC224   ROM_C000
 .rodata1                         136     R     0xC225     0xC2AC   ROM_C000
-.text                           5114     R     0xC2AD     0xD6A6   ROM_C000
-.copy                             52     R     0xD6E8     0xD71B   ROM_C000
+.text                           5062     R     0xC2AD     0xD672   ROM_C000
+.copy                             52     R     0xD6B4     0xD6E7   ROM_C000
 .stack                           256   R/W     0x3800     0x38FF   RAM
 .data                             50   R/W     0x3900     0x3931   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
@@ -275,12 +274,12 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_ffe4                  2     R     0xFFE4     0xFFE5   .absSeg226
 .abs_section_ffe2                  2     R     0xFFE2     0xFFE3   .absSeg227
 .bss                             529   R/W     0x3932     0x3B42   RAM
-RUNTIME                           65     R     0xD6A7     0xD6E7   ROM_C000
+RUNTIME                           65     R     0xD673     0xD6B3   ROM_C000
 .common                            6   R/W     0x3B43     0x3B48   RAM
 .vectSeg228_vect                   2     R     0xFFFE     0xFFFF   .vectSeg228
 
 Summary of section sizes per section type:
-READ_ONLY (R):        172C (dec:     5932)
+READ_ONLY (R):        16F8 (dec:     5880)
 READ_WRITE (R/W):      349 (dec:      841)
 NO_INIT (N/I):         104 (dec:      260)
 
@@ -528,12 +527,12 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                          3900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _BSHL                                     D6A7       8       8       3   RUNTIME     
-     _BDIVMODU                                 D6AF       A      10       3   RUNTIME     
-     _ISHRU                                    D6B9       B      11       1   RUNTIME     
-     _CASE_DIRECT_BYTE                         D6C4       5       5       1   RUNTIME     
-     _CASE_CHECKED                             D6C9       B      11       2   RUNTIME     
-     _CASE_CHECKED_BYTE                        D6D4      14      20       5   RUNTIME     
+     _BSHL                                     D673       8       8       1   RUNTIME     
+     _BDIVMODU                                 D67B       A      10       3   RUNTIME     
+     _ISHRU                                    D685       B      11       1   RUNTIME     
+     _CASE_DIRECT_BYTE                         D690       5       5       1   RUNTIME     
+     _CASE_CHECKED                             D695       B      11       2   RUNTIME     
+     _CASE_CHECKED_BYTE                        D6A0      14      20       5   RUNTIME     
 - VARIABLES:
 MODULE:                 -- game.c.o --
 - PROCEDURES:
@@ -580,16 +579,16 @@ MODULE:                 -- game.c.o --
      cursor                                    3B43       1       1      20   .common     
 MODULE:                 -- LCDG.c.o --
 - PROCEDURES:
-     lcdCmd                                    CD74      2C      44      10   .text       
-     lcdData                                   CDA0      19      25       4   .text       
-     LCD_Init                                  CDB9      50      80       1   .text       
-     LCD_Clear                                 CE09      4B      75       5   .text       
-     OutByte                                   CE54      12      18       1   .text       
-     pixelOn                                   CE66     3E6     998     169   .text       
-     LCD_DrawGrid                              D24C     1A3     419       5   .text       
-     LCD_OutChar                               D3EF      EE     238       2   .text       
-     LCD_OutString                             D4DD      18      24       5   .text       
-     LCD_GoTo                                  D4F5      61      97       5   .text       
+     lcdCmd                                    CD74      29      41      10   .text       
+     lcdData                                   CD9D      16      22       4   .text       
+     LCD_Init                                  CDB3      50      80       1   .text       
+     LCD_Clear                                 CE03      4B      75       5   .text       
+     OutByte                                   CE4E      12      18       1   .text       
+     pixelOn                                   CE60     3E6     998     169   .text       
+     LCD_DrawGrid                              D246     1A3     419       5   .text       
+     LCD_OutChar                               D3E9      EE     238       2   .text       
+     LCD_OutString                             D4D7      18      24       5   .text       
+     LCD_GoTo                                  D4EF      61      97       5   .text       
 - VARIABLES:
      Font                                      C045     1E0     480       2   .rodata     
      OpenFlag                                  3B36       2       2       5   .bss        
@@ -600,24 +599,24 @@ MODULE:                 -- LCDG.c.o --
      bDown                                     3B48       1       1       4   .common     
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      D556      18      24       1   .text       
+     main                                      D550      18      24       1   .text       
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  D56E      15      21       1   .text       
+     PLL_Init                                  D568      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Key_Init                                  D583      1C      28       1   .text       
-     enableOC6                                 D59F      2D      45       3   .text       
-     disableOC6                                D5CC       8       8       1   .text       
-     IC0Han                                    D5D4       8       8       1   .text       
-     IC1Han                                    D5DC       8       8       1   .text       
-     IC2Han                                    D5E4       A      10       1   .text       
-     IC3Han                                    D5EE       A      10       1   .text       
-     IC4Han                                    D5F8       A      10       1   .text       
-     IC5Han                                    D602       9       9       1   .text       
-     OC6Han                                    D60B      30      48       1   .text       
+     Key_Init                                  D57D      1C      28       1   .text       
+     enableOC6                                 D599      2D      45       3   .text       
+     disableOC6                                D5C6       8       8       1   .text       
+     IC0Han                                    D5CE       8       8       1   .text       
+     IC1Han                                    D5D6       8       8       1   .text       
+     IC2Han                                    D5DE       A      10       1   .text       
+     IC3Han                                    D5E8       A      10       1   .text       
+     IC4Han                                    D5F2       A      10       1   .text       
+     IC5Han                                    D5FC       9       9       1   .text       
+     OC6Han                                    D605      30      48       1   .text       
 - VARIABLES:
      OC6Func                                   3B38       2       2       2   .bss        
      OC6Enabled                                3B3A       1       1       1   .bss        
@@ -634,14 +633,10 @@ MODULE:                 -- switch.c.o --
      _Vector_14                                FFE2       2       2       0   .abs_section_ffe2
 MODULE:                 -- Timer.C.o --
 - PROCEDURES:
-     Timer_Init                                D63B       D      13       1   .text       
-     Timer_Wait                                D648      11      17       7   .text       
-     Timer_Wait1ms                             D659      10      16       1   .text       
-     Timer_Wait10ms                            D669      10      16       1   .text       
-- VARIABLES:
-MODULE:                 -- defs.c.o --
-- PROCEDURES:
-     reverseByte                               D679      2E      46       2   .text       
+     Timer_Init                                D635       D      13       1   .text       
+     Timer_Wait                                D642      11      17       7   .text       
+     Timer_Wait1ms                             D653      10      16       1   .text       
+     Timer_Wait10ms                            D663      10      16       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -652,12 +647,11 @@ MODULE STATISTIC
   Start12.c.o                                  0     59      0
   rtshc12.c.o (ansisi.lib)                     0     65      0
   game.c.o                                   567   2759    136
-  LCDG.c.o                                     7   2018    480
+  LCDG.c.o                                     7   2012    480
   main.c.o                                     0     24      0
   PLL.c.o                                      0     21      0
   switch.c.o                                  11    184     14
   Timer.C.o                                    0     62      0
-  defs.c.o                                     0     46      0
   other                                      256     12     52
 
 *********************************************************************************************
@@ -669,7 +663,7 @@ SECTION: ".text"
   Game_A Game_B Game_GetCursor Game_GetState lcdCmd lcdData LCD_Init LCD_Clear 
   OutByte pixelOn LCD_DrawGrid LCD_OutChar LCD_OutString LCD_GoTo main PLL_Init 
   Key_Init enableOC6 disableOC6 IC0Han IC1Han IC2Han IC3Han IC4Han IC5Han 
-  OC6Han Timer_Init Timer_Wait Timer_Wait1ms Timer_Wait10ms reverseByte 
+  OC6Han Timer_Init Timer_Wait Timer_Wait1ms Timer_Wait10ms 
 SECTION: ".data"
   ships computerShips 
 SECTION: ".bss"
@@ -1425,39 +1419,38 @@ OBJECT LIST SORTED BY ADDRESS
      Game_B                                    CCE2      84     132       1   .text       
      Game_GetCursor                            CD66       A      10       1   .text       
      Game_GetState                             CD70       4       4       1   .text       
-     lcdCmd                                    CD74      2C      44      10   .text       
-     lcdData                                   CDA0      19      25       4   .text       
-     LCD_Init                                  CDB9      50      80       1   .text       
-     LCD_Clear                                 CE09      4B      75       5   .text       
-     OutByte                                   CE54      12      18       1   .text       
-     pixelOn                                   CE66     3E6     998     169   .text       
-     LCD_DrawGrid                              D24C     1A3     419       5   .text       
-     LCD_OutChar                               D3EF      EE     238       2   .text       
-     LCD_OutString                             D4DD      18      24       5   .text       
-     LCD_GoTo                                  D4F5      61      97       5   .text       
-     main                                      D556      18      24       1   .text       
-     PLL_Init                                  D56E      15      21       1   .text       
-     Key_Init                                  D583      1C      28       1   .text       
-     enableOC6                                 D59F      2D      45       3   .text       
-     disableOC6                                D5CC       8       8       1   .text       
-     IC0Han                                    D5D4       8       8       1   .text       
-     IC1Han                                    D5DC       8       8       1   .text       
-     IC2Han                                    D5E4       A      10       1   .text       
-     IC3Han                                    D5EE       A      10       1   .text       
-     IC4Han                                    D5F8       A      10       1   .text       
-     IC5Han                                    D602       9       9       1   .text       
-     OC6Han                                    D60B      30      48       1   .text       
-     Timer_Init                                D63B       D      13       1   .text       
-     Timer_Wait                                D648      11      17       7   .text       
-     Timer_Wait1ms                             D659      10      16       1   .text       
-     Timer_Wait10ms                            D669      10      16       1   .text       
-     reverseByte                               D679      2E      46       2   .text       
-     _BSHL                                     D6A7       8       8       3   RUNTIME     
-     _BDIVMODU                                 D6AF       A      10       3   RUNTIME     
-     _ISHRU                                    D6B9       B      11       1   RUNTIME     
-     _CASE_DIRECT_BYTE                         D6C4       5       5       1   RUNTIME     
-     _CASE_CHECKED                             D6C9       B      11       2   RUNTIME     
-     _CASE_CHECKED_BYTE                        D6D4      14      20       5   RUNTIME     
+     lcdCmd                                    CD74      29      41      10   .text       
+     lcdData                                   CD9D      16      22       4   .text       
+     LCD_Init                                  CDB3      50      80       1   .text       
+     LCD_Clear                                 CE03      4B      75       5   .text       
+     OutByte                                   CE4E      12      18       1   .text       
+     pixelOn                                   CE60     3E6     998     169   .text       
+     LCD_DrawGrid                              D246     1A3     419       5   .text       
+     LCD_OutChar                               D3E9      EE     238       2   .text       
+     LCD_OutString                             D4D7      18      24       5   .text       
+     LCD_GoTo                                  D4EF      61      97       5   .text       
+     main                                      D550      18      24       1   .text       
+     PLL_Init                                  D568      15      21       1   .text       
+     Key_Init                                  D57D      1C      28       1   .text       
+     enableOC6                                 D599      2D      45       3   .text       
+     disableOC6                                D5C6       8       8       1   .text       
+     IC0Han                                    D5CE       8       8       1   .text       
+     IC1Han                                    D5D6       8       8       1   .text       
+     IC2Han                                    D5DE       A      10       1   .text       
+     IC3Han                                    D5E8       A      10       1   .text       
+     IC4Han                                    D5F2       A      10       1   .text       
+     IC5Han                                    D5FC       9       9       1   .text       
+     OC6Han                                    D605      30      48       1   .text       
+     Timer_Init                                D635       D      13       1   .text       
+     Timer_Wait                                D642      11      17       7   .text       
+     Timer_Wait1ms                             D653      10      16       1   .text       
+     Timer_Wait10ms                            D663      10      16       1   .text       
+     _BSHL                                     D673       8       8       1   RUNTIME     
+     _BDIVMODU                                 D67B       A      10       3   RUNTIME     
+     _ISHRU                                    D685       B      11       1   RUNTIME     
+     _CASE_DIRECT_BYTE                         D690       5       5       1   RUNTIME     
+     _CASE_CHECKED                             D695       B      11       2   RUNTIME     
+     _CASE_CHECKED_BYTE                        D6A0      14      20       5   RUNTIME     
      _Vector_14                                FFE2       2       2       0   .abs_section_ffe2
      _Vector_13                                FFE4       2       2       0   .abs_section_ffe4
      _Vector_12                                FFE6       2       2       0   .abs_section_ffe6
@@ -1483,67 +1476,67 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xD6E8 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6B4 ---- SIZE       4 ---
 Filling bytes inserted
  002E3903
-------- ROM-ADDRESS: 0xD6EC ---- RAM-ADDRESS: 0x3903 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6B8 ---- RAM-ADDRESS: 0x3903 ---- SIZE       1 ---
 Name of initialized Object : ships:3
  02
-------- ROM-ADDRESS: 0xD6ED ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6B9 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6F1 ---- RAM-ADDRESS: 0x3908 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6BD ---- RAM-ADDRESS: 0x3908 ---- SIZE       1 ---
 Name of initialized Object : ships:8
  03
-------- ROM-ADDRESS: 0xD6F2 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6BE ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6F6 ---- RAM-ADDRESS: 0x390D ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6C2 ---- RAM-ADDRESS: 0x390D ---- SIZE       1 ---
 Name of initialized Object : ships:13
  03
-------- ROM-ADDRESS: 0xD6F7 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6C3 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6FB ---- RAM-ADDRESS: 0x3912 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6C7 ---- RAM-ADDRESS: 0x3912 ---- SIZE       1 ---
 Name of initialized Object : ships:18
  04
-------- ROM-ADDRESS: 0xD6FC ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6C8 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD700 ---- RAM-ADDRESS: 0x3917 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6CC ---- RAM-ADDRESS: 0x3917 ---- SIZE       1 ---
 Name of initialized Object : ships:23
  05
-------- ROM-ADDRESS: 0xD701 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6CD ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD705 ---- RAM-ADDRESS: 0x391C ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6D1 ---- RAM-ADDRESS: 0x391C ---- SIZE       1 ---
 Name of initialized Object : computerShips:3
  02
-------- ROM-ADDRESS: 0xD706 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6D2 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD70A ---- RAM-ADDRESS: 0x3921 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6D6 ---- RAM-ADDRESS: 0x3921 ---- SIZE       1 ---
 Name of initialized Object : computerShips:8
  03
-------- ROM-ADDRESS: 0xD70B ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6D7 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD70F ---- RAM-ADDRESS: 0x3926 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6DB ---- RAM-ADDRESS: 0x3926 ---- SIZE       1 ---
 Name of initialized Object : computerShips:13
  03
-------- ROM-ADDRESS: 0xD710 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6DC ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD714 ---- RAM-ADDRESS: 0x392B ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6E0 ---- RAM-ADDRESS: 0x392B ---- SIZE       1 ---
 Name of initialized Object : computerShips:18
  04
-------- ROM-ADDRESS: 0xD715 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6E1 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD719 ---- RAM-ADDRESS: 0x3930 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6E5 ---- RAM-ADDRESS: 0x3930 ---- SIZE       1 ---
 Name of initialized Object : computerShips:23
  05
-------- ROM-ADDRESS: 0xD71A ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xD6E6 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -1587,8 +1580,8 @@ Game_B                    USES buttonFlag state _CASE_CHECKED_BYTE mode ships
                                 flag enableOC6 
 Game_GetCursor            USES cursor 
 Game_GetState             USES state 
-lcdCmd                    USES _PTT Timer_Wait reverseByte _PORTAB 
-lcdData                   USES _PTT reverseByte _PORTAB Timer_Wait 
+lcdCmd                    USES _PTT Timer_Wait _PORTAB 
+lcdData                   USES _PTT _PORTAB Timer_Wait 
 LCD_Init                  USES Timer_Init _DDRAB _DDRT _DDRP _PTP _PTT 
                                 Timer_Wait1ms lcdCmd OpenFlag Column1 bLeft1 bRight1 Page 
                                 bDown 
@@ -1619,7 +1612,6 @@ Timer_Init                USES _TSCR1 _TSCR2 _PACTL
 Timer_Wait                USES _TCNT 
 Timer_Wait1ms             USES Timer_Wait 
 Timer_Wait10ms            USES Timer_Wait 
-reverseByte               USES _BSHL 
 _Vector_14                USES OC6Han 
 _Vector_13                USES IC5Han 
 _Vector_12                USES IC4Han 
@@ -1648,11 +1640,7 @@ DEPENDENCY TREE
  |  |  +- lcdCmd              
  |  |     | 
  |  |     +- Timer_Wait           (see above)
- |  |     |  
- |  |     +- reverseByte         
- |  |        | 
- |  |        +- _BSHL               
- |  |             
+ |  |        
  |  +- Key_Init            
  |  |    
  |  +- Game_Init           
@@ -1667,8 +1655,6 @@ DEPENDENCY TREE
  |        |     | 
  |        |     +- lcdData             
  |        |     |  | 
- |        |     |  +- reverseByte          (see above)
- |        |     |  |  
  |        |     |  +- Timer_Wait           (see above)
  |        |     |     
  |        |     +- lcdCmd               (see above)
@@ -1719,8 +1705,8 @@ DEPENDENCY TREE
  |        |  |  |  |  
  |        |  |  |  +- lcdData              (see above)
  |        |  |  |     
- |        |  |  +- _BSHL                (see above)
- |        |  |     
+ |        |  |  +- _BSHL               
+ |        |  |       
  |        |  +- validShipPos         (see above)
  |        |     
  |        +- createField          (see above)
@@ -1842,5 +1828,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 13
-Total size of all blocks to be downloaded: 5932
+Total size of all blocks to be downloaded: 5880
 

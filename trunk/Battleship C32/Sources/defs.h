@@ -14,6 +14,6 @@ unsigned char reverseByte(unsigned char data);
 #define CS2 PTP_PTP3
 #define CS1 PTP_PTP2
 #define DATADR DDRB
-#define SET_DATA(x) (PORTB = reverseByte(x))
+#define DATA PORTB
 
 #endif
