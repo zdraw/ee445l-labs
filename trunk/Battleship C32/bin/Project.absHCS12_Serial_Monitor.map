@@ -30,7 +30,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x3900     585
-  _Copy    *toCopyDownBeg 0xD6B4
+  _Copy    *toCopyDownBeg 0xD6D1
 } _startupData;
 
 *********************************************************************************************
@@ -41,8 +41,8 @@ Section Name                    Size  Type     From       To       Segment
 .startData                        10     R     0xC03B     0xC044   ROM_C000
 .rodata                          480     R     0xC045     0xC224   ROM_C000
 .rodata1                         136     R     0xC225     0xC2AC   ROM_C000
-.text                           5062     R     0xC2AD     0xD672   ROM_C000
-.copy                             52     R     0xD6B4     0xD6E7   ROM_C000
+.text                           5091     R     0xC2AD     0xD68F   ROM_C000
+.copy                             52     R     0xD6D1     0xD704   ROM_C000
 .stack                           256   R/W     0x3800     0x38FF   RAM
 .data                             50   R/W     0x3900     0x3931   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
@@ -274,12 +274,12 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_ffe4                  2     R     0xFFE4     0xFFE5   .absSeg226
 .abs_section_ffe2                  2     R     0xFFE2     0xFFE3   .absSeg227
 .bss                             529   R/W     0x3932     0x3B42   RAM
-RUNTIME                           65     R     0xD673     0xD6B3   ROM_C000
+RUNTIME                           65     R     0xD690     0xD6D0   ROM_C000
 .common                            6   R/W     0x3B43     0x3B48   RAM
 .vectSeg228_vect                   2     R     0xFFFE     0xFFFF   .vectSeg228
 
 Summary of section sizes per section type:
-READ_ONLY (R):        16F8 (dec:     5880)
+READ_ONLY (R):        1715 (dec:     5909)
 READ_WRITE (R/W):      349 (dec:      841)
 NO_INIT (N/I):         104 (dec:      260)
 
@@ -442,9 +442,9 @@ MODULE:                 -- mc9s12c32.c.o --
      _PERT                                      244       1       1       1   .abs_section_244
      _PPST                                      245       1       1       0   .abs_section_245
      _MODRR                                     247       1       1       0   .abs_section_247
-     _PTS                                       248       1       1       0   .abs_section_248
+     _PTS                                       248       1       1       4   .abs_section_248
      _PTIS                                      249       1       1       0   .abs_section_249
-     _DDRS                                      24A       1       1       0   .abs_section_24a
+     _DDRS                                      24A       1       1       2   .abs_section_24a
      _RDRS                                      24B       1       1       0   .abs_section_24b
      _PERS                                      24C       1       1       0   .abs_section_24c
      _PPSS                                      24D       1       1       0   .abs_section_24d
@@ -456,9 +456,9 @@ MODULE:                 -- mc9s12c32.c.o --
      _PERM                                      254       1       1       0   .abs_section_254
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
-     _PTP                                       258       1       1      17   .abs_section_258
+     _PTP                                       258       1       1      19   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       2   .abs_section_25a
+     _DDRP                                      25A       1       1       3   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
@@ -478,8 +478,8 @@ MODULE:                 -- mc9s12c32.c.o --
      _RDRAD                                     273       1       1       0   .abs_section_273
      _PERAD                                     274       1       1       0   .abs_section_274
      _PPSAD                                     275       1       1       0   .abs_section_275
-     _PORTAB                                      0       2       2       2   .abs_section_0
-     _DDRAB                                       2       2       2       1   .abs_section_2
+     _PORTAB                                      0       2       2       8   .abs_section_0
+     _DDRAB                                       2       2       2       4   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
      _DBGTB                                      22       2       2       0   .abs_section_22
      _DBGCC                                      26       2       2       0   .abs_section_26
@@ -527,12 +527,12 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                          3900       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _BSHL                                     D673       8       8       1   RUNTIME     
-     _BDIVMODU                                 D67B       A      10       3   RUNTIME     
-     _ISHRU                                    D685       B      11       1   RUNTIME     
-     _CASE_DIRECT_BYTE                         D690       5       5       1   RUNTIME     
-     _CASE_CHECKED                             D695       B      11       2   RUNTIME     
-     _CASE_CHECKED_BYTE                        D6A0      14      20       5   RUNTIME     
+     _BSHL                                     D690       8       8       1   RUNTIME     
+     _BDIVMODU                                 D698       A      10       3   RUNTIME     
+     _ISHRU                                    D6A2       B      11       1   RUNTIME     
+     _CASE_DIRECT_BYTE                         D6AD       5       5       1   RUNTIME     
+     _CASE_CHECKED                             D6B2       B      11       2   RUNTIME     
+     _CASE_CHECKED_BYTE                        D6BD      14      20       5   RUNTIME     
 - VARIABLES:
 MODULE:                 -- game.c.o --
 - PROCEDURES:
@@ -541,19 +541,20 @@ MODULE:                 -- game.c.o --
      random                                    C332      2B      43       5   .text       
      shipInBounds                              C35D      42      66       3   .text       
      checkHit                                  C39F      66     102       2   .text       
-     validShipPos                              C405     184     388      17   .text       
-     createField                               C589     132     306      11   .text       
-     enemyInit                                 C6BB      72     114       1   .text       
-     enemyPickMove                             C72D      B5     181       1   .text       
-     Game_Init                                 C7E2      14      20       1   .text       
-     Game_Update                               C7F6     139     313      24   .text       
-     findValidPos                              C92F      DA     218       5   .text       
-     flag                                      CA09       6       6       3   .text       
-     Game_DPad                                 CA0F     171     369      16   .text       
-     Game_A                                    CB80     162     354       7   .text       
-     Game_B                                    CCE2      84     132       1   .text       
-     Game_GetCursor                            CD66       A      10       1   .text       
-     Game_GetState                             CD70       4       4       1   .text       
+     validShipPos                              C405     184     388      16   .text       
+     createField                               C589     132     306      10   .text       
+     enemyInit                                 C6BB      3C      60       1   .text       
+     enemyPickMove                             C6F7      B5     181       1   .text       
+     Game_Init                                 C7AC      29      41       1   .text       
+     Game_Update                               C7D5     139     313      24   .text       
+     findValidPos                              C90E      DA     218       5   .text       
+     flag                                      C9E8       6       6       3   .text       
+     Game_DPad                                 C9EE     171     369      16   .text       
+     LEDflash                                  CB5F      2B      43       1   .text       
+     Game_A                                    CB8A     179     377       8   .text       
+     Game_B                                    CD03      84     132       1   .text       
+     Game_GetCursor                            CD87       A      10       1   .text       
+     Game_GetState                             CD91       4       4       1   .text       
 - VARIABLES:
      STRING.Welcome.to.Battleshi.4             C225      16      22       1   .rodata1    
      STRING.Single.Player.5                    C23B       E      14       1   .rodata1    
@@ -563,32 +564,32 @@ MODULE:                 -- game.c.o --
      STRING........You.Win.......9             C281      16      22       1   .rodata1    
      STRING........You.Lose......10            C297      16      22       1   .rodata1    
      ships                                     3900      19      25      18   .data       
-     computerShips                             3919      19      25       8   .data       
+     computerShips                             3919      19      25       6   .data       
      seed1.1                                   3932       1       1       1   .bss        
      last.3                                    3933       2       2       2   .bss        
      mode                                      3935       2       2       8   .bss        
      state                                     3937       2       2      10   .bss        
      buttonFlag                                3939       2       2       7   .bss        
-     field                                     393B      64     100       8   .bss        
+     field                                     393B      64     100       7   .bss        
      numShips                                  399F       2       2      17   .bss        
      enemyAttacks                              39A1      C8     200       7   .bss        
      numEnemyAttacks                           3A69       2       2       7   .bss        
-     playerAttacks                             3A6B      C8     200       7   .bss        
-     numPlayerAttacks                          3B33       2       2       8   .bss        
+     playerAttacks                             3A6B      C8     200       6   .bss        
+     numPlayerAttacks                          3B33       2       2       7   .bss        
      seed2.2                                   3B35       1       1       2   .bss        
      cursor                                    3B43       1       1      20   .common     
 MODULE:                 -- LCDG.c.o --
 - PROCEDURES:
-     lcdCmd                                    CD74      29      41      10   .text       
-     lcdData                                   CD9D      16      22       4   .text       
-     LCD_Init                                  CDB3      50      80       1   .text       
-     LCD_Clear                                 CE03      4B      75       5   .text       
-     OutByte                                   CE4E      12      18       1   .text       
-     pixelOn                                   CE60     3E6     998     169   .text       
-     LCD_DrawGrid                              D246     1A3     419       5   .text       
-     LCD_OutChar                               D3E9      EE     238       2   .text       
-     LCD_OutString                             D4D7      18      24       5   .text       
-     LCD_GoTo                                  D4EF      61      97       5   .text       
+     lcdCmd                                    CD95      29      41      10   .text       
+     lcdData                                   CDBE      16      22       4   .text       
+     LCD_Init                                  CDD4      50      80       1   .text       
+     LCD_Clear                                 CE24      4B      75       4   .text       
+     OutByte                                   CE6F      12      18       1   .text       
+     pixelOn                                   CE81     3E6     998     169   .text       
+     LCD_DrawGrid                              D267     1A3     419       4   .text       
+     LCD_OutChar                               D40A      EE     238       2   .text       
+     LCD_OutString                             D4F8      18      24       5   .text       
+     LCD_GoTo                                  D510      61      97       5   .text       
 - VARIABLES:
      Font                                      C045     1E0     480       2   .rodata     
      OpenFlag                                  3B36       2       2       5   .bss        
@@ -599,24 +600,24 @@ MODULE:                 -- LCDG.c.o --
      bDown                                     3B48       1       1       4   .common     
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      D550      18      24       1   .text       
+     main                                      D571      18      24       1   .text       
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  D568      15      21       1   .text       
+     PLL_Init                                  D589      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Key_Init                                  D57D      1C      28       1   .text       
-     enableOC6                                 D599      2D      45       3   .text       
-     disableOC6                                D5C6       8       8       1   .text       
-     IC0Han                                    D5CE       8       8       1   .text       
-     IC1Han                                    D5D6       8       8       1   .text       
-     IC2Han                                    D5DE       A      10       1   .text       
-     IC3Han                                    D5E8       A      10       1   .text       
-     IC4Han                                    D5F2       A      10       1   .text       
-     IC5Han                                    D5FC       9       9       1   .text       
-     OC6Han                                    D605      30      48       1   .text       
+     Key_Init                                  D59E      1C      28       1   .text       
+     enableOC6                                 D5BA      2D      45       4   .text       
+     disableOC6                                D5E7       8       8       1   .text       
+     IC0Han                                    D5EF       A      10       1   .text       
+     IC1Han                                    D5F9       A      10       1   .text       
+     IC2Han                                    D603       9       9       1   .text       
+     IC3Han                                    D60C       A      10       1   .text       
+     IC4Han                                    D616       8       8       1   .text       
+     IC5Han                                    D61E       8       8       1   .text       
+     OC6Han                                    D626      2C      44       1   .text       
 - VARIABLES:
      OC6Func                                   3B38       2       2       2   .bss        
      OC6Enabled                                3B3A       1       1       1   .bss        
@@ -633,10 +634,10 @@ MODULE:                 -- switch.c.o --
      _Vector_14                                FFE2       2       2       0   .abs_section_ffe2
 MODULE:                 -- Timer.C.o --
 - PROCEDURES:
-     Timer_Init                                D635       D      13       1   .text       
-     Timer_Wait                                D642      11      17       7   .text       
-     Timer_Wait1ms                             D653      10      16       1   .text       
-     Timer_Wait10ms                            D663      10      16       1   .text       
+     Timer_Init                                D652       D      13       1   .text       
+     Timer_Wait                                D65F      11      17       7   .text       
+     Timer_Wait1ms                             D670      10      16       1   .text       
+     Timer_Wait10ms                            D680      10      16       1   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -646,11 +647,11 @@ MODULE STATISTIC
   mc9s12c32.c.o                              260      0      0
   Start12.c.o                                  0     59      0
   rtshc12.c.o (ansisi.lib)                     0     65      0
-  game.c.o                                   567   2759    136
+  game.c.o                                   567   2792    136
   LCDG.c.o                                     7   2012    480
   main.c.o                                     0     24      0
   PLL.c.o                                      0     21      0
-  switch.c.o                                  11    184     14
+  switch.c.o                                  11    180     14
   Timer.C.o                                    0     62      0
   other                                      256     12     52
 
@@ -660,10 +661,10 @@ SECTION USE IN OBJECT-ALLOCATION SECTION
 SECTION: ".text"
   checkDead incState random shipInBounds checkHit validShipPos createField 
   enemyInit enemyPickMove Game_Init Game_Update findValidPos flag Game_DPad 
-  Game_A Game_B Game_GetCursor Game_GetState lcdCmd lcdData LCD_Init LCD_Clear 
-  OutByte pixelOn LCD_DrawGrid LCD_OutChar LCD_OutString LCD_GoTo main PLL_Init 
-  Key_Init enableOC6 disableOC6 IC0Han IC1Han IC2Han IC3Han IC4Han IC5Han 
-  OC6Han Timer_Init Timer_Wait Timer_Wait1ms Timer_Wait10ms 
+  LEDflash Game_A Game_B Game_GetCursor Game_GetState lcdCmd lcdData LCD_Init 
+  LCD_Clear OutByte pixelOn LCD_DrawGrid LCD_OutChar LCD_OutString LCD_GoTo 
+  main PLL_Init Key_Init enableOC6 disableOC6 IC0Han IC1Han IC2Han IC3Han 
+  IC4Han IC5Han OC6Han Timer_Init Timer_Wait Timer_Wait1ms Timer_Wait10ms 
 SECTION: ".data"
   ships computerShips 
 SECTION: ".bss"
@@ -1143,8 +1144,8 @@ SECTION: ".abs_section_ffe2"
 OBJECT LIST SORTED BY ADDRESS
      Name                                      Addr   hSize   dSize     Ref    Section   RLIB
 ---------------------------------------------------------------------------------------------
-     _PORTAB                                      0       2       2       2   .abs_section_0
-     _DDRAB                                       2       2       2       1   .abs_section_2
+     _PORTAB                                      0       2       2       8   .abs_section_0
+     _DDRAB                                       2       2       2       4   .abs_section_2
      _PORTE                                       8       1       1       0   .abs_section_8
      _DDRE                                        9       1       1       0   .abs_section_9
      _PEAR                                        A       1       1       0   .abs_section_a
@@ -1328,9 +1329,9 @@ OBJECT LIST SORTED BY ADDRESS
      _PERT                                      244       1       1       1   .abs_section_244
      _PPST                                      245       1       1       0   .abs_section_245
      _MODRR                                     247       1       1       0   .abs_section_247
-     _PTS                                       248       1       1       0   .abs_section_248
+     _PTS                                       248       1       1       4   .abs_section_248
      _PTIS                                      249       1       1       0   .abs_section_249
-     _DDRS                                      24A       1       1       0   .abs_section_24a
+     _DDRS                                      24A       1       1       2   .abs_section_24a
      _RDRS                                      24B       1       1       0   .abs_section_24b
      _PERS                                      24C       1       1       0   .abs_section_24c
      _PPSS                                      24D       1       1       0   .abs_section_24d
@@ -1342,9 +1343,9 @@ OBJECT LIST SORTED BY ADDRESS
      _PERM                                      254       1       1       0   .abs_section_254
      _PPSM                                      255       1       1       0   .abs_section_255
      _WOMM                                      256       1       1       0   .abs_section_256
-     _PTP                                       258       1       1      17   .abs_section_258
+     _PTP                                       258       1       1      19   .abs_section_258
      _PTIP                                      259       1       1       0   .abs_section_259
-     _DDRP                                      25A       1       1       2   .abs_section_25a
+     _DDRP                                      25A       1       1       3   .abs_section_25a
      _RDRP                                      25B       1       1       0   .abs_section_25b
      _PERP                                      25C       1       1       0   .abs_section_25c
      _PPSP                                      25D       1       1       0   .abs_section_25d
@@ -1365,18 +1366,18 @@ OBJECT LIST SORTED BY ADDRESS
      _PERAD                                     274       1       1       0   .abs_section_274
      _PPSAD                                     275       1       1       0   .abs_section_275
      ships                                     3900      19      25      18   .data       
-     computerShips                             3919      19      25       8   .data       
+     computerShips                             3919      19      25       6   .data       
      seed1.1                                   3932       1       1       1   .bss        
      last.3                                    3933       2       2       2   .bss        
      mode                                      3935       2       2       8   .bss        
      state                                     3937       2       2      10   .bss        
      buttonFlag                                3939       2       2       7   .bss        
-     field                                     393B      64     100       8   .bss        
+     field                                     393B      64     100       7   .bss        
      numShips                                  399F       2       2      17   .bss        
      enemyAttacks                              39A1      C8     200       7   .bss        
      numEnemyAttacks                           3A69       2       2       7   .bss        
-     playerAttacks                             3A6B      C8     200       7   .bss        
-     numPlayerAttacks                          3B33       2       2       8   .bss        
+     playerAttacks                             3A6B      C8     200       6   .bss        
+     numPlayerAttacks                          3B33       2       2       7   .bss        
      seed2.2                                   3B35       1       1       2   .bss        
      OpenFlag                                  3B36       2       2       5   .bss        
      OC6Func                                   3B38       2       2       2   .bss        
@@ -1406,51 +1407,52 @@ OBJECT LIST SORTED BY ADDRESS
      random                                    C332      2B      43       5   .text       
      shipInBounds                              C35D      42      66       3   .text       
      checkHit                                  C39F      66     102       2   .text       
-     validShipPos                              C405     184     388      17   .text       
-     createField                               C589     132     306      11   .text       
-     enemyInit                                 C6BB      72     114       1   .text       
-     enemyPickMove                             C72D      B5     181       1   .text       
-     Game_Init                                 C7E2      14      20       1   .text       
-     Game_Update                               C7F6     139     313      24   .text       
-     findValidPos                              C92F      DA     218       5   .text       
-     flag                                      CA09       6       6       3   .text       
-     Game_DPad                                 CA0F     171     369      16   .text       
-     Game_A                                    CB80     162     354       7   .text       
-     Game_B                                    CCE2      84     132       1   .text       
-     Game_GetCursor                            CD66       A      10       1   .text       
-     Game_GetState                             CD70       4       4       1   .text       
-     lcdCmd                                    CD74      29      41      10   .text       
-     lcdData                                   CD9D      16      22       4   .text       
-     LCD_Init                                  CDB3      50      80       1   .text       
-     LCD_Clear                                 CE03      4B      75       5   .text       
-     OutByte                                   CE4E      12      18       1   .text       
-     pixelOn                                   CE60     3E6     998     169   .text       
-     LCD_DrawGrid                              D246     1A3     419       5   .text       
-     LCD_OutChar                               D3E9      EE     238       2   .text       
-     LCD_OutString                             D4D7      18      24       5   .text       
-     LCD_GoTo                                  D4EF      61      97       5   .text       
-     main                                      D550      18      24       1   .text       
-     PLL_Init                                  D568      15      21       1   .text       
-     Key_Init                                  D57D      1C      28       1   .text       
-     enableOC6                                 D599      2D      45       3   .text       
-     disableOC6                                D5C6       8       8       1   .text       
-     IC0Han                                    D5CE       8       8       1   .text       
-     IC1Han                                    D5D6       8       8       1   .text       
-     IC2Han                                    D5DE       A      10       1   .text       
-     IC3Han                                    D5E8       A      10       1   .text       
-     IC4Han                                    D5F2       A      10       1   .text       
-     IC5Han                                    D5FC       9       9       1   .text       
-     OC6Han                                    D605      30      48       1   .text       
-     Timer_Init                                D635       D      13       1   .text       
-     Timer_Wait                                D642      11      17       7   .text       
-     Timer_Wait1ms                             D653      10      16       1   .text       
-     Timer_Wait10ms                            D663      10      16       1   .text       
-     _BSHL                                     D673       8       8       1   RUNTIME     
-     _BDIVMODU                                 D67B       A      10       3   RUNTIME     
-     _ISHRU                                    D685       B      11       1   RUNTIME     
-     _CASE_DIRECT_BYTE                         D690       5       5       1   RUNTIME     
-     _CASE_CHECKED                             D695       B      11       2   RUNTIME     
-     _CASE_CHECKED_BYTE                        D6A0      14      20       5   RUNTIME     
+     validShipPos                              C405     184     388      16   .text       
+     createField                               C589     132     306      10   .text       
+     enemyInit                                 C6BB      3C      60       1   .text       
+     enemyPickMove                             C6F7      B5     181       1   .text       
+     Game_Init                                 C7AC      29      41       1   .text       
+     Game_Update                               C7D5     139     313      24   .text       
+     findValidPos                              C90E      DA     218       5   .text       
+     flag                                      C9E8       6       6       3   .text       
+     Game_DPad                                 C9EE     171     369      16   .text       
+     LEDflash                                  CB5F      2B      43       1   .text       
+     Game_A                                    CB8A     179     377       8   .text       
+     Game_B                                    CD03      84     132       1   .text       
+     Game_GetCursor                            CD87       A      10       1   .text       
+     Game_GetState                             CD91       4       4       1   .text       
+     lcdCmd                                    CD95      29      41      10   .text       
+     lcdData                                   CDBE      16      22       4   .text       
+     LCD_Init                                  CDD4      50      80       1   .text       
+     LCD_Clear                                 CE24      4B      75       4   .text       
+     OutByte                                   CE6F      12      18       1   .text       
+     pixelOn                                   CE81     3E6     998     169   .text       
+     LCD_DrawGrid                              D267     1A3     419       4   .text       
+     LCD_OutChar                               D40A      EE     238       2   .text       
+     LCD_OutString                             D4F8      18      24       5   .text       
+     LCD_GoTo                                  D510      61      97       5   .text       
+     main                                      D571      18      24       1   .text       
+     PLL_Init                                  D589      15      21       1   .text       
+     Key_Init                                  D59E      1C      28       1   .text       
+     enableOC6                                 D5BA      2D      45       4   .text       
+     disableOC6                                D5E7       8       8       1   .text       
+     IC0Han                                    D5EF       A      10       1   .text       
+     IC1Han                                    D5F9       A      10       1   .text       
+     IC2Han                                    D603       9       9       1   .text       
+     IC3Han                                    D60C       A      10       1   .text       
+     IC4Han                                    D616       8       8       1   .text       
+     IC5Han                                    D61E       8       8       1   .text       
+     OC6Han                                    D626      2C      44       1   .text       
+     Timer_Init                                D652       D      13       1   .text       
+     Timer_Wait                                D65F      11      17       7   .text       
+     Timer_Wait1ms                             D670      10      16       1   .text       
+     Timer_Wait10ms                            D680      10      16       1   .text       
+     _BSHL                                     D690       8       8       1   RUNTIME     
+     _BDIVMODU                                 D698       A      10       3   RUNTIME     
+     _ISHRU                                    D6A2       B      11       1   RUNTIME     
+     _CASE_DIRECT_BYTE                         D6AD       5       5       1   RUNTIME     
+     _CASE_CHECKED                             D6B2       B      11       2   RUNTIME     
+     _CASE_CHECKED_BYTE                        D6BD      14      20       5   RUNTIME     
      _Vector_14                                FFE2       2       2       0   .abs_section_ffe2
      _Vector_13                                FFE4       2       2       0   .abs_section_ffe4
      _Vector_12                                FFE6       2       2       0   .abs_section_ffe6
@@ -1476,67 +1478,67 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xD6B4 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6D1 ---- SIZE       4 ---
 Filling bytes inserted
  002E3903
-------- ROM-ADDRESS: 0xD6B8 ---- RAM-ADDRESS: 0x3903 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6D5 ---- RAM-ADDRESS: 0x3903 ---- SIZE       1 ---
 Name of initialized Object : ships:3
  02
-------- ROM-ADDRESS: 0xD6B9 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6D6 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6BD ---- RAM-ADDRESS: 0x3908 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6DA ---- RAM-ADDRESS: 0x3908 ---- SIZE       1 ---
 Name of initialized Object : ships:8
  03
-------- ROM-ADDRESS: 0xD6BE ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6DB ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6C2 ---- RAM-ADDRESS: 0x390D ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6DF ---- RAM-ADDRESS: 0x390D ---- SIZE       1 ---
 Name of initialized Object : ships:13
  03
-------- ROM-ADDRESS: 0xD6C3 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6E0 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6C7 ---- RAM-ADDRESS: 0x3912 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6E4 ---- RAM-ADDRESS: 0x3912 ---- SIZE       1 ---
 Name of initialized Object : ships:18
  04
-------- ROM-ADDRESS: 0xD6C8 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6E5 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6CC ---- RAM-ADDRESS: 0x3917 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6E9 ---- RAM-ADDRESS: 0x3917 ---- SIZE       1 ---
 Name of initialized Object : ships:23
  05
-------- ROM-ADDRESS: 0xD6CD ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6EA ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6D1 ---- RAM-ADDRESS: 0x391C ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6EE ---- RAM-ADDRESS: 0x391C ---- SIZE       1 ---
 Name of initialized Object : computerShips:3
  02
-------- ROM-ADDRESS: 0xD6D2 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6EF ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6D6 ---- RAM-ADDRESS: 0x3921 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6F3 ---- RAM-ADDRESS: 0x3921 ---- SIZE       1 ---
 Name of initialized Object : computerShips:8
  03
-------- ROM-ADDRESS: 0xD6D7 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6F4 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6DB ---- RAM-ADDRESS: 0x3926 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6F8 ---- RAM-ADDRESS: 0x3926 ---- SIZE       1 ---
 Name of initialized Object : computerShips:13
  03
-------- ROM-ADDRESS: 0xD6DC ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6F9 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6E0 ---- RAM-ADDRESS: 0x392B ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD6FD ---- RAM-ADDRESS: 0x392B ---- SIZE       1 ---
 Name of initialized Object : computerShips:18
  04
-------- ROM-ADDRESS: 0xD6E1 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xD6FE ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xD6E5 ---- RAM-ADDRESS: 0x3930 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xD702 ---- RAM-ADDRESS: 0x3930 ---- SIZE       1 ---
 Name of initialized Object : computerShips:23
  05
-------- ROM-ADDRESS: 0xD6E6 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xD703 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -1550,13 +1552,11 @@ incState                  USES state _CASE_CHECKED_BYTE numShips cursor mode
 random                    USES _TCNT seed1.1 seed2.2 last.3 
 validShipPos              USES validShipPos 
 createField               USES createField field _ISHRU 
-enemyInit                 USES computerShips random findValidPos LCD_Clear 
-                                playerAttacks numPlayerAttacks createField field 
-                                LCD_DrawGrid validShipPos 
+enemyInit                 USES computerShips random findValidPos 
 enemyPickMove             USES random enemyAttacks numEnemyAttacks ships 
                                 checkHit 
 Game_Init                 USES state numShips numEnemyAttacks numPlayerAttacks 
-                                cursor Game_Update 
+                                cursor _DDRAB _DDRS _DDRP Game_Update 
 Game_Update               USES state _CASE_CHECKED Game_Update 
                                 STRING.Welcome.to.Battleshi.4 LCD_OutString LCD_Clear LCD_GoTo 
                                 STRING.Single.Player.5 STRING.Multiplayer.6 cursor LCD_OutChar mode 
@@ -1572,9 +1572,11 @@ flag                      USES buttonFlag
 Game_DPad                 USES buttonFlag state _CASE_DIRECT_BYTE Game_DPad 
                                 cursor ships _CASE_CHECKED_BYTE numShips Game_Update 
                                 incState flag enableOC6 validShipPos shipInBounds 
+LEDflash                  USES _PORTAB _PTS _PTP 
 Game_A                    USES buttonFlag state Game_A cursor mode ships 
                                 numShips findValidPos playerAttacks numPlayerAttacks 
-                                computerShips checkHit Game_Update incState flag enableOC6 
+                                computerShips checkHit LEDflash enableOC6 Game_Update 
+                                incState flag 
 Game_B                    USES buttonFlag state _CASE_CHECKED_BYTE mode ships 
                                 numShips validShipPos shipInBounds Game_Update incState 
                                 flag enableOC6 
@@ -1600,12 +1602,12 @@ Key_Init                  USES _DDRT _PERT _TCTL3 _TCTL4 _TIOS _TIE
 enableOC6                 USES _TIE OC6Enabled OC6Func OC6Delay OC6DelayCount1 
                                 OC6DelayCount2 OC6Count _TFLG1 _TCNT _TC6 
 disableOC6                USES _TIE _TFLG1 
-IC0Han                    USES Game_B _TFLG1 
-IC1Han                    USES Game_A _TFLG1 
+IC0Han                    USES Game_DPad _TFLG1 
+IC1Han                    USES Game_DPad _TFLG1 
 IC2Han                    USES Game_DPad _TFLG1 
 IC3Han                    USES Game_DPad _TFLG1 
-IC4Han                    USES Game_DPad _TFLG1 
-IC5Han                    USES Game_DPad _TFLG1 
+IC4Han                    USES Game_B _TFLG1 
+IC5Han                    USES Game_A _TFLG1 
 OC6Han                    USES _TFLG1 OC6DelayCount2 OC6DelayCount1 OC6Func 
                                 OC6Count disableOC6 _TCNT OC6Delay _TC6 
 Timer_Init                USES _TSCR1 _TSCR2 _PACTL 
@@ -1674,43 +1676,17 @@ DEPENDENCY TREE
  |        |  +- random              
  |        |  |    
  |        |  +- findValidPos        
- |        |  |  | 
- |        |  |  +- _BDIVMODU           
- |        |  |  |    
- |        |  |  +- validShipPos        
- |        |  |  |    
- |        |  |  +- shipInBounds        
- |        |  |       
- |        |  +- LCD_Clear            (see above)
- |        |  |  
- |        |  +- createField         
- |        |  |  | 
- |        |  |  +- _ISHRU              
- |        |  |       
- |        |  +- LCD_DrawGrid        
- |        |  |  | 
- |        |  |  +- _CASE_CHECKED_BYTE  
- |        |  |  |    
- |        |  |  +- Game_GetCursor      
- |        |  |  |    
- |        |  |  +- pixelOn             
- |        |  |  |  | 
- |        |  |  |  +- _CASE_CHECKED        (see above)
- |        |  |  |     
- |        |  |  +- Game_GetState       
- |        |  |  |    
- |        |  |  +- OutByte             
- |        |  |  |  | 
- |        |  |  |  +- lcdCmd               (see above)
- |        |  |  |  |  
- |        |  |  |  +- lcdData              (see above)
- |        |  |  |     
- |        |  |  +- _BSHL               
- |        |  |       
- |        |  +- validShipPos         (see above)
- |        |     
- |        +- createField          (see above)
- |        |  
+ |        |     | 
+ |        |     +- _BDIVMODU           
+ |        |     |    
+ |        |     +- validShipPos        
+ |        |     |    
+ |        |     +- shipInBounds        
+ |        |          
+ |        +- createField         
+ |        |  | 
+ |        |  +- _ISHRU              
+ |        |       
  |        +- enemyPickMove       
  |        |  | 
  |        |  +- random               (see above)
@@ -1723,14 +1699,32 @@ DEPENDENCY TREE
  |        |     
  |        +- incState             (recursive dependency)
  |        |  | 
- |        |  +- _CASE_CHECKED_BYTE   (see above)
- |        |  |  
+ |        |  +- _CASE_CHECKED_BYTE  
+ |        |  |    
  |        |  +- checkDead           
  |        |  |    
  |        |  +- Game_Update          (see above) (recursive dependency)
  |        |     
- |        +- LCD_DrawGrid         (see above)
- |           
+ |        +- LCD_DrawGrid        
+ |           | 
+ |           +- _CASE_CHECKED_BYTE   (see above)
+ |           |  
+ |           +- Game_GetCursor      
+ |           |    
+ |           +- pixelOn             
+ |           |  | 
+ |           |  +- _CASE_CHECKED        (see above)
+ |           |     
+ |           +- Game_GetState       
+ |           |    
+ |           +- OutByte             
+ |           |  | 
+ |           |  +- lcdCmd               (see above)
+ |           |  |  
+ |           |  +- lcdData              (see above)
+ |           |     
+ |           +- _BSHL               
+ |                
  +- _Startup            
     | 
     +- Init                
@@ -1740,6 +1734,46 @@ DEPENDENCY TREE
  _Vector_8           
  | 
  +- IC0Han              
+    | 
+    +- Game_DPad           
+       | 
+       +- _CASE_DIRECT_BYTE   
+       |    
+       +- _CASE_CHECKED_BYTE   (see above)
+       |  
+       +- Game_Update          (see above) (recursive dependency)
+       |  
+       +- incState             (see above) (recursive dependency)
+       |  
+       +- flag                
+       |    
+       +- enableOC6           
+       |    
+       +- validShipPos         (see above)
+       |  
+       +- shipInBounds         (see above)
+          
+ _Vector_9           
+ | 
+ +- IC1Han              
+    | 
+    +- Game_DPad            (see above)
+       
+ _Vector_10          
+ | 
+ +- IC2Han              
+    | 
+    +- Game_DPad            (see above)
+       
+ _Vector_11          
+ | 
+ +- IC3Han              
+    | 
+    +- Game_DPad            (see above)
+       
+ _Vector_12          
+ | 
+ +- IC4Han              
     | 
     +- Game_B              
        | 
@@ -1753,13 +1787,13 @@ DEPENDENCY TREE
        |  
        +- incState             (see above) (recursive dependency)
        |  
-       +- flag                
-       |    
-       +- enableOC6           
-            
- _Vector_9           
+       +- flag                 (see above)
+       |  
+       +- enableOC6            (see above)
+          
+ _Vector_13          
  | 
- +- IC1Han              
+ +- IC5Han              
     | 
     +- Game_A              
        | 
@@ -1767,54 +1801,16 @@ DEPENDENCY TREE
        |  
        +- checkHit             (see above)
        |  
-       +- Game_Update          (see above) (recursive dependency)
-       |  
-       +- incState             (see above) (recursive dependency)
-       |  
-       +- flag                 (see above)
-       |  
-       +- enableOC6            (see above)
-          
- _Vector_10          
- | 
- +- IC2Han              
-    | 
-    +- Game_DPad           
-       | 
-       +- _CASE_DIRECT_BYTE   
+       +- LEDflash            
        |    
-       +- _CASE_CHECKED_BYTE   (see above)
+       +- enableOC6            (see above)
        |  
        +- Game_Update          (see above) (recursive dependency)
        |  
        +- incState             (see above) (recursive dependency)
        |  
        +- flag                 (see above)
-       |  
-       +- enableOC6            (see above)
-       |  
-       +- validShipPos         (see above)
-       |  
-       +- shipInBounds         (see above)
           
- _Vector_11          
- | 
- +- IC3Han              
-    | 
-    +- Game_DPad            (see above)
-       
- _Vector_12          
- | 
- +- IC4Han              
-    | 
-    +- Game_DPad            (see above)
-       
- _Vector_13          
- | 
- +- IC5Han              
-    | 
-    +- Game_DPad            (see above)
-       
  _Vector_14          
  | 
  +- OC6Han              
@@ -1828,5 +1824,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 13
-Total size of all blocks to be downloaded: 5880
+Total size of all blocks to be downloaded: 5909
 

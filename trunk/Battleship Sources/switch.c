@@ -29,7 +29,6 @@ asm cli
 }
 
 void enableOC6(void (*function) (void), unsigned short delay, unsigned short delayCount, unsigned short count) {
-  asm sei
   TIE |= 0x40;
   OC6Enabled = 1;    
   OC6Func = function;
@@ -39,7 +38,6 @@ void enableOC6(void (*function) (void), unsigned short delay, unsigned short del
   OC6Count = count;
   TFLG1 = 0x40;    
   TC6 = TCNT + OC6Delay;
-  asm cli
 }
 
 void disableOC6(void) {
@@ -48,32 +46,32 @@ void disableOC6(void) {
 }
 
 void interrupt 8 IC0Han(void) {
-  Game_B();                    
+  SW_PTP0;                    
   TFLG1 = 0x01;
 }
 
 void interrupt 9 IC1Han(void) {
-  Game_A();                    
+  SW_PTP1;                    
   TFLG1 = 0x02;
 }
 
 void interrupt 10 IC2Han(void) {
-  Game_DPad(RIGHT);                 
+  SW_PTP2;
   TFLG1 = 0x04;
 }
 
 void interrupt 11 IC3Han(void) {
-  Game_DPad(DOWN);                  
+  SW_PTP3;
   TFLG1 = 0x08;
 }
 
-void interrupt 12 IC4Han(void) {
-  Game_DPad(LEFT);                  
+void interrupt 12 IC4Han(void) { 
+  SW_PTP4;
   TFLG1 = 0x10;
 }
 
 void interrupt 13 IC5Han(void){
-  Game_DPad(UP);                   
+  SW_PTP5;
   TFLG1 = 0x20;
 }
 
@@ -84,9 +82,7 @@ void interrupt 14 OC6Han(void){
     (*OC6Func)();
     OC6Count--;
     if(!OC6Count) {
-      asm sei
       disableOC6();
-      asm cli
     }
   }
   else {

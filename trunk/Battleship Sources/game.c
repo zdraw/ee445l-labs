@@ -301,6 +301,19 @@ void Game_Init(void) {
   numPlayerAttacks = 0;
   cursor.x = 0;
   cursor.y = 0;
+  LED_DDR0 = 1;
+  LED_DDR1 = 1;
+  LED_DDR2 = 1;
+  LED_DDR3 = 1;
+  LED_DDR4 = 1;
+  LED_DDR5 = 1;
+  
+  LED0 = 1;
+  LED1 = 1;
+  LED2 = 1;
+  LED3 = 1;
+  LED4 = 1;
+  LED5 = 1;
   Game_Update();
 }
 
@@ -351,8 +364,6 @@ void Game_Update(void) {
       LCD_Clear(0);
       createField(ships, 0, playerAttacks, numPlayerAttacks);
       LCD_DrawGrid(field);
-      Timer_Wait10ms(100);
-      incState();
       break;
     case OPPONENT_TURN_WAITING:
       LCD_Clear(0);
@@ -487,6 +498,19 @@ void Game_DPad(unsigned char direction) {
   }
 }
 
+void LEDflash(void) {
+  int i;
+  for(i=0; i<10; i++) {
+    LED0 ^= 1;
+    LED1 ^= 1;
+    LED2 ^= 1;
+    LED3 ^= 1;
+    LED4 ^= 1;
+    LED5 ^= 1;
+    Timer_Wait1ms(100);
+  }
+}
+
 void Game_A(void) {
   int i, attackFlag;
   if(!buttonFlag) {
@@ -522,13 +546,18 @@ void Game_A(void) {
             playerAttacks[numPlayerAttacks].y = cursor.y;
             if(hit == -1) {
               playerAttacks[numPlayerAttacks++].type = MISS;
+              state = PLAYER_TURN_DONE;
+              Game_Update();
+              Timer_Wait10ms(100);
             }
             else {
               computerShips[hit].hits++;
               playerAttacks[numPlayerAttacks++].type = HIT;
+              state = PLAYER_TURN_DONE;
+              Game_Update();
+              LEDflash();
             }
-            state = PLAYER_TURN_DONE;
-            Game_Update();
+            incState();
           }
         }
         break; 
