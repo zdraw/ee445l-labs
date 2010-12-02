@@ -4,6 +4,19 @@
 #include "Timer.h"
 #include <string.h>
 
+#ifdef FIRST
+#define SOURCE 0x4E
+#define DESTINATION 0x4F
+#define SOURCE_CMD "ATMY4E"
+#define DESTINATION_CMD "ATDL4F"
+
+#else
+#define SOURCE 0x4F
+#define DESTINATION 0x4E
+#define SOURCE_CMD "ATMY4F"
+#define DESTINATION_CMD "ATDL4E"
+
+#endif
 
 char FrameID;
 
@@ -91,22 +104,23 @@ FrameType XBee_CreateTxFrameType(char * data)
   FrameType frame;
   short length = strlen(data) + 5;
   unsigned char checkSum = 0;
-  short i = 0;
-  for(i = 0; i < length; i++)
-  {
-    checkSum += data[i];
-  }
-  checkSum += 0x01;
-  checkSum += FrameID;
-  checkSum = 0xFF - checkSum;
-  frame.length = length;
-  frame.data = data;
-  frame.checkSum = checkSum;
+  int i;     
+  
+  frame.length = length; 
   frame.frameID = FrameID++;
   if(FrameID > 255)
   {
     FrameID = 1;
   }
+  for(i = 0; i < length; i++)
+  {       
+    frame.data[i] = data[i];
+    checkSum += data[i];
+  }
+  checkSum += 0x01;
+  checkSum += FrameID;
+  checkSum = 0xFF - checkSum;
+  frame.checkSum = checkSum;
   return frame;
 }
 
@@ -131,7 +145,7 @@ void XBee_SendTxFrameType(FrameType data_frame)
       SCI_OutChar(data_frame.data[i]);  
     }
     SCI_OutChar(data_frame.checkSum);
-  } while(XBee_TxStatus());
+  } while(!XBee_TxStatus());
 }
 
 /*-----------------------XBee_TxStatus------------------------
