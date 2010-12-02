@@ -1,8 +1,6 @@
 #include "defs.h"
 #include "game.h"
 
-#define DEBOUNCE_DELAY 10
-
 // UP     PT5
 // DOWN   PT4
 // LEFT   PT3

@@ -4,6 +4,10 @@
 #include <hidef.h>      /* common defines and macros */
 #include "derivative.h"      /* derivative-specific definitions */
 
+unsigned char reverseByte(unsigned char data);
+
+#define DEBOUNCE_DELAY 2500
+
 #define SET_LCD_DDR1() (DDRT |= 0xC0)
 #define SET_LCD_DDR2() (DDRP |= 0x0C)
   
@@ -12,7 +16,7 @@
 #define CS2 PTP_PTP3
 #define CS1 PTP_PTP2
 #define DATADR DDRB
-#define DATA PORTB
+#define SET_DATA(x) (PORTB = reverseByte(x))
 
 #define SW_PTP0 Game_DPad(LEFT)
 #define SW_PTP1 Game_DPad(DOWN)
@@ -34,5 +38,13 @@
 #define LED3 PTS_PTS2
 #define LED4 PTS_PTS3
 #define LED5 PTP_PTP6
+
+#define SS_DDR DDRM_DDRM3
+#define MOSI_DDR DDRM_DDRM4
+#define SCK_DDR DDRM_DDRM5
+
+#define SS PTM_PTM3
+#define MOSI PTM_PTM4
+#define SCK PTM_PTM5
 
 #endif
