@@ -1,4 +1,4 @@
-/*// filename  ***************  SCI1.C ****************************** 
+// filename  ***************  SCI.C ****************************** 
 // Simple I/O routines to 9S12DP512 serial port   
 // Jonathan W. Valvano 8/10/09
 
@@ -19,19 +19,19 @@
 #define RDRF 0x20   // Receive Data Register Full Bit
 #define TDRE 0x80   // Transmit Data Register Empty Bit
 
-//-------------------------SCI1_Init------------------------
-// Initialize Serial port SCI1
+//-------------------------SCI_Init------------------------
+// Initialize Serial port SCI
 // Input: baudRate is tha baud rate in bits/sec
 // Output: none
 // assumes a module clock frequency of 24 MHz
-void SCI1_Init(unsigned long baudRate){
+void SCI_Init(unsigned long baudRate){
 unsigned long br;
   DDRS |= 0x08;
   DDRS &= ~0x04;
-  SCI1BDH = 0;   
+  SCIBDH = 0;   
   br=(1500000+baudRate/2)/baudRate; // MCLK/(16*baudRate) 
-  SCI1BDL= (unsigned char) br; 
-  SCI1CR1 = 0x00;
+  SCIBDL= (unsigned char) br; 
+  SCICR1 = 0x00;
 // bit value meaning
 //    7   0    LOOPS, no looping, normal
 //   6   0    WOMS, normal high/low outputs
@@ -41,7 +41,7 @@ unsigned long br;
 //    2   0    ILT, short idle time (not applicable)
 //    1   0    PE, no parity
 //    0   0    PT, parity type (not applicable with PE=0) 
-  SCI1CR2 = 0x2C; 
+  SCICR2 = 0x2C; 
 // bit value meaning
 //    7   0    TIE, no transmit interrupts on TDRE
 //    6   0    TCIE, no transmit interrupts on TC
@@ -53,40 +53,36 @@ unsigned long br;
 //    0   0    SBK, no send break 
 }
 
-//-------------------------SCI1_OutChar------------------------
+//-------------------------SCI_OutChar------------------------
 // Wait for buffer to be empty, output 8-bit to serial port
 // busy-waiting synchronization
 // Input: 8-bit data to be transferred
 // Output: none
-void SCI1_OutChar(char data) {
-  while((SCI1SR1 & TDRE) == 0){};
-  SCI1DRL = data;
+void SCI_OutChar(char data) {
+  while((SCISR1 & TDRE) == 0){};
+  SCIDRL = data;
 }
 
-//-------------------------SCI1_InChar------------------------
+//-------------------------SCI_InChar------------------------
 // Wait for new serial port input, busy-waiting synchronization
 // The input is not echoed
 // Input: none
 // Output: ASCII code for key typed
-unsigned char SCI1_InChar(void) {
+unsigned char SCI_InChar(void) {
   unsigned char data;
   while(!Fifo_Get(&data)){};
   return data;
 }
 
-interrupt 21 void SCI1Handler(void) {
-  if(SCI1SR1 & RDRF){ 
-    Fifo_Put(SCI1DRL); // clears RDRF
+interrupt 21 void SCIHandler(void) {
+  if(SCISR1 & RDRF){ 
+    Fifo_Put(SCIDRL); // clears RDRF
   }    
 }
 
-void SCI1_OutString(char *pt) {
+void SCI_OutString(char *pt) {
   while(*pt){
-    SCI1_OutChar(*pt);
+    SCI_OutChar(*pt);
     pt++;
   }
 }
-
-
-
-*/

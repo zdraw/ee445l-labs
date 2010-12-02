@@ -3,6 +3,8 @@
 #include "LCDG.h"
 #include "switch.h"
 #include "Timer.h"
+#include "Music.h"
+#include "xbee.h"
 
 #define SINGLE      0
 #define MULTIPLAYER 1
@@ -86,6 +88,9 @@ void incState(void) {
       cursor.y = 0;
       if(mode == SINGLE) {
         state = PLAYER_TURN_WAITING;
+      }
+      else {
+        state = OPPONENT_SHIPS;  
       }
       break;
     case PLAYER_TURN_DONE:
@@ -316,21 +321,12 @@ void Game_Init(void) {
 }
 
 void Game_Update(void) {
+  int frameFlag = 1;
   switch(state) {
     case WELCOME:
       LCD_Clear(0);
       LCD_GoTo(4, 1);
-      LCD_OutString("Welcome to Battleship");
-      LCD_GoTo(4, 1); 
-      LCD_OutString("Welcome to Battleship");
-      LCD_GoTo(4, 1);
-      LCD_OutString("Welcome to Battleship");
-      LCD_GoTo(4, 1);
-      LCD_OutString("Welcome to Battleship");
-      LCD_GoTo(4, 1);
-      LCD_OutString("Welcome to Battleship");
-      LCD_GoTo(4, 1);
-      LCD_OutString("Welcome to Battleship");     
+      LCD_OutString("Welcome to Battleship");   
       Timer_Wait10ms(100);
       incState();
       break;
@@ -353,8 +349,59 @@ void Game_Update(void) {
           LCD_Clear(0);
           LCD_GoTo(4, 1);
           LCD_OutString(" Waiting on opponent ");
-          LCD_GoTo(5, 1);          
-          LCD_OutString("  Press B to cancel  ");
+          XBee_Init();
+          
+          #ifdef FIRST
+            FrameType frame = XBee_CreateTxFrameType("READY");
+            XBee_SendTxFrameType(frame);
+          
+            do {
+              FrameType frame;
+              while(!XBee_ReceiveTxFrame(&frame));
+              if(frame.data[5] != 'R') {
+                frameFlag = 0;
+              }
+              if(frame.data[6] != 'E') {
+                frameFlag = 0;
+              }
+              if(frame.data[7] != 'A') {
+                frameFlag = 0;
+              }
+              if(frame.data[8] != 'D') {
+                frameFlag = 0;
+              }
+              if(frame.data[9] != 'Y') {
+                frameFlag = 0;
+              }
+            } while(!frameFlag);
+          
+          #else 
+            do {
+              int i;
+              FrameType frame;
+              while(!XBee_ReceiveTxFrame(&frame));
+              if(frame.data[5] != 'R') {
+                frameFlag = 0;
+              }
+              if(frame.data[6] != 'E') {
+                frameFlag = 0;
+              }
+              if(frame.data[7] != 'A') {
+                frameFlag = 0;
+              }
+              if(frame.data[8] != 'D') {
+                frameFlag = 0;
+              }
+              if(frame.data[9] != 'Y') {
+                frameFlag = 0;
+              }
+            } while(!frameFlag);
+            
+            FrameType frame = XBee_CreateTxFrameType("READY");
+            XBee_SendTxFrameType(frame);
+          
+          #endif
+          
           break;
       }
       break;
@@ -362,6 +409,9 @@ void Game_Update(void) {
       LCD_Clear(0);
       createField(ships, numShips, enemyAttacks, 0);
       LCD_DrawGrid(field);
+      break;
+    case OPPONENT_SHIPS:
+      
       break;
     case PLAYER_TURN_WAITING:
       LCD_Clear(0);
@@ -584,13 +634,7 @@ void Game_A(void) {
 
 void Game_B(void) {
   if(!buttonFlag) {
-    switch(state) {  
-      case WAITING_FOR_OPPONENT:
-        if(mode == MULTIPLAYER) {
-          state = PICKING_MODE;
-          Game_Update();
-        }
-        break;
+    switch(state) {
       case PLACING_SHIPS:
         ships[numShips-1].orientation ^= 1;
         if(validShipPos(ships, numShips-1) && shipInBounds(ships, numShips-1)) {

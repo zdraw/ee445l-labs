@@ -6,6 +6,8 @@
 
 unsigned char reverseByte(unsigned char data);
 
+#define FIRST
+
 #define DEBOUNCE_DELAY 2500
 
 #define SET_LCD_DDR1() (DDRT |= 0xC0)
@@ -46,5 +48,11 @@ unsigned char reverseByte(unsigned char data);
 #define SS PTM_PTM3
 #define MOSI PTM_PTM4
 #define SCK PTM_PTM5
+
+#define SOURCE 0x4E
+#define DESTINATION 0x4F
+
+#define SOURCE_CMD "ATMY4E"
+#define DESTINATION_CMD "ATDL4F"
 
 #endif
