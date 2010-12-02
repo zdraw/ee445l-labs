@@ -173,7 +173,7 @@ void lcdCmd(unsigned char instruction){
   DI = 0;        // D/I=0, COMMAND WRITE
   Timer_Wait(T1usec);
   E = 1;         // E pulse width > 450ns
-  DATA = instruction;
+  SET_DATA(instruction);
   Timer_Wait(T1usec);
   E = 0;         // falling edge latch, setup time 200ns
   DI = 1;        // D/I=1 default state is data
@@ -188,7 +188,7 @@ void lcdData(unsigned char data){
   // R/W=0, write mode  default, R/W=0 always
   // normally D/I will be left at D/I=1 for data
   E = 1;         // E pulse width > 450ns
-  DATA = data;
+  SET_DATA(data);
   Timer_Wait(T1usec);
   E = 0;         // falling edge latch, setup time 200ns
   Timer_Wait(T4usec);

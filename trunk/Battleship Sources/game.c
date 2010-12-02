@@ -4,8 +4,6 @@
 #include "switch.h"
 #include "Timer.h"
 
-#define DEBOUNCE_DELAY 30000
-
 #define SINGLE      0
 #define MULTIPLAYER 1
 
@@ -322,6 +320,16 @@ void Game_Update(void) {
     case WELCOME:
       LCD_Clear(0);
       LCD_GoTo(4, 1);
+      LCD_OutString("Welcome to Battleship");
+      LCD_GoTo(4, 1); 
+      LCD_OutString("Welcome to Battleship");
+      LCD_GoTo(4, 1);
+      LCD_OutString("Welcome to Battleship");
+      LCD_GoTo(4, 1);
+      LCD_OutString("Welcome to Battleship");
+      LCD_GoTo(4, 1);
+      LCD_OutString("Welcome to Battleship");
+      LCD_GoTo(4, 1);
       LCD_OutString("Welcome to Battleship");     
       Timer_Wait10ms(100);
       incState();
@@ -554,7 +562,10 @@ void Game_A(void) {
               computerShips[hit].hits++;
               playerAttacks[numPlayerAttacks++].type = HIT;
               state = PLAYER_TURN_DONE;
+              
               Game_Update();
+              Music_EnableOC7();
+              asm cli
               LEDflash();
             }
             incState();
