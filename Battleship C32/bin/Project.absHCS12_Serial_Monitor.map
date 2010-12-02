@@ -36,7 +36,7 @@ _startupData is allocated at 0xC03B and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x3900     696
-  _Copy    *toCopyDownBeg 0xF68B
+  _Copy    *toCopyDownBeg 0xF622
 } _startupData;
 
 *********************************************************************************************
@@ -46,9 +46,9 @@ Section Name                    Size  Type     From       To       Segment
 .init                             59     R     0xC000     0xC03A   ROM_C000
 .startData                        10     R     0xC03B     0xC044   ROM_C000
 .rodata                         7518     R     0xC045     0xDDA2   ROM_C000
-.rodata1                         265     R     0xDDA3     0xDEAB   ROM_C000
-.text                           6033     R     0xDEAC     0xF63C   ROM_C000
-.copy                             55     R     0xF68B     0xF6C1   ROM_C000
+.rodata1                         178     R     0xDDA3     0xDE54   ROM_C000
+.text                           6015     R     0xDE55     0xF5D3   ROM_C000
+.copy                             55     R     0xF622     0xF658   ROM_C000
 .stack                           256   R/W     0x3800     0x38FF   RAM
 .data                             52   R/W     0x3900     0x3933   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
@@ -282,12 +282,12 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_ffe0                  2     R     0xFFE0     0xFFE1   .absSeg228
 .abs_section_ffd4                  2     R     0xFFD4     0xFFD5   .absSeg229
 .bss                             637   R/W     0x3934     0x3BB0   RAM
-RUNTIME                           78     R     0xF63D     0xF68A   ROM_C000
+RUNTIME                           78     R     0xF5D4     0xF621   ROM_C000
 .common                            7   R/W     0x3BB1     0x3BB7   RAM
 .vectSeg230_vect                   2     R     0xFFFE     0xFFFF   .vectSeg230
 
 Summary of section sizes per section type:
-READ_ONLY (R):        36D6 (dec:    14038)
+READ_ONLY (R):        366D (dec:    13933)
 READ_WRITE (R/W):      3B8 (dec:      952)
 NO_INIT (N/I):         104 (dec:      260)
 
@@ -535,58 +535,54 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                          3900       0       0       1               
 MODULE:                 -- STRING.C.o (ansisi.lib) --
 - PROCEDURES:
-     strlen                                    DEAC      14      20       1   .text       
+     strlen                                    DE55      14      20       1   .text       
 - VARIABLES:
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _BSHL                                     F63D       8       8       3   RUNTIME     
-     _BDIVMODU                                 F645       A      10       3   RUNTIME     
-     _ISHRU                                    F64F       B      11       1   RUNTIME     
-     _LINC                                     F65A       5       5       1   RUNTIME     
-     _COPY                                     F65F       8       8       1   RUNTIME     
-     _CASE_DIRECT_BYTE                         F667       5       5       1   RUNTIME     
-     _CASE_CHECKED                             F66C       B      11       2   RUNTIME     
-     _CASE_CHECKED_BYTE                        F677      14      20       5   RUNTIME     
+     _BSHL                                     F5D4       8       8       3   RUNTIME     
+     _BDIVMODU                                 F5DC       A      10       3   RUNTIME     
+     _ISHRU                                    F5E6       B      11       1   RUNTIME     
+     _LINC                                     F5F1       5       5       1   RUNTIME     
+     _COPY                                     F5F6       8       8       2   RUNTIME     
+     _CASE_DIRECT_BYTE                         F5FE       5       5       1   RUNTIME     
+     _CASE_CHECKED                             F603       B      11       2   RUNTIME     
+     _CASE_CHECKED_BYTE                        F60E      14      20       5   RUNTIME     
 - VARIABLES:
 MODULE:                 -- game.c.o --
 - PROCEDURES:
-     checkDead                                 DEC0      29      41       2   .text       
-     incState                                  DEE9      5F      95       4   .text       
-     random                                    DF48      2B      43       5   .text       
-     shipInBounds                              DF73      42      66       3   .text       
-     checkHit                                  DFB5      66     102       2   .text       
-     validShipPos                              E01B     184     388      16   .text       
-     createField                               E19F     132     306       9   .text       
-     enemyInit                                 E2D1      3C      60       1   .text       
-     enemyPickMove                             E30D      B5     181       1   .text       
-     Game_Init                                 E3C2      3E      62       1   .text       
-     Game_Update                               E400     1BA     442      31   .text       
-     findValidPos                              E5BA      DA     218       5   .text       
-     flag                                      E694       6       6       3   .text       
-     Game_DPad                                 E69A     16B     363      15   .text       
-     LEDflash                                  E805      3C      60       1   .text       
-     Game_A                                    E841     179     377       8   .text       
-     Game_B                                    E9BA      79     121       1   .text       
-     Game_GetCursor                            EA33       A      10       1   .text       
-     Game_GetState                             EA3D       4       4       1   .text       
+     checkDead                                 DE69      29      41       2   .text       
+     incState                                  DE92      6A     106       4   .text       
+     random                                    DEFC      2B      43       5   .text       
+     shipInBounds                              DF27      42      66       3   .text       
+     checkHit                                  DF69      66     102       2   .text       
+     validShipPos                              DFCF     184     388      16   .text       
+     createField                               E153     132     306       9   .text       
+     enemyInit                                 E285      3C      60       1   .text       
+     enemyPickMove                             E2C1      B5     181       1   .text       
+     Game_Init                                 E376      3E      62       1   .text       
+     Game_Update                               E3B4     18E     398      27   .text       
+     findValidPos                              E542      DA     218       5   .text       
+     flag                                      E61C       6       6       3   .text       
+     Game_DPad                                 E622     16B     363      15   .text       
+     LEDflash                                  E78D      3C      60       1   .text       
+     Game_A                                    E7C9     179     377       8   .text       
+     Game_B                                    E942      79     121       1   .text       
+     Game_GetCursor                            E9BB       A      10       1   .text       
+     Game_GetState                             E9C5       4       4       1   .text       
 - VARIABLES:
      STRING.Welcome.to.Battleshi.4             DDA3      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.5             DDB9      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.6             DDCF      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.7             DDE5      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.8             DDFB      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.9             DE11      16      22       1   .rodata1    
-     STRING.Single.Player.10                   DE27       E      14       1   .rodata1    
-     STRING.Multiplayer.11                     DE35       C      12       1   .rodata1    
-     STRING..Waiting.on.opponent.12            DE41      16      22       1   .rodata1    
-     STRING.READY.13                           DE57       6       6       1   .rodata1    
-     STRING........You.Win.......14            DE5D      16      22       1   .rodata1    
-     STRING........You.Lose......15            DE73      16      22       1   .rodata1    
+     STRING.Single.Player.5                    DDB9       E      14       1   .rodata1    
+     STRING.Multiplayer.6                      DDC7       C      12       1   .rodata1    
+     STRING...Initializing.Xbee..7             DDD3      16      22       1   .rodata1    
+     STRING..Waiting.for.Opponen.8             DDE9      17      23       1   .rodata1    
+     STRING.READY.9                            DE00       6       6       1   .rodata1    
+     STRING........You.Win.......10            DE06      16      22       1   .rodata1    
+     STRING........You.Lose......11            DE1C      16      22       1   .rodata1    
      ships                                     3900      19      25      20   .data       
      computerShips                             3919      19      25       6   .data       
      seed1.1                                   3934       1       1       1   .bss        
      last.3                                    3935       2       2       2   .bss        
-     mode                                      3937       2       2       7   .bss        
+     mode                                      3937       2       2       8   .bss        
      state                                     3939       2       2      10   .bss        
      buttonFlag                                393B       2       2       7   .bss        
      field                                     393D      64     100       8   .bss        
@@ -599,16 +595,16 @@ MODULE:                 -- game.c.o --
      cursor                                    3BB1       1       1      20   .common     
 MODULE:                 -- LCDG.c.o --
 - PROCEDURES:
-     lcdCmd                                    EA41      2C      44      10   .text       
-     lcdData                                   EA6D      19      25       4   .text       
-     LCD_Init                                  EA86      50      80       1   .text       
-     LCD_Clear                                 EAD6      4B      75       1   .text       
-     OutByte                                   EB21      12      18       1   .text       
-     pixelOn                                   EB33     3E6     998     169   .text       
-     LCD_DrawGrid                              EF19     1A3     419       5   .text       
-     LCD_OutChar                               F0BC      EE     238       2   .text       
-     LCD_OutString                             F1AA      18      24       6   .text       
-     LCD_GoTo                                  F1C2      61      97       5   .text       
+     lcdCmd                                    E9C9      2C      44      10   .text       
+     lcdData                                   E9F5      19      25       4   .text       
+     LCD_Init                                  EA0E      50      80       1   .text       
+     LCD_Clear                                 EA5E      4B      75       1   .text       
+     OutByte                                   EAA9      12      18       1   .text       
+     pixelOn                                   EABB     3E6     998     169   .text       
+     LCD_DrawGrid                              EEA1     1A3     419       5   .text       
+     LCD_OutChar                               F044      EE     238       2   .text       
+     LCD_OutString                             F132      18      24       6   .text       
+     LCD_GoTo                                  F14A      61      97       4   .text       
 - VARIABLES:
      Font                                      C045     1E0     480       2   .rodata     
      OpenFlag                                  3B38       2       2       5   .bss        
@@ -619,24 +615,24 @@ MODULE:                 -- LCDG.c.o --
      bDown                                     3BB6       1       1       4   .common     
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      F223      1E      30       1   .text       
+     main                                      F1AB      1E      30       1   .text       
 - VARIABLES:
 MODULE:                 -- PLL.c.o --
 - PROCEDURES:
-     PLL_Init                                  F241      15      21       1   .text       
+     PLL_Init                                  F1C9      15      21       1   .text       
 - VARIABLES:
 MODULE:                 -- switch.c.o --
 - PROCEDURES:
-     Key_Init                                  F256      1C      28       1   .text       
-     enableOC6                                 F272      29      41       3   .text       
-     disableOC6                                F29B       8       8       1   .text       
-     IC0Han                                    F2A3       A      10       1   .text       
-     IC1Han                                    F2AD       A      10       1   .text       
-     IC2Han                                    F2B7       9       9       1   .text       
-     IC3Han                                    F2C0       A      10       1   .text       
-     IC4Han                                    F2CA       8       8       1   .text       
-     IC5Han                                    F2D2       8       8       1   .text       
-     OC6Han                                    F2DA      2C      44       1   .text       
+     Key_Init                                  F1DE      1C      28       1   .text       
+     enableOC6                                 F1FA      29      41       3   .text       
+     disableOC6                                F223       8       8       1   .text       
+     IC0Han                                    F22B       A      10       1   .text       
+     IC1Han                                    F235       A      10       1   .text       
+     IC2Han                                    F23F       9       9       1   .text       
+     IC3Han                                    F248       A      10       1   .text       
+     IC4Han                                    F252       8       8       1   .text       
+     IC5Han                                    F25A       8       8       1   .text       
+     OC6Han                                    F262      2C      44       1   .text       
 - VARIABLES:
      OC6Func                                   3B3A       2       2       2   .bss        
      OC6Enabled                                3B3C       1       1       1   .bss        
@@ -653,57 +649,57 @@ MODULE:                 -- switch.c.o --
      _Vector_14                                FFE2       2       2       0   .abs_section_ffe2
 MODULE:                 -- Timer.C.o --
 - PROCEDURES:
-     Timer_Init                                F306       D      13       1   .text       
-     Timer_Wait                                F313      11      17       7   .text       
-     Timer_Wait1ms                             F324      10      16       3   .text       
-     Timer_Wait10ms                            F334      10      16       4   .text       
+     Timer_Init                                F28E       D      13       1   .text       
+     Timer_Wait                                F29B      11      17       7   .text       
+     Timer_Wait1ms                             F2AC      10      16       3   .text       
+     Timer_Wait10ms                            F2BC      10      16       4   .text       
 - VARIABLES:
 MODULE:                 -- defs.c.o --
 - PROCEDURES:
-     reverseByte                               F344      2E      46       2   .text       
+     reverseByte                               F2CC      2E      46       2   .text       
 - VARIABLES:
 MODULE:                 -- music.c.o --
 - PROCEDURES:
-     DAC_Init                                  F372      1B      27       1   .text       
-     transmitByte                              F38D      11      17       2   .text       
-     DAC_Out                                   F39E      12      18       1   .text       
-     Music_InitOC7                             F3B0       4       4       1   .text       
-     Music_EnableOC7                           F3B4       B      11       1   .text       
-     TC7Handler                                F3BF      3D      61       1   .text       
+     DAC_Init                                  F2FA      1B      27       1   .text       
+     transmitByte                              F315      11      17       2   .text       
+     DAC_Out                                   F326      12      18       1   .text       
+     Music_InitOC7                             F338       4       4       1   .text       
+     Music_EnableOC7                           F33C       B      11       1   .text       
+     TC7Handler                                F347      3D      61       1   .text       
 - VARIABLES:
      explode                                   C225    1B7E    7038       1   .rodata     
      i.1                                       3B45       4       4       8   .bss        
      _Vector_15                                FFE0       2       2       0   .abs_section_ffe0
 MODULE:                 -- xbee.c.o --
 - PROCEDURES:
-     ok                                        F3FC      1B      27       1   .text       
-     sendATCommand                             F417      21      33       5   .text       
-     XBee_Init                                 F438      39      57       1   .text       
-     XBee_ReceiveTxFrame                       F471      58      88       1   .text       
-     XBee_CreateTxFrameType                    F4C9      6F     111       1   .text       
-     XBee_SendTxFrameType                      F538      4C      76       1   .text       
-     XBee_TxStatus                             F584      3A      58       1   .text       
+     ok                                        F384      1B      27       1   .text       
+     sendATCommand                             F39F      21      33       5   .text       
+     XBee_Init                                 F3C0      39      57       1   .text       
+     XBee_ReceiveTxFrame                       F3F9      5A      90       1   .text       
+     XBee_CreateTxFrameType                    F453      72     114       1   .text       
+     XBee_SendTxFrameType                      F4C5      56      86       1   .text       
+     XBee_TxStatus                             F51B      3A      58       1   .text       
 - VARIABLES:
-     STRING.....1                              DE89       4       4       1   .rodata1    
-     STRING.ATMY4E.2                           DE8D       7       7       1   .rodata1    
-     STRING.ATDH0.3                            DE94       6       6       1   .rodata1    
-     STRING.ATDL4F.4                           DE9A       7       7       1   .rodata1    
-     STRING.ATAP1.5                            DEA1       6       6       1   .rodata1    
-     STRING.ATCN.6                             DEA7       5       5       1   .rodata1    
+     STRING.....1                              DE32       4       4       1   .rodata1    
+     STRING.ATMY4E.2                           DE36       7       7       1   .rodata1    
+     STRING.ATDH0.3                            DE3D       6       6       1   .rodata1    
+     STRING.ATDL4F.4                           DE43       7       7       1   .rodata1    
+     STRING.ATAP1.5                            DE4A       6       6       1   .rodata1    
+     STRING.ATCN.6                             DE50       5       5       1   .rodata1    
      FrameID.7                                 3932       2       2       2   .data       
      FrameID                                   3BB7       1       1       4   .common     
 MODULE:                 -- SCI.c.o --
 - PROCEDURES:
-     SCI_OutChar                               F5BE       9       9      14   .text       
-     SCI_InChar                                F5C7       D      13      15   .text       
-     SCIHandler                                F5D4       A      10       1   .text       
-     SCI_OutString                             F5DE       E      14       1   .text       
+     SCI_OutChar                               F555       9       9      14   .text       
+     SCI_InChar                                F55E       D      13      15   .text       
+     SCIHandler                                F56B       A      10       1   .text       
+     SCI_OutString                             F575       E      14       1   .text       
 - VARIABLES:
      _Vector_21                                FFD4       2       2       0   .abs_section_ffd4
 MODULE:                 -- FIFO.c.o --
 - PROCEDURES:
-     Fifo_Put                                  F5EC      26      38       1   .text       
-     Fifo_Get                                  F612      2B      43       1   .text       
+     Fifo_Put                                  F583      26      38       1   .text       
+     Fifo_Get                                  F5A9      2B      43       1   .text       
 - VARIABLES:
      PutPt                                     3B49       2       2       3   .bss        
      GetPt                                     3B4B       2       2       6   .bss        
@@ -717,7 +713,7 @@ MODULE STATISTIC
   Start12.c.o                                  0     59      0
   STRING.C.o (ansisi.lib)                      0     20      0
   rtshc12.c.o (ansisi.lib)                     0     78      0
-  game.c.o                                   567   2945    230
+  game.c.o                                   567   2912    143
   LCDG.c.o                                     7   2018    480
   main.c.o                                     0     30      0
   PLL.c.o                                      0     21      0
@@ -725,7 +721,7 @@ MODULE STATISTIC
   Timer.C.o                                    0     62      0
   defs.c.o                                     0     46      0
   music.c.o                                    4    138   7040
-  xbee.c.o                                     3    450     35
+  xbee.c.o                                     3    465     35
   SCI.c.o                                      0     46      2
   FIFO.c.o                                   104     81      0
   other                                      256     12     55
@@ -756,13 +752,10 @@ SECTION: ".init"
 SECTION: ".rodata"
   Font explode 
 SECTION: ".rodata1"
-  STRING.Welcome.to.Battleshi.4 STRING.Welcome.to.Battleshi.5 
-  STRING.Welcome.to.Battleshi.6 STRING.Welcome.to.Battleshi.7 
-  STRING.Welcome.to.Battleshi.8 STRING.Welcome.to.Battleshi.9 
-  STRING.Single.Player.10 STRING.Multiplayer.11 STRING..Waiting.on.opponent.12 
-  STRING.READY.13 STRING........You.Win.......14 STRING........You.Lose......15 
-  STRING.....1 STRING.ATMY4E.2 STRING.ATDH0.3 STRING.ATDL4F.4 STRING.ATAP1.5 
-  STRING.ATCN.6 
+  STRING.Welcome.to.Battleshi.4 STRING.Single.Player.5 STRING.Multiplayer.6 
+  STRING...Initializing.Xbee..7 STRING..Waiting.for.Opponen.8 STRING.READY.9 
+  STRING........You.Win.......10 STRING........You.Lose......11 STRING.....1 
+  STRING.ATMY4E.2 STRING.ATDH0.3 STRING.ATDL4F.4 STRING.ATAP1.5 STRING.ATCN.6 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -1459,7 +1452,7 @@ OBJECT LIST SORTED BY ADDRESS
      FrameID.7                                 3932       2       2       2   .data       
      seed1.1                                   3934       1       1       1   .bss        
      last.3                                    3935       2       2       2   .bss        
-     mode                                      3937       2       2       7   .bss        
+     mode                                      3937       2       2       8   .bss        
      state                                     3939       2       2      10   .bss        
      buttonFlag                                393B       2       2       7   .bss        
      field                                     393D      64     100       8   .bss        
@@ -1492,97 +1485,93 @@ OBJECT LIST SORTED BY ADDRESS
      Font                                      C045     1E0     480       2   .rodata     
      explode                                   C225    1B7E    7038       1   .rodata     
      STRING.Welcome.to.Battleshi.4             DDA3      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.5             DDB9      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.6             DDCF      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.7             DDE5      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.8             DDFB      16      22       1   .rodata1    
-     STRING.Welcome.to.Battleshi.9             DE11      16      22       1   .rodata1    
-     STRING.Single.Player.10                   DE27       E      14       1   .rodata1    
-     STRING.Multiplayer.11                     DE35       C      12       1   .rodata1    
-     STRING..Waiting.on.opponent.12            DE41      16      22       1   .rodata1    
-     STRING.READY.13                           DE57       6       6       1   .rodata1    
-     STRING........You.Win.......14            DE5D      16      22       1   .rodata1    
-     STRING........You.Lose......15            DE73      16      22       1   .rodata1    
-     STRING.....1                              DE89       4       4       1   .rodata1    
-     STRING.ATMY4E.2                           DE8D       7       7       1   .rodata1    
-     STRING.ATDH0.3                            DE94       6       6       1   .rodata1    
-     STRING.ATDL4F.4                           DE9A       7       7       1   .rodata1    
-     STRING.ATAP1.5                            DEA1       6       6       1   .rodata1    
-     STRING.ATCN.6                             DEA7       5       5       1   .rodata1    
-     strlen                                    DEAC      14      20       1   .text       
-     checkDead                                 DEC0      29      41       2   .text       
-     incState                                  DEE9      5F      95       4   .text       
-     random                                    DF48      2B      43       5   .text       
-     shipInBounds                              DF73      42      66       3   .text       
-     checkHit                                  DFB5      66     102       2   .text       
-     validShipPos                              E01B     184     388      16   .text       
-     createField                               E19F     132     306       9   .text       
-     enemyInit                                 E2D1      3C      60       1   .text       
-     enemyPickMove                             E30D      B5     181       1   .text       
-     Game_Init                                 E3C2      3E      62       1   .text       
-     Game_Update                               E400     1BA     442      31   .text       
-     findValidPos                              E5BA      DA     218       5   .text       
-     flag                                      E694       6       6       3   .text       
-     Game_DPad                                 E69A     16B     363      15   .text       
-     LEDflash                                  E805      3C      60       1   .text       
-     Game_A                                    E841     179     377       8   .text       
-     Game_B                                    E9BA      79     121       1   .text       
-     Game_GetCursor                            EA33       A      10       1   .text       
-     Game_GetState                             EA3D       4       4       1   .text       
-     lcdCmd                                    EA41      2C      44      10   .text       
-     lcdData                                   EA6D      19      25       4   .text       
-     LCD_Init                                  EA86      50      80       1   .text       
-     LCD_Clear                                 EAD6      4B      75       1   .text       
-     OutByte                                   EB21      12      18       1   .text       
-     pixelOn                                   EB33     3E6     998     169   .text       
-     LCD_DrawGrid                              EF19     1A3     419       5   .text       
-     LCD_OutChar                               F0BC      EE     238       2   .text       
-     LCD_OutString                             F1AA      18      24       6   .text       
-     LCD_GoTo                                  F1C2      61      97       5   .text       
-     main                                      F223      1E      30       1   .text       
-     PLL_Init                                  F241      15      21       1   .text       
-     Key_Init                                  F256      1C      28       1   .text       
-     enableOC6                                 F272      29      41       3   .text       
-     disableOC6                                F29B       8       8       1   .text       
-     IC0Han                                    F2A3       A      10       1   .text       
-     IC1Han                                    F2AD       A      10       1   .text       
-     IC2Han                                    F2B7       9       9       1   .text       
-     IC3Han                                    F2C0       A      10       1   .text       
-     IC4Han                                    F2CA       8       8       1   .text       
-     IC5Han                                    F2D2       8       8       1   .text       
-     OC6Han                                    F2DA      2C      44       1   .text       
-     Timer_Init                                F306       D      13       1   .text       
-     Timer_Wait                                F313      11      17       7   .text       
-     Timer_Wait1ms                             F324      10      16       3   .text       
-     Timer_Wait10ms                            F334      10      16       4   .text       
-     reverseByte                               F344      2E      46       2   .text       
-     DAC_Init                                  F372      1B      27       1   .text       
-     transmitByte                              F38D      11      17       2   .text       
-     DAC_Out                                   F39E      12      18       1   .text       
-     Music_InitOC7                             F3B0       4       4       1   .text       
-     Music_EnableOC7                           F3B4       B      11       1   .text       
-     TC7Handler                                F3BF      3D      61       1   .text       
-     ok                                        F3FC      1B      27       1   .text       
-     sendATCommand                             F417      21      33       5   .text       
-     XBee_Init                                 F438      39      57       1   .text       
-     XBee_ReceiveTxFrame                       F471      58      88       1   .text       
-     XBee_CreateTxFrameType                    F4C9      6F     111       1   .text       
-     XBee_SendTxFrameType                      F538      4C      76       1   .text       
-     XBee_TxStatus                             F584      3A      58       1   .text       
-     SCI_OutChar                               F5BE       9       9      14   .text       
-     SCI_InChar                                F5C7       D      13      15   .text       
-     SCIHandler                                F5D4       A      10       1   .text       
-     SCI_OutString                             F5DE       E      14       1   .text       
-     Fifo_Put                                  F5EC      26      38       1   .text       
-     Fifo_Get                                  F612      2B      43       1   .text       
-     _BSHL                                     F63D       8       8       3   RUNTIME     
-     _BDIVMODU                                 F645       A      10       3   RUNTIME     
-     _ISHRU                                    F64F       B      11       1   RUNTIME     
-     _LINC                                     F65A       5       5       1   RUNTIME     
-     _COPY                                     F65F       8       8       1   RUNTIME     
-     _CASE_DIRECT_BYTE                         F667       5       5       1   RUNTIME     
-     _CASE_CHECKED                             F66C       B      11       2   RUNTIME     
-     _CASE_CHECKED_BYTE                        F677      14      20       5   RUNTIME     
+     STRING.Single.Player.5                    DDB9       E      14       1   .rodata1    
+     STRING.Multiplayer.6                      DDC7       C      12       1   .rodata1    
+     STRING...Initializing.Xbee..7             DDD3      16      22       1   .rodata1    
+     STRING..Waiting.for.Opponen.8             DDE9      17      23       1   .rodata1    
+     STRING.READY.9                            DE00       6       6       1   .rodata1    
+     STRING........You.Win.......10            DE06      16      22       1   .rodata1    
+     STRING........You.Lose......11            DE1C      16      22       1   .rodata1    
+     STRING.....1                              DE32       4       4       1   .rodata1    
+     STRING.ATMY4E.2                           DE36       7       7       1   .rodata1    
+     STRING.ATDH0.3                            DE3D       6       6       1   .rodata1    
+     STRING.ATDL4F.4                           DE43       7       7       1   .rodata1    
+     STRING.ATAP1.5                            DE4A       6       6       1   .rodata1    
+     STRING.ATCN.6                             DE50       5       5       1   .rodata1    
+     strlen                                    DE55      14      20       1   .text       
+     checkDead                                 DE69      29      41       2   .text       
+     incState                                  DE92      6A     106       4   .text       
+     random                                    DEFC      2B      43       5   .text       
+     shipInBounds                              DF27      42      66       3   .text       
+     checkHit                                  DF69      66     102       2   .text       
+     validShipPos                              DFCF     184     388      16   .text       
+     createField                               E153     132     306       9   .text       
+     enemyInit                                 E285      3C      60       1   .text       
+     enemyPickMove                             E2C1      B5     181       1   .text       
+     Game_Init                                 E376      3E      62       1   .text       
+     Game_Update                               E3B4     18E     398      27   .text       
+     findValidPos                              E542      DA     218       5   .text       
+     flag                                      E61C       6       6       3   .text       
+     Game_DPad                                 E622     16B     363      15   .text       
+     LEDflash                                  E78D      3C      60       1   .text       
+     Game_A                                    E7C9     179     377       8   .text       
+     Game_B                                    E942      79     121       1   .text       
+     Game_GetCursor                            E9BB       A      10       1   .text       
+     Game_GetState                             E9C5       4       4       1   .text       
+     lcdCmd                                    E9C9      2C      44      10   .text       
+     lcdData                                   E9F5      19      25       4   .text       
+     LCD_Init                                  EA0E      50      80       1   .text       
+     LCD_Clear                                 EA5E      4B      75       1   .text       
+     OutByte                                   EAA9      12      18       1   .text       
+     pixelOn                                   EABB     3E6     998     169   .text       
+     LCD_DrawGrid                              EEA1     1A3     419       5   .text       
+     LCD_OutChar                               F044      EE     238       2   .text       
+     LCD_OutString                             F132      18      24       6   .text       
+     LCD_GoTo                                  F14A      61      97       4   .text       
+     main                                      F1AB      1E      30       1   .text       
+     PLL_Init                                  F1C9      15      21       1   .text       
+     Key_Init                                  F1DE      1C      28       1   .text       
+     enableOC6                                 F1FA      29      41       3   .text       
+     disableOC6                                F223       8       8       1   .text       
+     IC0Han                                    F22B       A      10       1   .text       
+     IC1Han                                    F235       A      10       1   .text       
+     IC2Han                                    F23F       9       9       1   .text       
+     IC3Han                                    F248       A      10       1   .text       
+     IC4Han                                    F252       8       8       1   .text       
+     IC5Han                                    F25A       8       8       1   .text       
+     OC6Han                                    F262      2C      44       1   .text       
+     Timer_Init                                F28E       D      13       1   .text       
+     Timer_Wait                                F29B      11      17       7   .text       
+     Timer_Wait1ms                             F2AC      10      16       3   .text       
+     Timer_Wait10ms                            F2BC      10      16       4   .text       
+     reverseByte                               F2CC      2E      46       2   .text       
+     DAC_Init                                  F2FA      1B      27       1   .text       
+     transmitByte                              F315      11      17       2   .text       
+     DAC_Out                                   F326      12      18       1   .text       
+     Music_InitOC7                             F338       4       4       1   .text       
+     Music_EnableOC7                           F33C       B      11       1   .text       
+     TC7Handler                                F347      3D      61       1   .text       
+     ok                                        F384      1B      27       1   .text       
+     sendATCommand                             F39F      21      33       5   .text       
+     XBee_Init                                 F3C0      39      57       1   .text       
+     XBee_ReceiveTxFrame                       F3F9      5A      90       1   .text       
+     XBee_CreateTxFrameType                    F453      72     114       1   .text       
+     XBee_SendTxFrameType                      F4C5      56      86       1   .text       
+     XBee_TxStatus                             F51B      3A      58       1   .text       
+     SCI_OutChar                               F555       9       9      14   .text       
+     SCI_InChar                                F55E       D      13      15   .text       
+     SCIHandler                                F56B       A      10       1   .text       
+     SCI_OutString                             F575       E      14       1   .text       
+     Fifo_Put                                  F583      26      38       1   .text       
+     Fifo_Get                                  F5A9      2B      43       1   .text       
+     _BSHL                                     F5D4       8       8       3   RUNTIME     
+     _BDIVMODU                                 F5DC       A      10       3   RUNTIME     
+     _ISHRU                                    F5E6       B      11       1   RUNTIME     
+     _LINC                                     F5F1       5       5       1   RUNTIME     
+     _COPY                                     F5F6       8       8       2   RUNTIME     
+     _CASE_DIRECT_BYTE                         F5FE       5       5       1   RUNTIME     
+     _CASE_CHECKED                             F603       B      11       2   RUNTIME     
+     _CASE_CHECKED_BYTE                        F60E      14      20       5   RUNTIME     
      _Vector_21                                FFD4       2       2       0   .abs_section_ffd4
      _Vector_15                                FFE0       2       2       0   .abs_section_ffe0
      _Vector_14                                FFE2       2       2       0   .abs_section_ffe2
@@ -1620,73 +1609,73 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xF68B ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF622 ---- SIZE       4 ---
 Filling bytes inserted
  00313903
-------- ROM-ADDRESS: 0xF68F ---- RAM-ADDRESS: 0x3903 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF626 ---- RAM-ADDRESS: 0x3903 ---- SIZE       1 ---
 Name of initialized Object : ships:3
  02
-------- ROM-ADDRESS: 0xF690 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF627 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF694 ---- RAM-ADDRESS: 0x3908 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF62B ---- RAM-ADDRESS: 0x3908 ---- SIZE       1 ---
 Name of initialized Object : ships:8
  03
-------- ROM-ADDRESS: 0xF695 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF62C ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF699 ---- RAM-ADDRESS: 0x390D ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF630 ---- RAM-ADDRESS: 0x390D ---- SIZE       1 ---
 Name of initialized Object : ships:13
  03
-------- ROM-ADDRESS: 0xF69A ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF631 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF69E ---- RAM-ADDRESS: 0x3912 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF635 ---- RAM-ADDRESS: 0x3912 ---- SIZE       1 ---
 Name of initialized Object : ships:18
  04
-------- ROM-ADDRESS: 0xF69F ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF636 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF6A3 ---- RAM-ADDRESS: 0x3917 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF63A ---- RAM-ADDRESS: 0x3917 ---- SIZE       1 ---
 Name of initialized Object : ships:23
  05
-------- ROM-ADDRESS: 0xF6A4 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF63B ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF6A8 ---- RAM-ADDRESS: 0x391C ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF63F ---- RAM-ADDRESS: 0x391C ---- SIZE       1 ---
 Name of initialized Object : computerShips:3
  02
-------- ROM-ADDRESS: 0xF6A9 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF640 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF6AD ---- RAM-ADDRESS: 0x3921 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF644 ---- RAM-ADDRESS: 0x3921 ---- SIZE       1 ---
 Name of initialized Object : computerShips:8
  03
-------- ROM-ADDRESS: 0xF6AE ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF645 ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF6B2 ---- RAM-ADDRESS: 0x3926 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF649 ---- RAM-ADDRESS: 0x3926 ---- SIZE       1 ---
 Name of initialized Object : computerShips:13
  03
-------- ROM-ADDRESS: 0xF6B3 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF64A ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF6B7 ---- RAM-ADDRESS: 0x392B ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF64E ---- RAM-ADDRESS: 0x392B ---- SIZE       1 ---
 Name of initialized Object : computerShips:18
  04
-------- ROM-ADDRESS: 0xF6B8 ---- SIZE       4 ---
+------- ROM-ADDRESS: 0xF64F ---- SIZE       4 ---
 Filling bytes inserted
  00000000
-------- ROM-ADDRESS: 0xF6BC ---- RAM-ADDRESS: 0x3930 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF653 ---- RAM-ADDRESS: 0x3930 ---- SIZE       1 ---
 Name of initialized Object : computerShips:23
  05
-------- ROM-ADDRESS: 0xF6BD ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xF654 ---- SIZE       2 ---
 Filling bytes inserted
  0000
-------- ROM-ADDRESS: 0xF6BF ---- RAM-ADDRESS: 0x3933 ---- SIZE       1 ---
+------- ROM-ADDRESS: 0xF656 ---- RAM-ADDRESS: 0x3933 ---- SIZE       1 ---
 Name of initialized Object : FrameID.7:1
  01
-------- ROM-ADDRESS: 0xF6C0 ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xF657 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -1695,7 +1684,7 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-incState                  USES state _CASE_CHECKED_BYTE numShips cursor mode 
+incState                  USES state _CASE_CHECKED_BYTE mode numShips cursor 
                                 computerShips checkDead ships Game_Update 
 random                    USES _TCNT seed1.1 seed2.2 last.3 
 validShipPos              USES validShipPos 
@@ -1707,18 +1696,15 @@ Game_Init                 USES state numShips numEnemyAttacks numPlayerAttacks
                                 cursor _DDRAB _DDRS _DDRP _PORTAB _PTS _PTP 
                                 Game_Update 
 Game_Update               USES state _CASE_CHECKED Game_Update 
-                                STRING.Welcome.to.Battleshi.4 STRING.Welcome.to.Battleshi.5 
-                                STRING.Welcome.to.Battleshi.6 STRING.Welcome.to.Battleshi.7 
-                                STRING.Welcome.to.Battleshi.8 STRING.Welcome.to.Battleshi.9 LCD_OutString 
-                                LCD_GoTo STRING.Single.Player.10 STRING.Multiplayer.11 
-                                cursor LCD_OutChar mode enemyInit 
-                                STRING..Waiting.on.opponent.12 XBee_Init STRING.READY.13 
-                                XBee_CreateTxFrameType _COPY XBee_SendTxFrameType XBee_TxStatus 
-                                XBee_ReceiveTxFrame ships numShips enemyAttacks enemyPickMove 
-                                Timer_Wait10ms incState computerShips playerAttacks 
-                                numPlayerAttacks createField field LCD_DrawGrid 
-                                STRING........You.Win.......14 STRING........You.Lose......15 numEnemyAttacks 
-                                LCD_Clear 
+                                STRING.Welcome.to.Battleshi.4 LCD_OutString LCD_GoTo STRING.Single.Player.5 
+                                STRING.Multiplayer.6 cursor LCD_OutChar mode enemyInit 
+                                STRING...Initializing.Xbee..7 XBee_Init STRING..Waiting.for.Opponen.8 
+                                STRING.READY.9 XBee_CreateTxFrameType _COPY 
+                                XBee_SendTxFrameType XBee_ReceiveTxFrame ships numShips 
+                                enemyAttacks enemyPickMove Timer_Wait10ms incState 
+                                computerShips playerAttacks numPlayerAttacks createField 
+                                field LCD_DrawGrid STRING........You.Win.......10 
+                                STRING........You.Lose......11 numEnemyAttacks LCD_Clear 
 findValidPos              USES findValidPos _BDIVMODU validShipPos 
                                 shipInBounds 
 flag                      USES buttonFlag 
@@ -1781,8 +1767,8 @@ XBee_Init                 USES SCI_OutChar Timer_Wait10ms STRING.....1
                                 SCI_OutString STRING.ATMY4E.2 sendATCommand STRING.ATDH0.3 
                                 STRING.ATDL4F.4 STRING.ATAP1.5 STRING.ATCN.6 _PTP 
 XBee_ReceiveTxFrame       USES SCI_InChar FrameID.7 
-XBee_CreateTxFrameType    USES strlen FrameID 
-XBee_SendTxFrameType      USES SCI_OutChar 
+XBee_CreateTxFrameType    USES strlen FrameID _COPY 
+XBee_SendTxFrameType      USES SCI_OutChar XBee_TxStatus 
 XBee_TxStatus             USES SCI_InChar 
 SCI_OutChar               USES _SCISR1 _SCIDRL 
 SCI_InChar                USES Fifo_Get 
@@ -1888,17 +1874,19 @@ DEPENDENCY TREE
  |  |     +- XBee_CreateTxFrameType
  |  |     |  | 
  |  |     |  +- strlen              
+ |  |     |  |    
+ |  |     |  +- _COPY               
  |  |     |       
- |  |     +- _COPY               
- |  |     |    
+ |  |     +- _COPY                (see above)
+ |  |     |  
  |  |     +- XBee_SendTxFrameType
  |  |     |  | 
  |  |     |  +- SCI_OutChar          (see above)
- |  |     |     
- |  |     +- XBee_TxStatus       
- |  |     |  | 
- |  |     |  +- SCI_InChar           (see above)
- |  |     |     
+ |  |     |  |  
+ |  |     |  +- XBee_TxStatus       
+ |  |     |     | 
+ |  |     |     +- SCI_InChar           (see above)
+ |  |     |        
  |  |     +- XBee_ReceiveTxFrame 
  |  |     |  | 
  |  |     |  +- SCI_InChar           (see above)
@@ -2074,5 +2062,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 17
-Total size of all blocks to be downloaded: 14038
+Total size of all blocks to be downloaded: 13933
 

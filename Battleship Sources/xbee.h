@@ -1,7 +1,7 @@
 typedef struct
 {
 	short length; // Length of data
-	char * data;
+	char data[30];
 	char checkSum;
 	short frameID;
 } FrameType;

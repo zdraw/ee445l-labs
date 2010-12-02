@@ -14,15 +14,16 @@
 #define WELCOME               0
 #define PICKING_MODE          1
 #define WAITING_FOR_OPPONENT  2
-#define OPPONENT_SHIPS        3
-#define PLACING_SHIPS         4
-#define PLAYER_TURN_WAITING   5
-#define PLAYER_TURN_DONE      6
-#define COMPUTER_SCREEN       7
-#define OPPONENT_TURN_WAITING 8
-#define OPPONENT_TURN_DONE    9
-#define WIN                  10
-#define LOSE                 11
+#define OPPONENT_XBEE         3
+#define OPPONENT_SHIPS        4
+#define PLACING_SHIPS         5
+#define PLAYER_TURN_WAITING   6
+#define PLAYER_TURN_DONE      7
+#define COMPUTER_SCREEN       8
+#define OPPONENT_TURN_WAITING 9
+#define OPPONENT_TURN_DONE   10
+#define WIN                  11
+#define LOSE                 12
 
 #define UP    0
 #define DOWN  1
