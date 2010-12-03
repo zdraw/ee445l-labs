@@ -2,7 +2,7 @@ Design Consistency Status Report
 --------------------------------
 
 Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Design Consistency Status Report).txt
-Report Written : Thursday, November 25, 2010
+Report Written : Wednesday, December 01, 2010
 Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
