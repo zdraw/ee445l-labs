@@ -1,16 +1,17 @@
 Forward Design Changes Report
 -----------------------------
 
-Report File    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Forward Design Changes Report).txt
-Report Written : Wednesday, December 01, 2010
-Design Path    : C:\Users\Stephen\Desktop\445L\Lab8\Schematic\UTX-2010F108.pcb
+Report File    : C:\Users\Stephen\Downloads\HubDownloads\Drop\445L\Lab8\Schematic\UTX-2010F108 (PCB - Forward Design Changes Report).txt
+Report Written : Monday, December 06, 2010
+Design Path    : C:\Users\Stephen\Downloads\HubDownloads\Drop\445L\Lab8\Schematic\UTX-2010F108.pcb
 Design Title   : 
 Created        : 9/11/2009 4:58:24 PM
 Last Saved     : 11/8/2010 5:11:45 PM
 Editing Time   : 3667 min
 Units          : mil (precision 0)
 
-The designs are the same, so no design changes to forward.
+Changed value "V" on component reference "R22" to "2.7k".
+
 
 
 End Of Report.
