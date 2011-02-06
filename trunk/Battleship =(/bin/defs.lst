@@ -1,0 +1,44 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  unsigned char reverseByte(unsigned char data) {
+*** EVALUATION ***
+
+Function: reverseByte
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\defs.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\defs.c.o" -OnB=b
+
+  0000 6bac         [2]     STAB  4,-SP
+    2:    int i;
+    3:    unsigned char reversed = 0;
+  0002 6983         [2]     CLR   3,SP
+    4:  
+    5:    for(i=0; i<8; i++) {
+  0004 c7           [1]     CLRB  
+  0005 87           [1]     CLRA  
+  0006 6c81         [2]     STD   1,SP
+    6:      if(data&(1<<i)) {
+  0008 c601         [1]     LDAB  #1
+  000a a682         [3]     LDAA  2,SP
+  000c 160000       [4]     JSR   _BSHL
+  000f e480         [3]     ANDB  0,SP
+  0011 270c         [3/1]   BEQ   *+14 ;abs = 001f
+    7:        reversed |= (1<<(7-i));
+  0013 cc0701       [2]     LDD   #1793
+  0016 a082         [3]     SUBA  2,SP
+  0018 160000       [4]     JSR   _BSHL
+  001b ea83         [3]     ORAB  3,SP
+  001d 6b83         [2]     STAB  3,SP
+  001f ee81         [3]     LDX   1,SP
+  0021 08           [1]     INX   
+  0022 6e81         [2]     STX   1,SP
+  0024 8e0008       [2]     CPX   #8
+  0027 2ddf         [3/1]   BLT   *-31 ;abs = 0008
+    8:      }
+    9:    }
+   10:  
+   11:    return reversed;
+  0029 e683         [3]     LDAB  3,SP
+   12:  }
+  002b 1b84         [2]     LEAS  4,SP
+  002d 3d           [5]     RTS   

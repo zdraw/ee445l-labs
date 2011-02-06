@@ -29,7 +29,7 @@ void main(void) {
   DDRP |= 0x80;
   PLL_Init(); // 24 MHz 
   Timer_Init();
-  LCD_Open();
+ // LCD_Open();
   Fifo_Init();
   SCI1_Init(9600); // SCI output to PC
      

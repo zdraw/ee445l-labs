@@ -8,7 +8,7 @@ unsigned char reverseByte(unsigned char data);
 
 #define FIRST
 
-#define DEBOUNCE_DELAY 2500
+#define DEBOUNCE_DELAY 30000
 
 #define SET_LCD_DDR1() (DDRT |= 0xC0)
 #define SET_LCD_DDR2() (DDRP |= 0x0C)
@@ -48,5 +48,10 @@ unsigned char reverseByte(unsigned char data);
 #define SS PTM_PTM3
 #define MOSI PTM_PTM4
 #define SCK PTM_PTM5
+
+#define RX_DDR DDRS_DDRS0
+#define TX_DDR DDRS_DDRS1
+
+#define SCI_INTERRUPT 20
 
 #endif
