@@ -1,0 +1,1528 @@
+*** EVALUATION ***
+ANSI-C/cC++ Compiler for HC12 V-5.0.41 Build 10203, Jul 23 2010
+
+    1:  //*****************LCDG.c***************************************
+    2:  // implementation of the driver for the AGM1264F MODULE
+    3:  // Jonathan W. Valvano 11/20/09 
+    4:  
+    5:  //  This example accompanies the books
+    6:  //   "Embedded Microcomputer Systems: Real Time Interfacing",
+    7:  //         Engineering, copyright (c) 2006,
+    8:  //   "Introduction to Embedded Microcomputer Systems: 
+    9:  //    Motorola 6811 and 6812 Simulation", Thomson, copyright (c) 2002
+   10:  
+   11:  // Copyright 2009 by Jonathan W. Valvano, valvano@mail.utexas.edu 
+   12:  //    You may use, edit, run or distribute this file 
+   13:  //    as long as the above copyright notice remains 
+   14:  
+   15:  // Hardware:
+   16:  // gnd    =  1- AGM1264F ground
+   17:  // +5V    =  2- AGM1264F Vcc (with 0.1uF cap to ground)
+   18:  // pot    =  3- AGM1264F Vo  (center pin of 10k pot)
+   19:  // PP2    =  4- AGM1264F D/I (0 for command, 1 for data)
+   20:  // gnd    =  5- AGM1264F R/W (blind cycle synchronization)
+   21:  // PP3    =  6- AGM1264F E   (1 to latch in data/command)
+   22:  // PH0    =  7- AGM1264F DB0
+   23:  // PH1    =  8- AGM1264F DB1
+   24:  // PH2    =  9- AGM1264F DB2
+   25:  // PH3    = 10- AGM1264F DB3
+   26:  // PH4    = 11- AGM1264F DB4
+   27:  // PH5    = 12- AGM1264F DB5
+   28:  // PH6    = 13- AGM1264F DB6
+   29:  // PH7    = 14- AGM1264F DB7
+   30:  // PP0    = 15- AGM1264F CS1 (controls left half of LCD)
+   31:  // PP1    = 16- AGM1264F CS2 (controls right half of LCD)
+   32:  // +5V    = 17- AGM1264F RES (reset)
+   33:  // pot    = 18- ADM1264F Vee (-10V)
+   34:  // 10k pot from pin 18 to ground, with center to pin 3
+   35:  // references   http://www.azdisplays.com/prod/g1264f.php
+   36:  // sample code  http://www.azdisplays.com/PDF/agm1264f_code.pdf
+   37:  // data sheet   http://www.azdisplays.com/PDF/agm1264f.pdf
+   38:  
+   39:  // BUG NOTICE 11/11/09 -Valvano
+   40:  // When changing from right to left or from left to right
+   41:  //   the first write with data=0 goes to two places
+   42:  // One can reduce the effect of this bug by
+   43:  // 1) Changing sides less often
+   44:  // 2) Ignore autoincrement, and set column and page address each time
+   45:  // 3) Blanking the screen then write 1's to the screen
+   46:  // GoTo bug fixed on 11/20/09
+   47:  
+   48:  //******************************************************************
+   49:  #include "defs.h"
+   50:  #include "LCDG.h"
+   51:  #include "Timer.h"
+   52:  #include "game.h"
+   53:  
+   54:  // assuming TCNT is 1.5 MHz
+   55:  #define T1usec 2
+   56:  #define T4usec 6
+   57:  
+   58:  static unsigned short OpenFlag=0;// 5 wide by 7 tall font
+   59:  
+   60:  unsigned char Column1; // column position
+   61:  unsigned char bLeft1;  // to be placed into CS1, in LCD_OutChar
+   62:  unsigned char bRight1; // to be placed into CS2, in LCD_OutChar
+   63:  unsigned char Page;
+   64:  unsigned char bDown;    // true if want font shifted down
+   65:  
+   66:  const unsigned char Font[96*5]={   // no numbers with bit7=1
+   67:    0,0,0,0,0,           // 32  space
+   68:    0,0,95,0,0,          // 33  !
+   69:    0,7,0,7,0,           // 34  "
+   70:    20,127,20,127,20,    // 35  #
+   71:    36,42,127,42,18,     // 36  $
+   72:    35,19,8,100,98,      // 37  %
+   73:    54,73,85,34,80,      // 38  &
+   74:    0,5,3,0,0,           // 39  quote
+   75:    0,28,34,65,0,        // 40  (
+   76:    0,65,34,28,0,        // 41  )
+   77:    20,8,62,8,20,        // 42  *
+   78:    8,8,62,8,8,          // 43  plus
+   79:    0,80,48,0,0,         // 44  ,
+   80:    8,8,8,8,8,           // 45  minus
+   81:    0,112,112,112,0,     // 46  .
+   82:    32,16,8,4,2,         // 47  /
+   83:    62,81,73,69,62,      // 48  0
+   84:    0,66,127,64,0,       // 49  1
+   85:    66,97,81,73,70,      // 50  2
+   86:    33,65,69,75,49,      // 51  3
+   87:    24,20,18,127,16,     // 52  4
+   88:    39,69,69,69,57,      // 53  5
+   89:    60,74,73,73,48,      // 54  6
+   90:    3,1,113,9,7,         // 55  7
+   91:    54,73,73,73,54,      // 56  8
+   92:    6,73,73,41,30,       // 57  9
+   93:    0,54,54,0,0,         // 58  :
+   94:    0,86,54,0,0,         // 59  ;
+   95:    8,20,34,65,0,        // 60  <
+   96:    20,20,20,20,20,      // 61  equals
+   97:    65,34,20,8,0,        // 62  >
+   98:    2,1,81,9,6,          // 63  ?
+   99:    50,73,121,65,62,     // 64  @
+  100:    126,17,17,17,126,    // 65  A
+  101:    127,73,73,73,54,     // 66  B
+  102:    62,65,65,65,34,      // 67  C
+  103:    127,65,65,65,62,     // 68  D
+  104:    127,73,73,73,65,     // 69  E
+  105:    127,9,9,9,1,         // 70  F
+  106:    62,65,73,73,122,     // 71  G
+  107:    127,8,8,8,127,       // 72  H
+  108:    65,65,127,65,65,     // 73  I
+  109:    32,64,65,63,1,       // 74  J
+  110:    127,8,20,34,65,      // 75  K
+  111:    127,64,64,64,64,     // 76  L
+  112:    127,2,12,2,127,      // 77  M
+  113:    127,6,24,96,127,     // 78  N
+  114:    62,65,65,65,62,      // 79  O
+  115:    127,9,9,9,6,         // 80  P
+  116:    62,65,81,33,94,      // 81  Q
+  117:    127,9,25,41,70,      // 82  R
+  118:    70,73,73,73,49,      // 83  S
+  119:    1,1,127,1,1,         // 84  T
+  120:    63,64,64,64,63,      // 85  U
+  121:    31,32,64,32,31,      // 86  V
+  122:    63,64,56,64,63,      // 87  W
+  123:    99,20,8,20,99,       // 88  X
+  124:    7,8,112,8,7,         // 89  Y
+  125:    97,81,73,69,67,      // 90  Z
+  126:    0,127,65,65,0,       // 91  [
+  127:    2,4,8,16,32,         // 92  back slash
+  128:    0,65,65,127,0,       // 93  ]
+  129:    4,2,1,2,4,           // 94  ^
+  130:    64,64,64,64,64,      // 95  _
+  131:    0,1,2,4,0,           // 96  quote
+  132:    32,84,84,84,120,     // 97  a
+  133:    127,72,68,68,56,     // 98  b
+  134:    56,68,68,68,32,      // 99  c
+  135:    56,68,68,72,127,     // 100  d
+  136:    56,84,84,84,24,      // 101  e
+  137:    8,126,9,1,2,         // 102  f
+  138:    8,84,84,84,60,       // 103  g   
+  139:    127,8,4,4,120,       // 104  h
+  140:    0,72,125,64,0,       // 105  i
+  141:    32,64,68,61,0,       // 106  j  
+  142:    127,16,40,68,0,      // 107  k
+  143:    0,65,127,64,0,       // 108  l
+  144:    124,4,24,4,120,      // 109  m
+  145:    124,8,4,4,120,       // 110  n
+  146:    56,68,68,68,56,      // 111  o
+  147:    124,20,20,20,8,      // 112  p      
+  148:    12,18,18,20,126,     // 113  q   
+  149:    124,8,4,4,8,         // 114  r
+  150:    72,84,84,84,36,      // 115  s
+  151:    4,63,68,64,32,       // 116  t
+  152:    60,64,64,32,124,     // 117  u
+  153:    28,32,64,32,28,      // 118  v
+  154:    60,64,48,64,60,      // 119  w
+  155:    68,40,16,40,68,      // 120  x
+  156:    12,80,80,80,60,      // 121  y    
+  157:    68,100,84,76,68,     // 122  z
+  158:    0,65,54,8,0,         // 123  }
+  159:    0,0,127,0,0,         // 124  |
+  160:    0,8,54,65,0,         // 125  {
+  161:    8,4,8,16,8,          // 126  ~
+  162:    31,36,124,36,31      // 127  UT sign
+  163:  };
+  164:  
+  165:  
+  166:  // ********* lcdCmd***********
+  167:  // Output command to AGM1264F 128-bit by 64-bit graphics display
+  168:  // Inputs: 8-bit instruction
+  169:  // Outputs: none
+  170:  void lcdCmd(unsigned char instruction){
+*** EVALUATION ***
+
+Function: lcdCmd
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  171:    // R/W=0, write mode  default, R/W=0 always
+  172:    // normally D/I will be left at D/I=1 for data
+  173:    DI = 0;        // D/I=0, COMMAND WRITE
+  0001 1d000080     [4]     BCLR  _PTT,#128
+  174:    Timer_Wait(T1usec);
+  0005 c602         [1]     LDAB  #2
+  0007 87           [1]     CLRA  
+  0008 160000       [4]     JSR   Timer_Wait
+  175:    E = 1;         // E pulse width > 450ns
+  000b 1c000040     [4]     BSET  _PTT,#64
+  176:    SET_DATA(instruction);
+  000f e680         [3]     LDAB  0,SP
+  0011 160000       [4]     JSR   reverseByte
+  0014 5b00         [2]     STAB  _PORTAB:1
+  177:    Timer_Wait(T1usec);
+  0016 c602         [1]     LDAB  #2
+  0018 87           [1]     CLRA  
+  0019 160000       [4]     JSR   Timer_Wait
+  178:    E = 0;         // falling edge latch, setup time 200ns
+  001c 1d000040     [4]     BCLR  _PTT,#64
+  179:    DI = 1;        // D/I=1 default state is data
+  0020 1c000080     [4]     BSET  _PTT,#128
+  180:    Timer_Wait(T4usec);
+  0024 c606         [1]     LDAB  #6
+  0026 87           [1]     CLRA  
+  0027 160000       [4]     JSR   Timer_Wait
+  181:  } 
+  002a 32           [3]     PULA  
+  002b 3d           [5]     RTS   
+  182:  
+  183:  // ********* lcdData***********
+  184:  // Output data to AGM1264F 128-bit by 64-bit graphics display
+  185:  // Inputs: 8-bit data
+  186:  // Outputs: none
+  187:  void lcdData(unsigned char data){
+*** EVALUATION ***
+
+Function: lcdData
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  188:    // R/W=0, write mode  default, R/W=0 always
+  189:    // normally D/I will be left at D/I=1 for data
+  190:    E = 1;         // E pulse width > 450ns
+  0000 1c000040     [4]     BSET  _PTT,#64
+  191:    SET_DATA(data);
+  0004 160000       [4]     JSR   reverseByte
+  0007 5b00         [2]     STAB  _PORTAB:1
+  192:    Timer_Wait(T1usec);
+  0009 c602         [1]     LDAB  #2
+  000b 87           [1]     CLRA  
+  000c 160000       [4]     JSR   Timer_Wait
+  193:    E = 0;         // falling edge latch, setup time 200ns
+  000f 1d000040     [4]     BCLR  _PTT,#64
+  194:    Timer_Wait(T4usec);
+  0013 c606         [1]     LDAB  #6
+  0015 87           [1]     CLRA  
+  0016 060000       [3]     JMP   Timer_Wait
+  195:  }    
+  196:  
+  197:  // ********* LCD_Init***********
+  198:  // Initialize AGM1264F 128-bit by 64-bit graphics display
+  199:  // activates TCNT at 1.5 MHz, assumes PLL active
+  200:  // Input: none                                      
+  201:  // Output: none
+  202:  // does not clear the display
+  203:  void LCD_Init(void){
+*** EVALUATION ***
+
+Function: LCD_Init
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  204:    Timer_Init();   // TCNT at 1.5 MHz
+  0000 160000       [4]     JSR   Timer_Init
+  205:    DATADR = 0xFF;    // PH7-PH0 outputs to DB7-DB0, PT3=E
+  0003 c6ff         [1]     LDAB  #255
+  0005 5b00         [2]     STAB  _DDRAB:1
+  206:    SET_LCD_DDR1();   // PP3-PP0 outputs to E,DI,CS1,CS2
+  0007 1c0000c0     [4]     BSET  _DDRT,#192
+  207:    SET_LCD_DDR2();   // PP3-PP0 outputs to E,DI,CS1,CS2
+  000b 1c00000c     [4]     BSET  _DDRP,#12
+  208:    CS2 = 1;         // talk to both LCD controllers
+  000f 1c000008     [4]     BSET  _PTP,#8
+  209:    CS1 = 1;
+  0013 1c000004     [4]     BSET  _PTP,#4
+  210:    DI = 1;          // default mode is data 
+  0017 1c000080     [4]     BSET  _PTT,#128
+  211:    E = 0;           // inactive
+  001b 1d000040     [4]     BCLR  _PTT,#64
+  212:    Timer_Wait1ms(100); // let it warm up
+  001f c664         [1]     LDAB  #100
+  0021 87           [1]     CLRA  
+  0022 160000       [4]     JSR   Timer_Wait1ms
+  213:    lcdCmd(0x3F);    // display=ON
+  0025 c63f         [1]     LDAB  #63
+  0027 160000       [4]     JSR   lcdCmd
+  214:    lcdCmd(0xB8);    // Page address (0 to 7) is 0
+  002a c6b8         [1]     LDAB  #184
+  002c 160000       [4]     JSR   lcdCmd
+  215:    lcdCmd(0x40);    // Column address (0 to 63) is 0
+  002f c640         [1]     LDAB  #64
+  0031 160000       [4]     JSR   lcdCmd
+  216:    lcdCmd(0xC0);    // Y=0 is at top
+  0034 c6c0         [1]     LDAB  #192
+  0036 160000       [4]     JSR   lcdCmd
+  217:    OpenFlag = 1;    // device openopen
+  0039 c601         [1]     LDAB  #1
+  003b 87           [1]     CLRA  
+  003c 7c0000       [3]     STD   OpenFlag
+  218:    Column1 = 0x41;  // column position
+  003f c641         [1]     LDAB  #65
+  0041 7b0000       [3]     STAB  Column1
+  219:    bLeft1 = 1;
+  0044 42           [1]     INCA  
+  0045 7a0000       [3]     STAA  bLeft1
+  220:    bRight1 = 0;
+  0048 790000       [3]     CLR   bRight1
+  221:    Page = 0xB8;
+  004b c6b8         [1]     LDAB  #184
+  004d 7b0000       [3]     STAB  Page
+  222:    bDown = 0;    // true if want font shifted down
+  0050 790000       [3]     CLR   bDown
+  223:  
+  224:  }
+  0053 3d           [5]     RTS   
+  225:  
+  226:  
+  227:  // ********* LCD_Clear***********
+  228:  // Clear the entire 1024 byte (8192 bit) image on the
+  229:  //    AGM1264F 128-bit by 64-bit graphics display
+  230:  // Input: value to write into all bytes of display RAM
+  231:  // Output: none
+  232:  // e.g., LCD_Clear(0);  // makes all pixels off
+  233:  void LCD_Clear(unsigned char data){
+*** EVALUATION ***
+
+Function: LCD_Clear
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 6bae         [2]     STAB  2,-SP
+  234:  unsigned char page;
+  235:    int i;
+  236:    if(OpenFlag == 0) return;
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 2728         [3/1]   BEQ   *+42 ;abs = 002f
+  237:    for(page = 0xB8; page< 0xB8+8; page++){ // pages 0 to 7
+  0007 c6b8         [1]     LDAB  #184
+  0009 6b81         [2]     STAB  1,SP
+  238:      CS2 = 1;          // right enable
+  000b 1c000008     [4]     BSET  _PTP,#8
+  239:      CS1 = 0;         
+  000f 1d000004     [4]     BCLR  _PTP,#4
+  240:      lcdCmd(page);    // Page address (0 to 7) 
+  0013 071c         [4]     BSR   *+30 ;abs = 0031
+  241:      lcdCmd(0x40);    // Column = 0
+  242:      for(i=64; i>0; i--){
+  243:        lcdData(data);   // copy one byte to right side
+  0015 0728         [4]     BSR   *+42 ;abs = 003f
+  0017 2efc         [3/1]   BGT   *-2 ;abs = 0015
+  244:      }
+  245:      CS2 = 0;          
+  0019 1d000008     [4]     BCLR  _PTP,#8
+  246:      CS1 = 1;         // left enable
+  001d 1c000004     [4]     BSET  _PTP,#4
+  247:      lcdCmd(page);    // Page address (0 to 7) 
+  0021 070e         [4]     BSR   *+16 ;abs = 0031
+  248:      lcdCmd(0x40);    // Column = 0
+  249:      for(i=64; i>0; i--){
+  250:        lcdData(data);   // copy one byte to left side
+  0023 071a         [4]     BSR   *+28 ;abs = 003f
+  0025 2efc         [3/1]   BGT   *-2 ;abs = 0023
+  0027 6281         [3]     INC   1,SP
+  0029 e681         [3]     LDAB  1,SP
+  002b c1c0         [1]     CMPB  #192
+  002d 25dc         [3/1]   BCS   *-34 ;abs = 000b
+  251:      }
+  252:    }
+  253:  }
+  002f 3a           [3]     PULD  
+  0030 3d           [5]     RTS   
+  0031 e683         [3]     LDAB  3,SP
+  0033 160000       [4]     JSR   lcdCmd
+  0036 c640         [1]     LDAB  #64
+  0038 160000       [4]     JSR   lcdCmd
+  003b ce0040       [2]     LDX   #64
+  003e 3d           [5]     RTS   
+  003f e682         [3]     LDAB  2,SP
+  0041 34           [2]     PSHX  
+  0042 160000       [4]     JSR   lcdData
+  0045 30           [3]     PULX  
+  0046 09           [1]     DEX   
+  0047 8e0000       [2]     CPX   #0
+  004a 3d           [5]     RTS   
+  254:  
+  255:  // page   is 0xB8 to 0xBF for pages 0 to 7
+  256:  // column is 0x40 to 0x7F for columns 0 to 63
+  257:  void OutByte(unsigned char page, unsigned char column,unsigned char data){
+*** EVALUATION ***
+
+Function: OutByte
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 37           [2]     PSHB  
+  258:    lcdCmd(page);    // Page address (0 to 7) 
+  0001 e684         [3]     LDAB  4,SP
+  0003 160000       [4]     JSR   lcdCmd
+  259:    lcdCmd(column);  // Column = 0 to 63
+  0006 e683         [3]     LDAB  3,SP
+  0008 160000       [4]     JSR   lcdCmd
+  260:    lcdData(data);   // data
+  000b e680         [3]     LDAB  0,SP
+  000d 160000       [4]     JSR   lcdData
+  261:  }
+  0010 32           [3]     PULA  
+  0011 3d           [5]     RTS   
+  262:  
+  263:  int pixelOn(int type, int x, int y) {
+*** EVALUATION ***
+
+Function: pixelOn
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  264:    switch(type) {
+  0001 ec86         [3]     LDD   6,SP
+  0003 160000       [4]     JSR   _CASE_CHECKED
+  0006 0008         DC.W  8
+  0008 0000         DC.W  pixelOn:0x03a6
+  000a 0000         DC.W  pixelOn:0x02e8
+  000c 0000         DC.W  pixelOn:0x035b
+  000e 0000         DC.W  pixelOn:0x001a
+  0010 0000         DC.W  pixelOn:0x0083
+  0012 0000         DC.W  pixelOn:0x00e9
+  0014 0000         DC.W  pixelOn:0x014f
+  0016 0000         DC.W  pixelOn:0x01b5
+  0018 0000         DC.W  pixelOn:0x0250
+  265:      case SHIPEND_UP:
+  266:        if((x == 2 && y == 3) ||
+  001a 160000       [4]     JSR   pixelOn:0x03b6
+  001d 2605         [3/1]   BNE   *+7 ;abs = 0024
+  001f 160000       [4]     JSR   pixelOn:0x03b0
+  0022 2708         [3/1]   BEQ   *+10 ;abs = 002c
+  267:           (x == 3 && y == 2) ||
+  0024 160000       [4]     JSR   pixelOn:0x03aa
+  0027 2605         [3/1]   BNE   *+7 ;abs = 002e
+  0029 160000       [4]     JSR   pixelOn:0x03bc
+  002c 2708         [3/1]   BEQ   *+10 ;abs = 0036
+  268:           (x == 3 && y == 3) ||
+  002e 160000       [4]     JSR   pixelOn:0x03aa
+  0031 2605         [3/1]   BNE   *+7 ;abs = 0038
+  0033 160000       [4]     JSR   pixelOn:0x03b0
+  0036 2708         [3/1]   BEQ   *+10 ;abs = 0040
+  269:           (x == 3 && y == 4) ||
+  0038 160000       [4]     JSR   pixelOn:0x03aa
+  003b 2605         [3/1]   BNE   *+7 ;abs = 0042
+  003d 160000       [4]     JSR   pixelOn:0x03c2
+  0040 2708         [3/1]   BEQ   *+10 ;abs = 004a
+  270:           (x == 4 && y == 2) ||
+  0042 160000       [4]     JSR   pixelOn:0x03c8
+  0045 2605         [3/1]   BNE   *+7 ;abs = 004c
+  0047 160000       [4]     JSR   pixelOn:0x03bc
+  004a 2708         [3/1]   BEQ   *+10 ;abs = 0054
+  271:           (x == 4 && y == 3) ||
+  004c 160000       [4]     JSR   pixelOn:0x03c8
+  004f 2605         [3/1]   BNE   *+7 ;abs = 0056
+  0051 160000       [4]     JSR   pixelOn:0x03b0
+  0054 2708         [3/1]   BEQ   *+10 ;abs = 005e
+  272:           (x == 4 && y == 4) ||
+  0056 160000       [4]     JSR   pixelOn:0x03c8
+  0059 2605         [3/1]   BNE   *+7 ;abs = 0060
+  005b 160000       [4]     JSR   pixelOn:0x03c2
+  005e 2708         [3/1]   BEQ   *+10 ;abs = 0068
+  273:           (x == 5 && y == 2) ||
+  0060 160000       [4]     JSR   pixelOn:0x03ce
+  0063 2605         [3/1]   BNE   *+7 ;abs = 006a
+  0065 160000       [4]     JSR   pixelOn:0x03bc
+  0068 2708         [3/1]   BEQ   *+10 ;abs = 0072
+  274:           (x == 5 && y == 3) ||
+  006a 160000       [4]     JSR   pixelOn:0x03ce
+  006d 2605         [3/1]   BNE   *+7 ;abs = 0074
+  006f 160000       [4]     JSR   pixelOn:0x03b0
+  0072 270c         [3/1]   BEQ   *+14 ;abs = 0080
+  275:           (x == 5 && y == 4)) {
+  0074 160000       [4]     JSR   pixelOn:0x03ce
+  0077 2603         [3/1]   BNE   *+5 ;abs = 007c
+  0079 160000       [4]     JSR   pixelOn:0x03c2
+  007c 18260326     [4/3]   LBNE  *+810 ;abs = 03a6
+  276:                        
+  277:          return 1;
+  0080 060000       [3]     JMP   pixelOn:0x03a3
+  278:        }
+  279:        break;
+  280:      case SHIPEND_DOWN:
+  281:        if((x == 1 && y == 2) ||
+  0083 160000       [4]     JSR   pixelOn:0x03d4
+  0086 2605         [3/1]   BNE   *+7 ;abs = 008d
+  0088 160000       [4]     JSR   pixelOn:0x03bc
+  008b 2708         [3/1]   BEQ   *+10 ;abs = 0095
+  282:           (x == 1 && y == 3) ||
+  008d 160000       [4]     JSR   pixelOn:0x03d4
+  0090 2605         [3/1]   BNE   *+7 ;abs = 0097
+  0092 160000       [4]     JSR   pixelOn:0x03b0
+  0095 2708         [3/1]   BEQ   *+10 ;abs = 009f
+  283:           (x == 1 && y == 4) ||
+  0097 160000       [4]     JSR   pixelOn:0x03d4
+  009a 2605         [3/1]   BNE   *+7 ;abs = 00a1
+  009c 160000       [4]     JSR   pixelOn:0x03c2
+  009f 2708         [3/1]   BEQ   *+10 ;abs = 00a9
+  284:           (x == 2 && y == 2) ||
+  00a1 160000       [4]     JSR   pixelOn:0x03b6
+  00a4 2605         [3/1]   BNE   *+7 ;abs = 00ab
+  00a6 160000       [4]     JSR   pixelOn:0x03bc
+  00a9 2708         [3/1]   BEQ   *+10 ;abs = 00b3
+  285:           (x == 2 && y == 3) ||
+  00ab 160000       [4]     JSR   pixelOn:0x03b6
+  00ae 2605         [3/1]   BNE   *+7 ;abs = 00b5
+  00b0 160000       [4]     JSR   pixelOn:0x03b0
+  00b3 2708         [3/1]   BEQ   *+10 ;abs = 00bd
+  286:           (x == 2 && y == 4) ||
+  00b5 160000       [4]     JSR   pixelOn:0x03b6
+  00b8 2605         [3/1]   BNE   *+7 ;abs = 00bf
+  00ba 160000       [4]     JSR   pixelOn:0x03c2
+  00bd 2708         [3/1]   BEQ   *+10 ;abs = 00c7
+  287:           (x == 3 && y == 2) ||
+  00bf 160000       [4]     JSR   pixelOn:0x03aa
+  00c2 2605         [3/1]   BNE   *+7 ;abs = 00c9
+  00c4 160000       [4]     JSR   pixelOn:0x03bc
+  00c7 2708         [3/1]   BEQ   *+10 ;abs = 00d1
+  288:           (x == 3 && y == 3) ||
+  00c9 160000       [4]     JSR   pixelOn:0x03aa
+  00cc 2605         [3/1]   BNE   *+7 ;abs = 00d3
+  00ce 160000       [4]     JSR   pixelOn:0x03b0
+  00d1 2708         [3/1]   BEQ   *+10 ;abs = 00db
+  289:           (x == 3 && y == 4) ||
+  00d3 160000       [4]     JSR   pixelOn:0x03aa
+  00d6 2605         [3/1]   BNE   *+7 ;abs = 00dd
+  00d8 160000       [4]     JSR   pixelOn:0x03c2
+  00db 27a3         [3/1]   BEQ   *-91 ;abs = 0080
+  290:           (x == 4 && y == 3)) {
+  00dd 160000       [4]     JSR   pixelOn:0x03c8
+  00e0 2603         [3/1]   BNE   *+5 ;abs = 00e5
+  00e2 160000       [4]     JSR   pixelOn:0x03b0
+  00e5 2695         [3/1]   BNE   *-105 ;abs = 007c
+  291:                        
+  292:          return 1;
+  00e7 2097         [3]     BRA   *-103 ;abs = 0080
+  293:        } 
+  294:        break;
+  295:      case SHIPEND_LEFT:
+  296:        if((x == 2 && y == 3) ||
+  00e9 160000       [4]     JSR   pixelOn:0x03b6
+  00ec 2605         [3/1]   BNE   *+7 ;abs = 00f3
+  00ee 160000       [4]     JSR   pixelOn:0x03b0
+  00f1 2708         [3/1]   BEQ   *+10 ;abs = 00fb
+  297:           (x == 2 && y == 4) ||
+  00f3 160000       [4]     JSR   pixelOn:0x03b6
+  00f6 2605         [3/1]   BNE   *+7 ;abs = 00fd
+  00f8 160000       [4]     JSR   pixelOn:0x03c2
+  00fb 2708         [3/1]   BEQ   *+10 ;abs = 0105
+  298:           (x == 2 && y == 5) ||
+  00fd 160000       [4]     JSR   pixelOn:0x03b6
+  0100 2605         [3/1]   BNE   *+7 ;abs = 0107
+  0102 160000       [4]     JSR   pixelOn:0x03da
+  0105 2708         [3/1]   BEQ   *+10 ;abs = 010f
+  299:           (x == 3 && y == 2) ||
+  0107 160000       [4]     JSR   pixelOn:0x03aa
+  010a 2605         [3/1]   BNE   *+7 ;abs = 0111
+  010c 160000       [4]     JSR   pixelOn:0x03bc
+  010f 2708         [3/1]   BEQ   *+10 ;abs = 0119
+  300:           (x == 3 && y == 3) ||
+  0111 160000       [4]     JSR   pixelOn:0x03aa
+  0114 2605         [3/1]   BNE   *+7 ;abs = 011b
+  0116 160000       [4]     JSR   pixelOn:0x03b0
+  0119 2708         [3/1]   BEQ   *+10 ;abs = 0123
+  301:           (x == 3 && y == 4) ||
+  011b 160000       [4]     JSR   pixelOn:0x03aa
+  011e 2605         [3/1]   BNE   *+7 ;abs = 0125
+  0120 160000       [4]     JSR   pixelOn:0x03c2
+  0123 2708         [3/1]   BEQ   *+10 ;abs = 012d
+  302:           (x == 3 && y == 5) ||
+  0125 160000       [4]     JSR   pixelOn:0x03aa
+  0128 2605         [3/1]   BNE   *+7 ;abs = 012f
+  012a 160000       [4]     JSR   pixelOn:0x03da
+  012d 2708         [3/1]   BEQ   *+10 ;abs = 0137
+  303:           (x == 4 && y == 3) ||
+  012f 160000       [4]     JSR   pixelOn:0x03c8
+  0132 2605         [3/1]   BNE   *+7 ;abs = 0139
+  0134 160000       [4]     JSR   pixelOn:0x03b0
+  0137 2708         [3/1]   BEQ   *+10 ;abs = 0141
+  304:           (x == 4 && y == 4) ||
+  0139 160000       [4]     JSR   pixelOn:0x03c8
+  013c 2605         [3/1]   BNE   *+7 ;abs = 0143
+  013e 160000       [4]     JSR   pixelOn:0x03c2
+  0141 27a4         [3/1]   BEQ   *-90 ;abs = 00e7
+  305:           (x == 4 && y == 5)) {
+  0143 160000       [4]     JSR   pixelOn:0x03c8
+  0146 2603         [3/1]   BNE   *+5 ;abs = 014b
+  0148 160000       [4]     JSR   pixelOn:0x03da
+  014b 2698         [3/1]   BNE   *-102 ;abs = 00e5
+  306:                        
+  307:          return 1;
+  014d 2098         [3]     BRA   *-102 ;abs = 00e7
+  308:        }
+  309:        break;
+  310:      case SHIPEND_RIGHT:
+  311:        if((x == 2 && y == 1) ||
+  014f 160000       [4]     JSR   pixelOn:0x03b6
+  0152 2605         [3/1]   BNE   *+7 ;abs = 0159
+  0154 160000       [4]     JSR   pixelOn:0x03e0
+  0157 2708         [3/1]   BEQ   *+10 ;abs = 0161
+  312:           (x == 2 && y == 2) ||
+  0159 160000       [4]     JSR   pixelOn:0x03b6
+  015c 2605         [3/1]   BNE   *+7 ;abs = 0163
+  015e 160000       [4]     JSR   pixelOn:0x03bc
+  0161 2708         [3/1]   BEQ   *+10 ;abs = 016b
+  313:           (x == 2 && y == 3) ||
+  0163 160000       [4]     JSR   pixelOn:0x03b6
+  0166 2605         [3/1]   BNE   *+7 ;abs = 016d
+  0168 160000       [4]     JSR   pixelOn:0x03b0
+  016b 2708         [3/1]   BEQ   *+10 ;abs = 0175
+  314:           (x == 3 && y == 1) ||
+  016d 160000       [4]     JSR   pixelOn:0x03aa
+  0170 2605         [3/1]   BNE   *+7 ;abs = 0177
+  0172 160000       [4]     JSR   pixelOn:0x03e0
+  0175 2708         [3/1]   BEQ   *+10 ;abs = 017f
+  315:           (x == 3 && y == 2) ||
+  0177 160000       [4]     JSR   pixelOn:0x03aa
+  017a 2605         [3/1]   BNE   *+7 ;abs = 0181
+  017c 160000       [4]     JSR   pixelOn:0x03bc
+  017f 2708         [3/1]   BEQ   *+10 ;abs = 0189
+  316:           (x == 3 && y == 3) ||
+  0181 160000       [4]     JSR   pixelOn:0x03aa
+  0184 2605         [3/1]   BNE   *+7 ;abs = 018b
+  0186 160000       [4]     JSR   pixelOn:0x03b0
+  0189 2708         [3/1]   BEQ   *+10 ;abs = 0193
+  317:           (x == 3 && y == 4) ||
+  018b 160000       [4]     JSR   pixelOn:0x03aa
+  018e 2605         [3/1]   BNE   *+7 ;abs = 0195
+  0190 160000       [4]     JSR   pixelOn:0x03c2
+  0193 2708         [3/1]   BEQ   *+10 ;abs = 019d
+  318:           (x == 4 && y == 1) ||
+  0195 160000       [4]     JSR   pixelOn:0x03c8
+  0198 2605         [3/1]   BNE   *+7 ;abs = 019f
+  019a 160000       [4]     JSR   pixelOn:0x03e0
+  019d 2708         [3/1]   BEQ   *+10 ;abs = 01a7
+  319:           (x == 4 && y == 2) ||
+  019f 160000       [4]     JSR   pixelOn:0x03c8
+  01a2 2605         [3/1]   BNE   *+7 ;abs = 01a9
+  01a4 160000       [4]     JSR   pixelOn:0x03bc
+  01a7 27a4         [3/1]   BEQ   *-90 ;abs = 014d
+  320:           (x == 4 && y == 3)) {
+  01a9 160000       [4]     JSR   pixelOn:0x03c8
+  01ac 2603         [3/1]   BNE   *+5 ;abs = 01b1
+  01ae 160000       [4]     JSR   pixelOn:0x03b0
+  01b1 2698         [3/1]   BNE   *-102 ;abs = 014b
+  321:                        
+  322:          return 1;
+  01b3 2098         [3]     BRA   *-102 ;abs = 014d
+  323:        }
+  324:        break;
+  325:      case SHIP_VERT:
+  326:        if((x == 1 && y == 2) ||
+  01b5 160000       [4]     JSR   pixelOn:0x03d4
+  01b8 2605         [3/1]   BNE   *+7 ;abs = 01bf
+  01ba 160000       [4]     JSR   pixelOn:0x03bc
+  01bd 2708         [3/1]   BEQ   *+10 ;abs = 01c7
+  327:           (x == 1 && y == 3) ||
+  01bf 160000       [4]     JSR   pixelOn:0x03d4
+  01c2 2605         [3/1]   BNE   *+7 ;abs = 01c9
+  01c4 160000       [4]     JSR   pixelOn:0x03b0
+  01c7 2708         [3/1]   BEQ   *+10 ;abs = 01d1
+  328:           (x == 1 && y == 4) ||
+  01c9 160000       [4]     JSR   pixelOn:0x03d4
+  01cc 2605         [3/1]   BNE   *+7 ;abs = 01d3
+  01ce 160000       [4]     JSR   pixelOn:0x03c2
+  01d1 2708         [3/1]   BEQ   *+10 ;abs = 01db
+  329:           (x == 2 && y == 2) ||
+  01d3 160000       [4]     JSR   pixelOn:0x03b6
+  01d6 2605         [3/1]   BNE   *+7 ;abs = 01dd
+  01d8 160000       [4]     JSR   pixelOn:0x03bc
+  01db 2708         [3/1]   BEQ   *+10 ;abs = 01e5
+  330:           (x == 2 && y == 3) ||
+  01dd 160000       [4]     JSR   pixelOn:0x03b6
+  01e0 2605         [3/1]   BNE   *+7 ;abs = 01e7
+  01e2 160000       [4]     JSR   pixelOn:0x03b0
+  01e5 2708         [3/1]   BEQ   *+10 ;abs = 01ef
+  331:           (x == 2 && y == 4) ||
+  01e7 160000       [4]     JSR   pixelOn:0x03b6
+  01ea 2605         [3/1]   BNE   *+7 ;abs = 01f1
+  01ec 160000       [4]     JSR   pixelOn:0x03c2
+  01ef 2708         [3/1]   BEQ   *+10 ;abs = 01f9
+  332:           (x == 3 && y == 2) ||
+  01f1 160000       [4]     JSR   pixelOn:0x03aa
+  01f4 2605         [3/1]   BNE   *+7 ;abs = 01fb
+  01f6 160000       [4]     JSR   pixelOn:0x03bc
+  01f9 2708         [3/1]   BEQ   *+10 ;abs = 0203
+  333:           (x == 3 && y == 3) ||
+  01fb 160000       [4]     JSR   pixelOn:0x03aa
+  01fe 2605         [3/1]   BNE   *+7 ;abs = 0205
+  0200 160000       [4]     JSR   pixelOn:0x03b0
+  0203 2708         [3/1]   BEQ   *+10 ;abs = 020d
+  334:           (x == 3 && y == 4) ||
+  0205 160000       [4]     JSR   pixelOn:0x03aa
+  0208 2605         [3/1]   BNE   *+7 ;abs = 020f
+  020a 160000       [4]     JSR   pixelOn:0x03c2
+  020d 2708         [3/1]   BEQ   *+10 ;abs = 0217
+  335:           (x == 4 && y == 2) ||
+  020f 160000       [4]     JSR   pixelOn:0x03c8
+  0212 2605         [3/1]   BNE   *+7 ;abs = 0219
+  0214 160000       [4]     JSR   pixelOn:0x03bc
+  0217 2708         [3/1]   BEQ   *+10 ;abs = 0221
+  336:           (x == 4 && y == 3) ||
+  0219 160000       [4]     JSR   pixelOn:0x03c8
+  021c 2605         [3/1]   BNE   *+7 ;abs = 0223
+  021e 160000       [4]     JSR   pixelOn:0x03b0
+  0221 2708         [3/1]   BEQ   *+10 ;abs = 022b
+  337:           (x == 4 && y == 4) ||
+  0223 160000       [4]     JSR   pixelOn:0x03c8
+  0226 2605         [3/1]   BNE   *+7 ;abs = 022d
+  0228 160000       [4]     JSR   pixelOn:0x03c2
+  022b 2708         [3/1]   BEQ   *+10 ;abs = 0235
+  338:           (x == 5 && y == 2) ||
+  022d 160000       [4]     JSR   pixelOn:0x03ce
+  0230 2605         [3/1]   BNE   *+7 ;abs = 0237
+  0232 160000       [4]     JSR   pixelOn:0x03bc
+  0235 2708         [3/1]   BEQ   *+10 ;abs = 023f
+  339:           (x == 5 && y == 3) ||
+  0237 160000       [4]     JSR   pixelOn:0x03ce
+  023a 2605         [3/1]   BNE   *+7 ;abs = 0241
+  023c 160000       [4]     JSR   pixelOn:0x03b0
+  023f 270c         [3/1]   BEQ   *+14 ;abs = 024d
+  340:           (x == 5 && y == 4)) {
+  0241 160000       [4]     JSR   pixelOn:0x03ce
+  0244 2603         [3/1]   BNE   *+5 ;abs = 0249
+  0246 160000       [4]     JSR   pixelOn:0x03c2
+  0249 18260159     [4/3]   LBNE  *+349 ;abs = 03a6
+  341:                        
+  342:          return 1;
+  024d 060000       [3]     JMP   pixelOn:0x03a3
+  343:        }
+  344:        break;
+  345:      case SHIP_HORIZ:
+  346:        if((x == 2 && y == 1) ||
+  0250 160000       [4]     JSR   pixelOn:0x03b6
+  0253 2605         [3/1]   BNE   *+7 ;abs = 025a
+  0255 160000       [4]     JSR   pixelOn:0x03e0
+  0258 2708         [3/1]   BEQ   *+10 ;abs = 0262
+  347:           (x == 2 && y == 2) ||
+  025a 160000       [4]     JSR   pixelOn:0x03b6
+  025d 2605         [3/1]   BNE   *+7 ;abs = 0264
+  025f 160000       [4]     JSR   pixelOn:0x03bc
+  0262 2708         [3/1]   BEQ   *+10 ;abs = 026c
+  348:           (x == 2 && y == 3) ||
+  0264 160000       [4]     JSR   pixelOn:0x03b6
+  0267 2605         [3/1]   BNE   *+7 ;abs = 026e
+  0269 160000       [4]     JSR   pixelOn:0x03b0
+  026c 2708         [3/1]   BEQ   *+10 ;abs = 0276
+  349:           (x == 2 && y == 4) ||
+  026e 160000       [4]     JSR   pixelOn:0x03b6
+  0271 2605         [3/1]   BNE   *+7 ;abs = 0278
+  0273 160000       [4]     JSR   pixelOn:0x03c2
+  0276 2708         [3/1]   BEQ   *+10 ;abs = 0280
+  350:           (x == 2 && y == 5) ||
+  0278 160000       [4]     JSR   pixelOn:0x03b6
+  027b 2605         [3/1]   BNE   *+7 ;abs = 0282
+  027d 160000       [4]     JSR   pixelOn:0x03da
+  0280 2708         [3/1]   BEQ   *+10 ;abs = 028a
+  351:           (x == 3 && y == 1) ||
+  0282 160000       [4]     JSR   pixelOn:0x03aa
+  0285 2605         [3/1]   BNE   *+7 ;abs = 028c
+  0287 160000       [4]     JSR   pixelOn:0x03e0
+  028a 2708         [3/1]   BEQ   *+10 ;abs = 0294
+  352:           (x == 3 && y == 2) ||
+  028c 160000       [4]     JSR   pixelOn:0x03aa
+  028f 2605         [3/1]   BNE   *+7 ;abs = 0296
+  0291 160000       [4]     JSR   pixelOn:0x03bc
+  0294 2708         [3/1]   BEQ   *+10 ;abs = 029e
+  353:           (x == 3 && y == 3) ||
+  0296 160000       [4]     JSR   pixelOn:0x03aa
+  0299 2605         [3/1]   BNE   *+7 ;abs = 02a0
+  029b 160000       [4]     JSR   pixelOn:0x03b0
+  029e 2708         [3/1]   BEQ   *+10 ;abs = 02a8
+  354:           (x == 3 && y == 4) ||
+  02a0 160000       [4]     JSR   pixelOn:0x03aa
+  02a3 2605         [3/1]   BNE   *+7 ;abs = 02aa
+  02a5 160000       [4]     JSR   pixelOn:0x03c2
+  02a8 2708         [3/1]   BEQ   *+10 ;abs = 02b2
+  355:           (x == 3 && y == 5) ||
+  02aa 160000       [4]     JSR   pixelOn:0x03aa
+  02ad 2605         [3/1]   BNE   *+7 ;abs = 02b4
+  02af 160000       [4]     JSR   pixelOn:0x03da
+  02b2 2708         [3/1]   BEQ   *+10 ;abs = 02bc
+  356:           (x == 4 && y == 1) ||
+  02b4 160000       [4]     JSR   pixelOn:0x03c8
+  02b7 2605         [3/1]   BNE   *+7 ;abs = 02be
+  02b9 160000       [4]     JSR   pixelOn:0x03e0
+  02bc 2708         [3/1]   BEQ   *+10 ;abs = 02c6
+  357:           (x == 4 && y == 2) ||
+  02be 160000       [4]     JSR   pixelOn:0x03c8
+  02c1 2605         [3/1]   BNE   *+7 ;abs = 02c8
+  02c3 160000       [4]     JSR   pixelOn:0x03bc
+  02c6 2708         [3/1]   BEQ   *+10 ;abs = 02d0
+  358:           (x == 4 && y == 3) ||
+  02c8 160000       [4]     JSR   pixelOn:0x03c8
+  02cb 2605         [3/1]   BNE   *+7 ;abs = 02d2
+  02cd 160000       [4]     JSR   pixelOn:0x03b0
+  02d0 2708         [3/1]   BEQ   *+10 ;abs = 02da
+  359:           (x == 4 && y == 4) ||
+  02d2 160000       [4]     JSR   pixelOn:0x03c8
+  02d5 2605         [3/1]   BNE   *+7 ;abs = 02dc
+  02d7 160000       [4]     JSR   pixelOn:0x03c2
+  02da 277d         [3/1]   BEQ   *+127 ;abs = 0359
+  360:           (x == 4 && y == 5)) {
+  02dc 160000       [4]     JSR   pixelOn:0x03c8
+  02df 2603         [3/1]   BNE   *+5 ;abs = 02e4
+  02e1 160000       [4]     JSR   pixelOn:0x03da
+  02e4 266d         [3/1]   BNE   *+111 ;abs = 0353
+  361:                        
+  362:          return 1;
+  02e6 2071         [3]     BRA   *+115 ;abs = 0359
+  363:        } 
+  364:        break;
+  365:      case HIT:
+  366:        if((x == 1 && y == 3) ||
+  02e8 160000       [4]     JSR   pixelOn:0x03d4
+  02eb 2605         [3/1]   BNE   *+7 ;abs = 02f2
+  02ed 160000       [4]     JSR   pixelOn:0x03b0
+  02f0 2708         [3/1]   BEQ   *+10 ;abs = 02fa
+  367:           (x == 2 && y == 2) ||
+  02f2 160000       [4]     JSR   pixelOn:0x03b6
+  02f5 2605         [3/1]   BNE   *+7 ;abs = 02fc
+  02f7 160000       [4]     JSR   pixelOn:0x03bc
+  02fa 2708         [3/1]   BEQ   *+10 ;abs = 0304
+  368:           (x == 2 && y == 3) ||
+  02fc 160000       [4]     JSR   pixelOn:0x03b6
+  02ff 2605         [3/1]   BNE   *+7 ;abs = 0306
+  0301 160000       [4]     JSR   pixelOn:0x03b0
+  0304 2708         [3/1]   BEQ   *+10 ;abs = 030e
+  369:           (x == 2 && y == 4) ||
+  0306 160000       [4]     JSR   pixelOn:0x03b6
+  0309 2605         [3/1]   BNE   *+7 ;abs = 0310
+  030b 160000       [4]     JSR   pixelOn:0x03c2
+  030e 2708         [3/1]   BEQ   *+10 ;abs = 0318
+  370:           (x == 3 && y == 1) ||
+  0310 160000       [4]     JSR   pixelOn:0x03aa
+  0313 2605         [3/1]   BNE   *+7 ;abs = 031a
+  0315 160000       [4]     JSR   pixelOn:0x03e0
+  0318 2708         [3/1]   BEQ   *+10 ;abs = 0322
+  371:           (x == 3 && y == 2) ||
+  031a 160000       [4]     JSR   pixelOn:0x03aa
+  031d 2605         [3/1]   BNE   *+7 ;abs = 0324
+  031f 160000       [4]     JSR   pixelOn:0x03bc
+  0322 2708         [3/1]   BEQ   *+10 ;abs = 032c
+  372:           (x == 3 && y == 4) ||
+  0324 160000       [4]     JSR   pixelOn:0x03aa
+  0327 2605         [3/1]   BNE   *+7 ;abs = 032e
+  0329 160000       [4]     JSR   pixelOn:0x03c2
+  032c 2707         [3/1]   BEQ   *+9 ;abs = 0335
+  373:           (x == 3 && y == 5) ||
+  032e 077a         [4]     BSR   *+124 ;abs = 03aa
+  0330 2605         [3/1]   BNE   *+7 ;abs = 0337
+  0332 160000       [4]     JSR   pixelOn:0x03da
+  0335 2707         [3/1]   BEQ   *+9 ;abs = 033e
+  374:           (x == 4 && y == 2) ||
+  0337 160000       [4]     JSR   pixelOn:0x03c8
+  033a 2604         [3/1]   BNE   *+6 ;abs = 0340
+  033c 077e         [4]     BSR   *+128 ;abs = 03bc
+  033e 2707         [3/1]   BEQ   *+9 ;abs = 0347
+  375:           (x == 4 && y == 3) ||
+  0340 160000       [4]     JSR   pixelOn:0x03c8
+  0343 2604         [3/1]   BNE   *+6 ;abs = 0349
+  0345 0769         [4]     BSR   *+107 ;abs = 03b0
+  0347 2706         [3/1]   BEQ   *+8 ;abs = 034f
+  376:           (x == 4 && y == 4) ||
+  0349 077d         [4]     BSR   *+127 ;abs = 03c8
+  034b 2604         [3/1]   BNE   *+6 ;abs = 0351
+  034d 0773         [4]     BSR   *+117 ;abs = 03c2
+  034f 2752         [3/1]   BEQ   *+84 ;abs = 03a3
+  377:           (x == 5 && y == 3)) {
+  0351 077b         [4]     BSR   *+125 ;abs = 03ce
+  0353 2602         [3/1]   BNE   *+4 ;abs = 0357
+  0355 0759         [4]     BSR   *+91 ;abs = 03b0
+  0357 2644         [3/1]   BNE   *+70 ;abs = 039d
+  378:                        
+  379:          return 1;
+  0359 2048         [3]     BRA   *+74 ;abs = 03a3
+  380:        } 
+  381:        break;
+  382:      case MISS: 
+  383:        if((x == 1 && y == 1) ||
+  035b 0777         [4]     BSR   *+121 ;abs = 03d4
+  035d 2604         [3/1]   BNE   *+6 ;abs = 0363
+  035f 077f         [4]     BSR   *+129 ;abs = 03e0
+  0361 2740         [3/1]   BEQ   *+66 ;abs = 03a3
+  384:           (x == 1 && y == 5) ||
+  0363 076f         [4]     BSR   *+113 ;abs = 03d4
+  0365 2604         [3/1]   BNE   *+6 ;abs = 036b
+  0367 0771         [4]     BSR   *+115 ;abs = 03da
+  0369 2738         [3/1]   BEQ   *+58 ;abs = 03a3
+  385:           (x == 2 && y == 2) ||
+  036b 0749         [4]     BSR   *+75 ;abs = 03b6
+  036d 2604         [3/1]   BNE   *+6 ;abs = 0373
+  036f 074b         [4]     BSR   *+77 ;abs = 03bc
+  0371 2730         [3/1]   BEQ   *+50 ;abs = 03a3
+  386:           (x == 2 && y == 4) ||
+  0373 0741         [4]     BSR   *+67 ;abs = 03b6
+  0375 2604         [3/1]   BNE   *+6 ;abs = 037b
+  0377 0749         [4]     BSR   *+75 ;abs = 03c2
+  0379 2728         [3/1]   BEQ   *+42 ;abs = 03a3
+  387:           (x == 3 && y == 3) ||
+  037b 072d         [4]     BSR   *+47 ;abs = 03aa
+  037d 2604         [3/1]   BNE   *+6 ;abs = 0383
+  037f 072f         [4]     BSR   *+49 ;abs = 03b0
+  0381 2720         [3/1]   BEQ   *+34 ;abs = 03a3
+  388:           (x == 4 && y == 2) ||
+  0383 0743         [4]     BSR   *+69 ;abs = 03c8
+  0385 2604         [3/1]   BNE   *+6 ;abs = 038b
+  0387 0733         [4]     BSR   *+53 ;abs = 03bc
+  0389 2718         [3/1]   BEQ   *+26 ;abs = 03a3
+  389:           (x == 4 && y == 4) ||
+  038b 073b         [4]     BSR   *+61 ;abs = 03c8
+  038d 2604         [3/1]   BNE   *+6 ;abs = 0393
+  038f 0731         [4]     BSR   *+51 ;abs = 03c2
+  0391 2710         [3/1]   BEQ   *+18 ;abs = 03a3
+  390:           (x == 5 && y == 1) ||
+  0393 0739         [4]     BSR   *+59 ;abs = 03ce
+  0395 2604         [3/1]   BNE   *+6 ;abs = 039b
+  0397 0747         [4]     BSR   *+73 ;abs = 03e0
+  0399 2708         [3/1]   BEQ   *+10 ;abs = 03a3
+  391:           (x == 5 && y == 5)) {
+  039b 0731         [4]     BSR   *+51 ;abs = 03ce
+  039d 2607         [3/1]   BNE   *+9 ;abs = 03a6
+  039f 0739         [4]     BSR   *+59 ;abs = 03da
+  03a1 2603         [3/1]   BNE   *+5 ;abs = 03a6
+  392:                        
+  393:          return 1;
+  03a3 c601         [1]     LDAB  #1
+  03a5 21           [1]     SKIP1 
+  394:        }
+  395:        break;
+  396:    }
+  397:    return 0;  
+  03a6 c7           [1]     CLRB  
+  03a7 87           [1]     CLRA  
+  398:  }
+  03a8 30           [3]     PULX  
+  03a9 3d           [5]     RTS   
+  03aa ec86         [3]     LDD   6,SP
+  03ac 8c0003       [2]     CPD   #3
+  03af 3d           [5]     RTS   
+  03b0 ec82         [3]     LDD   2,SP
+  03b2 8c0003       [2]     CPD   #3
+  03b5 3d           [5]     RTS   
+  03b6 ec86         [3]     LDD   6,SP
+  03b8 8c0002       [2]     CPD   #2
+  03bb 3d           [5]     RTS   
+  03bc ec82         [3]     LDD   2,SP
+  03be 8c0002       [2]     CPD   #2
+  03c1 3d           [5]     RTS   
+  03c2 ec82         [3]     LDD   2,SP
+  03c4 8c0004       [2]     CPD   #4
+  03c7 3d           [5]     RTS   
+  03c8 ec86         [3]     LDD   6,SP
+  03ca 8c0004       [2]     CPD   #4
+  03cd 3d           [5]     RTS   
+  03ce ec86         [3]     LDD   6,SP
+  03d0 8c0005       [2]     CPD   #5
+  03d3 3d           [5]     RTS   
+  03d4 ec86         [3]     LDD   6,SP
+  03d6 830001       [2]     SUBD  #1
+  03d9 3d           [5]     RTS   
+  03da ec82         [3]     LDD   2,SP
+  03dc 8c0005       [2]     CPD   #5
+  03df 3d           [5]     RTS   
+  03e0 ec82         [3]     LDD   2,SP
+  03e2 830001       [2]     SUBD  #1
+  03e5 3d           [5]     RTS   
+  399:  
+  400:  void LCD_DrawGrid(unsigned char field[10][10]) { 
+*** EVALUATION ***
+
+Function: LCD_DrawGrid
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 1b94         [2]     LEAS  -12,SP
+  0002 3b           [2]     PSHD  
+  401:    int i, j, k;               
+  402:    
+  403:    //PTP |= 0x80;
+  404:    
+  405:    CS1 = 0;
+  0003 1d000004     [4]     BCLR  _PTP,#4
+  406:    CS2 = 1;
+  0007 1c000008     [4]     BSET  _PTP,#8
+  407:    
+  408:    for(i=0; i<8; i++) {
+  000b c7           [1]     CLRB  
+  000c 87           [1]     CLRA  
+  000d 6c85         [2]     STD   5,SP
+  409:      for(j=0; j<61; j++) {
+  000f c7           [1]     CLRB  
+  0010 87           [1]     CLRA  
+  0011 6c89         [2]     STD   9,SP
+  410:        unsigned char pixels = 0;
+  0013 6984         [2]     CLR   4,SP
+  411:        if(!(j%6)) {
+  0015 ec89         [3]     LDD   9,SP
+  0017 ce0006       [2]     LDX   #6
+  001a 1815         [12]    IDIVS 
+  001c 046414       [3]     TBNE  D,*+23 ;abs = 0033
+  412:          if(i<7) {
+  001f ec85         [3]     LDD   5,SP
+  0021 8c0007       [2]     CPD   #7
+  0024 2c06         [3/1]   BGE   *+8 ;abs = 002c
+  413:            pixels = 0xFF;
+  0026 c6ff         [1]     LDAB  #255
+  0028 6b84         [2]     STAB  4,SP
+  414:          } 
+  002a 2004         [3]     BRA   *+6 ;abs = 0030
+  415:          else {
+  416:            pixels = 0x1F; 
+  002c c61f         [1]     LDAB  #31
+  002e 6b84         [2]     STAB  4,SP
+  0030 060000       [3]     JMP   LCD_DrawGrid:0x016c
+  417:          }
+  418:        }
+  419:        else {
+  420:          switch(i) {
+  0033 ec85         [3]     LDD   5,SP
+  0035 160000       [4]     JSR   _CASE_CHECKED_BYTE
+  0038 08           DC.B  8
+  0039 12           DC.B  18
+  003a 08           DC.B  8
+  003b 0b           DC.B  11
+  003c 0e           DC.B  14
+  003d 08           DC.B  8
+  003e 0b           DC.B  11
+  003f 0e           DC.B  14
+  0040 08           DC.B  8
+  0041 0b           DC.B  11
+  421:            case 0:
+  422:            case 3:
+  423:            case 6:
+  424:              pixels = 0x41;
+  0042 c641         [1]     LDAB  #65
+  425:              break;
+  0044 8f           [2]     SKIP2 
+  426:            case 1:
+  427:            case 4:
+  428:            case 7:
+  429:              pixels = 0x10;
+  0045 c610         [1]     LDAB  #16
+  430:              break;
+  0047 8f           [2]     SKIP2 
+  431:            case 2:
+  432:            case 5:
+  433:              pixels = 0x04;
+  0048 c604         [1]     LDAB  #4
+  004a 6b84         [2]     STAB  4,SP
+  434:              break;
+  435:          }
+  436:          for(k=0; k<8 && (i<7 || k<4); k++) {
+  004c c7           [1]     CLRB  
+  004d 87           [1]     CLRA  
+  004e 6c87         [2]     STD   7,SP
+  0050 060000       [3]     JMP   LCD_DrawGrid:0x0157
+  437:            unsigned char boxRow = ((i*8)+k)/6;
+  0053 ec85         [3]     LDD   5,SP
+  0055 59           [1]     LSLD  
+  0056 59           [1]     LSLD  
+  0057 59           [1]     LSLD  
+  0058 e387         [3]     ADDD  7,SP
+  005a ce0006       [2]     LDX   #6
+  005d 3b           [2]     PSHD  
+  005e 1815         [12]    IDIVS 
+  0060 b751         [1]     TFR   X,B
+  0062 6b8f         [2]     STAB  15,SP
+  438:            unsigned char boxCol = j/6;
+  0064 ec8b         [3]     LDD   11,SP
+  0066 ce0006       [2]     LDX   #6
+  0069 1815         [12]    IDIVS 
+  006b b751         [1]     TFR   X,B
+  006d 6b8e         [2]     STAB  14,SP
+  439:            
+  440:            unsigned char boxX = ((i*8)+k)%6;
+  006f 3a           [3]     PULD  
+  0070 ce0006       [2]     LDX   #6
+  0073 1815         [12]    IDIVS 
+  0075 6b83         [2]     STAB  3,SP
+  441:            unsigned char boxY = j%6;
+  0077 ec89         [3]     LDD   9,SP
+  0079 ce0006       [2]     LDX   #6
+  007c 1815         [12]    IDIVS 
+  007e 6b82         [2]     STAB  2,SP
+  442:            
+  443:            CursorType curs = Game_GetCursor();
+  0080 1a8b         [2]     LEAX  11,SP
+  0082 b754         [1]     TFR   X,D
+  0084 160000       [4]     JSR   Game_GetCursor
+  444:            
+  445:            if(pixelOn(field[boxRow][boxCol], boxX, boxY)) {
+  0087 c60a         [1]     LDAB  #10
+  0089 a68d         [3]     LDAA  13,SP
+  008b 12           [1]     MUL   
+  008c e380         [3]     ADDD  0,SP
+  008e b745         [1]     TFR   D,X
+  0090 e68c         [3]     LDAB  12,SP
+  0092 87           [1]     CLRA  
+  0093 1ae6         [2]     LEAX  D,X
+  0095 e600         [3]     LDAB  0,X
+  0097 3b           [2]     PSHD  
+  0098 e685         [3]     LDAB  5,SP
+  009a 3b           [2]     PSHD  
+  009b e686         [3]     LDAB  6,SP
+  009d 160000       [4]     JSR   pixelOn
+  00a0 1b84         [2]     LEAS  4,SP
+  00a2 044403       [3]     TBEQ  D,*+6 ;abs = 00a8
+  446:              pixels |= 1 << k;
+  00a5 160000       [4]     JSR   LCD_DrawGrid:0x0197
+  447:            }
+  448:            if(Game_GetState() == PLAYER_TURN_WAITING) {
+  00a8 160000       [4]     JSR   Game_GetState
+  00ab 8c0003       [2]     CPD   #3
+  00ae 182600a0     [4/3]   LBNE  *+164 ;abs = 0152
+  449:              if(curs.x == boxRow && curs.y == boxCol) {
+  00b2 e68b         [3]     LDAB  11,SP
+  00b4 c40f         [1]     ANDB  #15
+  00b6 e18d         [3]     CMPB  13,SP
+  00b8 260a         [3/1]   BNE   *+12 ;abs = 00c4
+  00ba e68b         [3]     LDAB  11,SP
+  00bc c4f0         [1]     ANDB  #240
+  00be 54           [1]     LSRB  
+  00bf 54           [1]     LSRB  
+  00c0 54           [1]     LSRB  
+  00c1 54           [1]     LSRB  
+  00c2 e18c         [3]     CMPB  12,SP
+  00c4 1826008a     [4/3]   LBNE  *+142 ;abs = 0152
+  450:                if((boxX == 1 && boxY == 1) ||
+  00c8 e683         [3]     LDAB  3,SP
+  00ca 042105       [3]     DBNE  B,*+8 ;abs = 00d2
+  00cd e682         [3]     LDAB  2,SP
+  00cf 04017e       [3]     DBEQ  B,*+129 ;abs = 0150
+  451:                   (boxX == 1 && boxY == 2) ||
+  00d2 e683         [3]     LDAB  3,SP
+  00d4 042106       [3]     DBNE  B,*+9 ;abs = 00dd
+  00d7 e682         [3]     LDAB  2,SP
+  00d9 c102         [1]     CMPB  #2
+  00db 2709         [3/1]   BEQ   *+11 ;abs = 00e6
+  452:                   (boxX == 1 && boxY == 4) ||
+  00dd e683         [3]     LDAB  3,SP
+  00df 042106       [3]     DBNE  B,*+9 ;abs = 00e8
+  00e2 e682         [3]     LDAB  2,SP
+  00e4 c104         [1]     CMPB  #4
+  00e6 2709         [3/1]   BEQ   *+11 ;abs = 00f1
+  453:                   (boxX == 1 && boxY == 5) ||
+  00e8 e683         [3]     LDAB  3,SP
+  00ea 042106       [3]     DBNE  B,*+9 ;abs = 00f3
+  00ed e682         [3]     LDAB  2,SP
+  00ef c105         [1]     CMPB  #5
+  00f1 2715         [3/1]   BEQ   *+23 ;abs = 0108
+  454:                   (boxX == 2 && boxY == 1) ||
+  00f3 e683         [3]     LDAB  3,SP
+  00f5 c102         [1]     CMPB  #2
+  00f7 2605         [3/1]   BNE   *+7 ;abs = 00fe
+  00f9 e682         [3]     LDAB  2,SP
+  00fb 040152       [3]     DBEQ  B,*+85 ;abs = 0150
+  455:                   (boxX == 2 && boxY == 5) ||
+  00fe e683         [3]     LDAB  3,SP
+  0100 c102         [1]     CMPB  #2
+  0102 2606         [3/1]   BNE   *+8 ;abs = 010a
+  0104 e682         [3]     LDAB  2,SP
+  0106 c105         [1]     CMPB  #5
+  0108 2746         [3/1]   BEQ   *+72 ;abs = 0150
+  456:                   (boxX == 4 && boxY == 1) ||
+  010a e683         [3]     LDAB  3,SP
+  010c c104         [1]     CMPB  #4
+  010e 2605         [3/1]   BNE   *+7 ;abs = 0115
+  0110 e682         [3]     LDAB  2,SP
+  0112 04013b       [3]     DBEQ  B,*+62 ;abs = 0150
+  457:                   (boxX == 4 && boxY == 5) ||
+  0115 e683         [3]     LDAB  3,SP
+  0117 c104         [1]     CMPB  #4
+  0119 2606         [3/1]   BNE   *+8 ;abs = 0121
+  011b e682         [3]     LDAB  2,SP
+  011d c105         [1]     CMPB  #5
+  011f 272f         [3/1]   BEQ   *+49 ;abs = 0150
+  458:                   (boxX == 5 && boxY == 1) ||
+  0121 e683         [3]     LDAB  3,SP
+  0123 c105         [1]     CMPB  #5
+  0125 2605         [3/1]   BNE   *+7 ;abs = 012c
+  0127 e682         [3]     LDAB  2,SP
+  0129 040124       [3]     DBEQ  B,*+39 ;abs = 0150
+  459:                   (boxX == 5 && boxY == 2) ||
+  012c e683         [3]     LDAB  3,SP
+  012e c105         [1]     CMPB  #5
+  0130 2606         [3/1]   BNE   *+8 ;abs = 0138
+  0132 e682         [3]     LDAB  2,SP
+  0134 c102         [1]     CMPB  #2
+  0136 2718         [3/1]   BEQ   *+26 ;abs = 0150
+  460:                   (boxX == 5 && boxY == 4) ||
+  0138 e683         [3]     LDAB  3,SP
+  013a c105         [1]     CMPB  #5
+  013c 2606         [3/1]   BNE   *+8 ;abs = 0144
+  013e e682         [3]     LDAB  2,SP
+  0140 c104         [1]     CMPB  #4
+  0142 270c         [3/1]   BEQ   *+14 ;abs = 0150
+  461:                   (boxX == 5 && boxY == 5)) {
+  0144 e683         [3]     LDAB  3,SP
+  0146 c105         [1]     CMPB  #5
+  0148 2608         [3/1]   BNE   *+10 ;abs = 0152
+  014a e682         [3]     LDAB  2,SP
+  014c c105         [1]     CMPB  #5
+  014e 2602         [3/1]   BNE   *+4 ;abs = 0152
+  462:  
+  463:                  pixels |= 1 << k;
+  0150 0745         [4]     BSR   *+71 ;abs = 0197
+  0152 ee87         [3]     LDX   7,SP
+  0154 08           [1]     INX   
+  0155 6e87         [2]     STX   7,SP
+  0157 ec87         [3]     LDD   7,SP
+  0159 8c0008       [2]     CPD   #8
+  015c 2c0e         [3/1]   BGE   *+16 ;abs = 016c
+  015e ee85         [3]     LDX   5,SP
+  0160 8e0007       [2]     CPX   #7
+  0163 2d03         [3/1]   BLT   *+5 ;abs = 0168
+  0165 8c0004       [2]     CPD   #4
+  0168 182dfee7     [4/3]   LBLT  *-277 ;abs = 0053
+  464:                }
+  465:              }
+  466:            }
+  467:          }
+  468:        }
+  469:        OutByte(i + 0xB8, j + 0x40, pixels);
+  016c e686         [3]     LDAB  6,SP
+  016e cbb8         [1]     ADDB  #184
+  0170 37           [2]     PSHB  
+  0171 e68b         [3]     LDAB  11,SP
+  0173 cb40         [1]     ADDB  #64
+  0175 37           [2]     PSHB  
+  0176 e686         [3]     LDAB  6,SP
+  0178 160000       [4]     JSR   OutByte
+  017b 30           [3]     PULX  
+  017c ee89         [3]     LDX   9,SP
+  017e 08           [1]     INX   
+  017f 6e89         [2]     STX   9,SP
+  0181 8e003d       [2]     CPX   #61
+  0184 182dfe8b     [4/3]   LBLT  *-369 ;abs = 0013
+  0188 ee85         [3]     LDX   5,SP
+  018a 08           [1]     INX   
+  018b 6e85         [2]     STX   5,SP
+  018d 8e0008       [2]     CPX   #8
+  0190 182dfe7b     [4/3]   LBLT  *-385 ;abs = 000f
+  470:      }
+  471:    }
+  472:  }
+  0194 1b8e         [2]     LEAS  14,SP
+  0196 3d           [5]     RTS   
+  0197 c601         [1]     LDAB  #1
+  0199 a68a         [3]     LDAA  10,SP
+  019b 160000       [4]     JSR   _BSHL
+  019e ea86         [3]     ORAB  6,SP
+  01a0 6b86         [2]     STAB  6,SP
+  01a2 3d           [5]     RTS   
+  473:  
+  474:  // ********* LCD_OutChar***********
+  475:  // Output ASCII character on the
+  476:  //    AGM1264F 128-bit by 64-bit graphics display
+  477:  // Input: 7-bit ASCII to display
+  478:  // Output: none
+  479:  // letter must be between 32 and 127 inclusive
+  480:  // execute LCD_GoTo to specify cursor location
+  481:  void LCD_OutChar(unsigned char letter){
+*** EVALUATION ***
+
+Function: LCD_OutChar
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 6bab         [2]     STAB  5,-SP
+  482:  unsigned short i,cnt;
+  483:    if(OpenFlag == 0) return;
+  0002 fc0000       [3]     LDD   OpenFlag
+  0005 182700ac     [4/3]   LBEQ  *+176 ;abs = 00b5
+  484:  // page 0 is 0xB8, varies from 0xB7 to 0xBF
+  485:    if(letter<32) return;
+  0009 e680         [3]     LDAB  0,SP
+  000b c120         [1]     CMPB  #32
+  000d 182500a4     [4/3]   LBCS  *+168 ;abs = 00b5
+  486:    if(letter>127) return;
+  0011 c17f         [1]     CMPB  #127
+  0013 1822009e     [4/3]   LBHI  *+162 ;abs = 00b5
+  487:    i = 5*(letter-32); // index into font table
+  0017 87           [1]     CLRA  
+  0018 830020       [2]     SUBD  #32
+  001b b746         [1]     TFR   D,Y
+  001d c605         [1]     LDAB  #5
+  001f 87           [1]     CLRA  
+  0020 13           [3]     EMUL  
+  0021 6c81         [2]     STD   1,SP
+  488:    CS2 = bRight1;   // right enable
+  0023 1e00000106   [5]     BRSET bRight1,#1,*+11 ;abs = 002e
+  0028 1d000008     [4]     BCLR  _PTP,#8
+  002c 2004         [3]     BRA   *+6 ;abs = 0032
+  002e 1c000008     [4]     BSET  _PTP,#8
+  489:    CS1 = bLeft1;    // left enable
+  0032 1e00000106   [5]     BRSET bLeft1,#1,*+11 ;abs = 003d
+  0037 1d000004     [4]     BCLR  _PTP,#4
+  003b 2004         [3]     BRA   *+6 ;abs = 0041
+  003d 1c000004     [4]     BSET  _PTP,#4
+  490:    lcdCmd(Page);    // Page address 0 to 7 
+  0041 0775         [4]     BSR   *+119 ;abs = 00b8
+  491:    lcdCmd(Column1); // Column = 0
+  492:    for(cnt=5; cnt>0; cnt--){
+  0043 c605         [1]     LDAB  #5
+  0045 87           [1]     CLRA  
+  0046 6c83         [2]     STD   3,SP
+  493:      if(bDown){
+  0048 f60000       [3]     LDAB  bDown
+  004b 2709         [3/1]   BEQ   *+11 ;abs = 0056
+  494:        lcdData(Font[i]<<1);  // copy one byte, shifted down 
+  004d ee81         [3]     LDX   1,SP
+  004f e6e20000     [4]     LDAB  Font,X
+  0053 58           [1]     LSLB  
+  495:      } else{
+  0054 2006         [3]     BRA   *+8 ;abs = 005c
+  496:        lcdData(Font[i]);  // copy one byte 
+  0056 ee81         [3]     LDX   1,SP
+  0058 e6e20000     [4]     LDAB  Font,X
+  005c 160000       [4]     JSR   lcdData
+  497:      }
+  498:      i++;
+  005f ee81         [3]     LDX   1,SP
+  0061 08           [1]     INX   
+  0062 6e81         [2]     STX   1,SP
+  499:      Column1++;
+  0064 720000       [4]     INC   Column1
+  500:      if(bLeft1&&(Column1==0x80)){
+  0067 f60000       [3]     LDAB  bLeft1
+  006a 270b         [3/1]   BEQ   *+13 ;abs = 0077
+  006c f60000       [3]     LDAB  Column1
+  006f c180         [1]     CMPB  #128
+  0071 2604         [3/1]   BNE   *+6 ;abs = 0077
+  501:        Column1 = 0x40;
+  0073 074f         [4]     BSR   *+81 ;abs = 00c4
+  502:        bLeft1 = 0;  
+  503:        bRight1 = 1;     // switch to right side
+  504:        CS2 = bRight1;   // right enable
+  505:        CS1 = bLeft1;    // left enable
+  506:        lcdCmd(Page);    // Page address 0 to 7) 
+  0075 0741         [4]     BSR   *+67 ;abs = 00b8
+  507:        lcdCmd(Column1); // Column = 0
+  508:      }
+  509:      if(bRight1&&(Column1==0x7F)){
+  0077 f60000       [3]     LDAB  bRight1
+  007a 270b         [3/1]   BEQ   *+13 ;abs = 0087
+  007c f60000       [3]     LDAB  Column1
+  007f c17f         [1]     CMPB  #127
+  0081 2604         [3/1]   BNE   *+6 ;abs = 0087
+  510:        Column1 = 0x41;
+  0083 0754         [4]     BSR   *+86 ;abs = 00d9
+  511:        bLeft1 = 1;  
+  512:        bRight1 = 0;     // switch to left side
+  513:        CS2 = bRight1;   // right enable
+  514:        CS1 = bLeft1;    // left enable
+  515:        lcdCmd(Page);    // Page address 0 to 7) 
+  0085 0731         [4]     BSR   *+51 ;abs = 00b8
+  0087 ee83         [3]     LDX   3,SP
+  0089 09           [1]     DEX   
+  008a 6e83         [2]     STX   3,SP
+  008c 26ba         [3/1]   BNE   *-68 ;abs = 0048
+  516:        lcdCmd(Column1); // Column = 0
+  517:      }
+  518:    }
+  519:    lcdData(0);  // inter-character space copy one byte 
+  008e c7           [1]     CLRB  
+  008f 160000       [4]     JSR   lcdData
+  520:    Column1++;
+  0092 720000       [4]     INC   Column1
+  521:    if(bLeft1&&(Column1==0x80)){
+  0095 f60000       [3]     LDAB  bLeft1
+  0098 270b         [3/1]   BEQ   *+13 ;abs = 00a5
+  009a f60000       [3]     LDAB  Column1
+  009d c180         [1]     CMPB  #128
+  009f 2604         [3/1]   BNE   *+6 ;abs = 00a5
+  522:      Column1 = 0x40;
+  00a1 0721         [4]     BSR   *+35 ;abs = 00c4
+  523:      bLeft1 = 0;  
+  524:      bRight1 = 1;     // switch to right side
+  525:      CS2 = bRight1;   // right enable
+  526:      CS1 = bLeft1;    // left enable
+  527:      lcdCmd(Page);    // Page address 0 to 7) 
+  00a3 0713         [4]     BSR   *+21 ;abs = 00b8
+  528:      lcdCmd(Column1); // Column = 0
+  529:    }
+  530:    if(bRight1&&(Column1==0x7F)){
+  00a5 f60000       [3]     LDAB  bRight1
+  00a8 270b         [3/1]   BEQ   *+13 ;abs = 00b5
+  00aa f60000       [3]     LDAB  Column1
+  00ad c17f         [1]     CMPB  #127
+  00af 2604         [3/1]   BNE   *+6 ;abs = 00b5
+  531:      Column1 = 0x41;
+  00b1 0726         [4]     BSR   *+40 ;abs = 00d9
+  532:      bLeft1 = 1;  
+  533:      bRight1 = 0;     // switch to left side
+  534:      CS2 = bRight1;   // right enable
+  535:      CS1 = bLeft1;    // left enable
+  536:      lcdCmd(Page);    // Page address 0 to 7) 
+  00b3 0703         [4]     BSR   *+5 ;abs = 00b8
+  537:      lcdCmd(Column1); // Column = 0
+  538:    }
+  539:  }  
+  00b5 1b85         [2]     LEAS  5,SP
+  00b7 3d           [5]     RTS   
+  00b8 f60000       [3]     LDAB  Page
+  00bb 160000       [4]     JSR   lcdCmd
+  00be f60000       [3]     LDAB  Column1
+  00c1 060000       [3]     JMP   lcdCmd
+  00c4 cc0140       [2]     LDD   #320
+  00c7 7b0000       [3]     STAB  Column1
+  00ca 790000       [3]     CLR   bLeft1
+  00cd 7a0000       [3]     STAA  bRight1
+  00d0 1c000008     [4]     BSET  _PTP,#8
+  00d4 1d000004     [4]     BCLR  _PTP,#4
+  00d8 3d           [5]     RTS   
+  00d9 cc0141       [2]     LDD   #321
+  00dc 7b0000       [3]     STAB  Column1
+  00df 7a0000       [3]     STAA  bLeft1
+  00e2 790000       [3]     CLR   bRight1
+  00e5 1d000008     [4]     BCLR  _PTP,#8
+  00e9 1c000004     [4]     BSET  _PTP,#4
+  00ed 3d           [5]     RTS   
+  540:  
+  541:  
+  542:    
+  543:  //---------------------LCD_OutString--------------
+  544:  // Display String
+  545:  // Input: pointer to NULL-terminationed ASCII string 
+  546:  // Output: none
+  547:  void LCD_OutString(char *pt){ 
+*** EVALUATION ***
+
+Function: LCD_OutString
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  548:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 260a         [3/1]   BNE   *+12 ;abs = 0010
+  549:      return;  // not open
+  0006 200e         [3]     BRA   *+16 ;abs = 0016
+  550:    }
+  551:    while(*pt){
+  552:      LCD_OutChar((unsigned char)*pt);
+  0008 160000       [4]     JSR   LCD_OutChar
+  553:      pt++;
+  000b ee80         [3]     LDX   0,SP
+  000d 08           [1]     INX   
+  000e 6e80         [2]     STX   0,SP
+  0010 ee80         [3]     LDX   0,SP
+  0012 e600         [3]     LDAB  0,X
+  0014 26f2         [3/1]   BNE   *-12 ;abs = 0008
+  554:    }
+  555:  }
+  0016 3a           [3]     PULD  
+  0017 3d           [5]     RTS   
+  556:  
+  557:  //-----------------------LCD_GoTo-----------------------
+  558:  // Move cursor
+  559:  // Input: line number is 1 to 8, column from 1 to 21 
+  560:  // Output: none
+  561:  // errors: it will ignore legal addresses
+  562:  void LCD_GoTo(int line, int column){
+*** EVALUATION ***
+
+Function: LCD_GoTo
+Source  : C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources\LCDG.c
+Options : -Cc -CPUHCS12 -D_HCS12_SERIALMON -D__NO_FLOAT__ -Env"GENPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(;C:\Users\Raz\Documents\EE 445L\Battleship =(\bin;C:\Users\Raz\Documents\EE 445L\Battleship =(\prm;C:\Users\Raz\Documents\EE 445L\Battleship =(\cmd;C:\Users\Raz\Documents\EE 445L\Battleship =(\Sources;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\lib;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\src;C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"LIBPATH=C:\Program Files\Freescale\CWS12v5.1\lib\HC12c\include" -Env"OBJPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Env"TEXTPATH=C:\Users\Raz\Documents\EE 445L\Battleship =(\bin" -Lasm=%n.lst -Ms -ObjN="C:\Users\Raz\Documents\EE 445L\Battleship =(\Battleship_=(_Data\Standard\ObjectCode\LCDG.c.o" -OnB=b -WmsgSd1106
+
+  0000 3b           [2]     PSHD  
+  563:    if(OpenFlag==0){
+  0001 fc0000       [3]     LDD   OpenFlag
+  0004 2759         [3/1]   BEQ   *+91 ;abs = 005f
+  564:      return;  // not open
+  565:    }
+  566:    if((line<1) || (line>8)) return;
+  0006 ee84         [3]     LDX   4,SP
+  0008 8e0001       [2]     CPX   #1
+  000b 2d52         [3/1]   BLT   *+84 ;abs = 005f
+  000d 8e0008       [2]     CPX   #8
+  0010 2e4d         [3/1]   BGT   *+79 ;abs = 005f
+  567:    if((column<1) || (column>21)) return;
+  0012 ed80         [3]     LDY   0,SP
+  0014 8d0001       [2]     CPY   #1
+  0017 2d46         [3/1]   BLT   *+72 ;abs = 005f
+  0019 8d0015       [2]     CPY   #21
+  001c 2e41         [3/1]   BGT   *+67 ;abs = 005f
+  568:    if(line<5){
+  001e 8e0005       [2]     CPX   #5
+  0021 2c05         [3/1]   BGE   *+7 ;abs = 0028
+  569:      bDown = 0;             // normal position on lines 1,2,3,4
+  0023 790000       [3]     CLR   bDown
+  570:    } else{
+  0026 2005         [3]     BRA   *+7 ;abs = 002d
+  571:      bDown = 0xFF;          // shifted down on lines 5,6,7,8
+  0028 c6ff         [1]     LDAB  #255
+  002a 7b0000       [3]     STAB  bDown
+  572:    }
+  573:    Page = 0xB8+line-1;      // 0xB8 to 0xBF
+  002d e685         [3]     LDAB  5,SP
+  002f cbb7         [1]     ADDB  #183
+  0031 7b0000       [3]     STAB  Page
+  574:    if(column<12){
+  0034 8d000c       [2]     CPY   #12
+  0037 2c14         [3/1]   BGE   *+22 ;abs = 004d
+  575:      Column1 = 59+6*column; // 0x41+6*(column-1);
+  0039 c606         [1]     LDAB  #6
+  003b a681         [3]     LDAA  1,SP
+  003d 12           [1]     MUL   
+  003e cb3b         [1]     ADDB  #59
+  0040 7b0000       [3]     STAB  Column1
+  576:      bLeft1 = 1;  
+  0043 c601         [1]     LDAB  #1
+  0045 7b0000       [3]     STAB  bLeft1
+  577:      bRight1 = 0;           // on left side
+  0048 790000       [3]     CLR   bRight1
+  578:    } else{
+  004b 2012         [3]     BRA   *+20 ;abs = 005f
+  579:      Column1 = 6*column-5;  // 0x43+6*(column-12);
+  004d c606         [1]     LDAB  #6
+  004f a681         [3]     LDAA  1,SP
+  0051 12           [1]     MUL   
+  0052 c005         [1]     SUBB  #5
+  0054 7b0000       [3]     STAB  Column1
+  580:      bLeft1 = 0;  
+  0057 790000       [3]     CLR   bLeft1
+  581:      bRight1 = 1;           // on right side
+  005a c601         [1]     LDAB  #1
+  005c 7b0000       [3]     STAB  bRight1
+  582:    }
+  583:  }
+  005f 3a           [3]     PULD  
+  0060 3d           [5]     RTS   
